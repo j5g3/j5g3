@@ -25,6 +25,6 @@ end
 desc "Generate Documentation"
 task :docs => :source do
 	puts "j5g3 Documentation..."
-	`#{JSDOC} -d=g3/docs g3/js/j5g3-all.js`
+	#`#{JSDOC} -d=g3/docs g3/js/j5g3-all.js`
 end
 	

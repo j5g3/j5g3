@@ -12,13 +12,14 @@ Building j5g3
 
 rake
 	Build j5g3 files.
-rake compile
+rake minify
 	Minifies the code.
-rake docs
-	Generates Documentation.
+rake lint
+	Runs jshint on all files.
 
 ### Dependencies ###
 
+- jshint
 - Ruby/Rake - To build the library.
 - UglifyJS (Optional) To minify the code.
 
@@ -28,5 +29,5 @@ Documentation
 
 Online documentation at <http://j5g3.com/docs>
 
-To get started and get a feeling of how j5g3 works. Visit the Writing a Pong Game tutorial at <http://j5g3.com/tutorials/pong.html>.
+To get started and get a feeling of how j5g3 works. Visit the homepage at <http://j5g3.com>.
 
