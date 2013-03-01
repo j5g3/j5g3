@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>j5 Framework - Demos</title>
+	<script src="../build/j5g3-dbg-all.js"></script>
+
+	<link rel="stylesheet" href="../build/j5g3.css" />
+	<link rel="stylesheet" href="demo.css" />
+
+	<script src="demo.js"></script>
+
+</head>
+<body>
+
+<div style="text-align: center">
+	<h1>Demos</h1>
+	<p>Select a demo from the list to start.
+	<select id="demos">
+		<optgroup label="j5fx">
+			<option>Easing</option>
+			<option>Font</option>
+		</optgroup>
+		<optgroup label="j5g3">
+			<option>Clock</option>
+			<option>Fire</option>
+			<option>Image</option>
+			<option>Life</option>
+			<option>Particles</option>
+			<option>Isometric</option>
+			<option>Collides</option>
+		<!-- 	<option>Clipping</option>-->
+			<option>Tunnel</option>
+			<option>Balls</option>
+			<option>Shapes</option>
+			<option>Transformation</option>
+			<option>Loader</option>
+			<option>Masking</option>
+			<option>Radial</option>
+		</optgroup>
+		<optgroup label="Games">
+			<option>Pong</option>
+			<option>Breakout</option>
+			<option>Bubble</option>
+		</optgroup>
+	</select>
+	<a href="javascript: view_source();">View Source</a>
+	</p>
+</div>
+	<canvas id="screen"></canvas>
+
+	<div class="j5g3-assets">
+		<img id="ball" src="img/soccer-ball.gif" />
+		<img id="earth" src="img/earth.gif" />
+		<img id="tunnel" src="img/tunnel.jpg" />
+		<img id="j5g3" src="img/j5g3.png" />
+
+		<img id="iso-terrain" src="img/iso-terrain.png" />
+		<img id="batman" src="character/batman.png" />
+	</div>
+
+</body>
+</html>
