@@ -1,4 +1,615 @@
 /**
+ * @license Copyright 2010-2012, Giancarlo F Bellido.
+ *
+ * j5 v0.9 - Javascript Library
+ * http://j5g3.com
+ *
+ * j5 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * j5 is distributed in the hope that it will be useful
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with j5. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Date: 2013-03-01 01:55:57 -0500
+ *
+ */
+
+(function(window, document, undefined) {
+'use strict';
+
+var
+property = Object.defineProperty,
+describe = Object.getOwnPropertyDescriptor,
+
+HTMLAudioElement = window.HTMLAudioElement,
+HTMLElement = window.HTMLElement,
+
+/** @namespace j5 */
+j5 = {
+
+	/** @type {Window} */
+	win: window,
+
+	/**
+	 * Extends object a with b
+	 *
+	 * @param {Object} a
+	 * @param {Object} b
+	 *
+	 * @return {Object} Returns a
+	 */
+	extend: function(a, b)
+	{
+		for (var i in b)
+			a[i] = b[i];
+
+		return a;
+	},
+
+	/**
+	 * Returns a function that creates a class Klass and takes 1 parameter
+	 *
+	 * @param {Function} Klass
+	 * @return {Function}
+	 */
+	factory: function(Klass)
+	{
+		return function(properties) { return new Klass(properties); };
+	},
+
+	/**
+	 * Clones Array recursively.
+	 *
+	 * @param {Array} ary
+	 *
+	 * @return {Array}
+	 */
+	clone: function j5clone(ary)
+	{
+	var
+		i = 0, l=ary.length, current, result=[]
+	;
+		for (;i < l; i++)
+			result.push((current=ary[i]) instanceof Array ?
+				j5clone(current) :
+				current
+			);
+
+		return result;
+	},
+
+	/**
+	 * Returns a DOM element by ID.
+	 *
+	 * @param {string} id Id of DOM Element
+	 */
+	id: function(id) { return document.getElementById(id); },
+
+	/**
+	 * Adds a callback to the body onLoad event.
+	 */
+	ready: function(fn) { window.addEventListener('load', fn, false); },
+
+	/**
+	 * @return {number} A random number from 0 to max
+	 */
+	rand: function(max) { return Math.random() * max; },
+
+	/**
+	 * @return {number} A random integer number from 0 to max.
+	 */
+	irand: function(max) { return Math.floor(Math.random() * max); },
+
+	/**
+	 * Creates an array of w*h dimensions initialized with value v
+	 *
+	 * @return {Array} Array
+	 */
+	ary: function(w, h, v)
+	{
+	/*jshint maxdepth:4 */
+		var result = [], x;
+
+		if (h)
+			while (h--)
+			{
+				result[h] = [];
+				for (x=0; x<w; x++)
+					result[h][x]=v;
+			}
+		else
+			while (w--)
+				result.push(v);
+
+		return result;
+	},
+
+	/**
+	 * Wrapper for window.console.log().
+	 */
+	log: function()
+	{
+		window.console.log.apply(window.console, arguments); return this;
+	},
+
+	/**
+	 * Wrapper for window.console.info().
+	 */
+	info: function()
+	{
+		window.console.info.apply(window.console, arguments); return this;
+	},
+
+	/**
+	 * Wrapper for window.console.warn().
+	 */
+	warn: function()
+	{
+		window.console.warn.apply(window.console, arguments); return this;
+	},
+
+	/**
+	 * Binds function with scope
+	 * @deprecated
+	 */
+	bind: function(fn, scope)
+	{
+		return function() { fn.apply(scope, arguments); };
+	},
+
+	/**
+	 * Returns a DOM element.
+	 * @namespace
+	 *
+	 * @param {string} tagname
+	 */
+	dom: function(tagname)
+	{
+		return document.createElement(tagname);
+	},
+
+	/**
+	 * Gets type of obj. It returns 'dom' for HTML DOM objects, 'audio'
+	 * for HTMLAudioElement's and 'j5' for j5.Class descendants.
+	 */
+	getType: function(obj)
+	{
+		var result = typeof(obj);
+
+		if (result === 'object')
+		{
+			if (obj instanceof Array) return 'array';
+			if (obj instanceof HTMLAudioElement) return 'audio';
+			if (obj instanceof HTMLElement) return 'dom';
+			if (obj instanceof j5.Class) return 'j5';
+		}
+
+		return result;
+	},
+
+	/**
+	 * Void function. Does nothing. Used to avoid creating a new empty function.
+	 */
+	Void: function() { }
+
+},
+
+Class =
+
+/**
+ * j5 Base class
+ * @constructor
+ * @param {Object} p
+ */
+j5.Class = function j5Class(p) {
+	this.extend(p);
+};
+
+/**
+ * Returns a new DOM Element with tag tag and src attribute src.
+ *
+ * @param {string} tag
+ * @param {string} uri
+ *
+ */
+j5.dom.src= function(tag, uri)
+{
+var
+	el = document.createElement(tag)
+;
+	el.setAttribute('src', uri);
+	return el;
+};
+
+/**
+ * Returns an HTML Image object from a URI uri
+ *
+ * @param {string} uri
+ */
+j5.dom.image= function(uri)
+{
+	return j5.dom.src('img', uri);
+};
+
+
+/**
+ *
+ * Uses methods.init as the constructor. If not passed it will define a function
+ * and call the base constructor. Sets 'super' as the base class.
+ *
+ * @param {Object} methods Class instance methods.
+ * @param {Object=} static_methods Static Methods.
+ *
+ */
+j5.Class.extend = function(methods, static_methods)
+{
+/*jshint maxstatements:20 */
+var
+	i,
+	_super  = this,
+	init   = methods.init || function() { _super.apply(this, arguments); },
+	/** @constructor @ignore */
+	Subclass= function() { },
+	/** @type {Object} */
+	method
+;
+
+	Subclass.prototype = _super.prototype;
+
+	init.prototype = new Subclass();
+	init.prototype.constructor = init;
+	init.prototype.base = _super.prototype;
+
+	init.extend = Class.extend;
+
+	for(i in methods)
+		if (methods.hasOwnProperty(i))
+		{
+			method = describe(methods, i);
+			property(init.prototype, i, method);
+		}
+
+	for (i in static_methods)
+		if (static_methods.hasOwnProperty(i))
+		{
+			method = describe(static_methods, i);
+			property(init, i, method);
+		}
+
+	return init;
+};
+
+/**
+ * Extends this instance with properties from p
+ */
+j5.Class.prototype.extend = function(p)
+{
+	for (var i in p)
+		this[i] = p[i];
+};
+
+window.j5 = j5;
+
+})(this, this.document);
+
+/**
+ * j5-math v0.9 - Javascript Math Module
+ * http://j5g3.com
+ *
+ * Copyright 2010-2012, Giancarlo F Bellido
+ *
+ * j5p4 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * j5p4 is distributed in the hope that it will be useful
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with j5. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Date: 2013-03-01 01:55:57 -0500
+ *
+ */
+
+(function(j5, undefined) {
+'use strict';
+
+var
+Math = j5.win.Math,
+
+j5Math =
+
+/**
+ * @namespace
+ */
+j5.math = {
+	/** @const */ PI: Math.PI,
+	/** @const */ PI180: Math.PI / 180,
+
+	clamp: function clamp(f, min, max)
+	{
+		return Math.min(Math.max(f, min), max);
+	},
+
+	/**
+	 * 2D Determinant
+	 */
+	determinant: function (a, b, c, d)
+	{
+		return a*d - c*b;
+	},
+
+	/**
+	 * Transform points x,y using matrix and stores it in result
+	 *
+	 * @param {j5.Matrix} matrix
+	 * @param x
+	 * @param y
+	 * @param {Array} result
+	 */
+	transform: function(matrix, x, y, result)
+	{
+		result[0] = matrix.a * x + matrix.c * y + matrix.e;
+		result[1] = matrix.f + matrix.b * x + matrix.d * y;
+		return result;
+	},
+
+	itransform: function(matrix, x, y, result)
+	{
+	var
+		adbc = matrix.a * matrix.d - matrix.b * matrix.c
+	;
+		result[0] = (matrix.d*x - matrix.c*y + matrix.c*matrix.f-matrix.d*matrix.e)/adbc;
+		result[1] = (-matrix.b*x + matrix.a*y + matrix.b*matrix.e-matrix.a*matrix.f)/adbc;
+	},
+
+	/**
+	 * Dot Product of [a,b].[c,d]
+	 */
+	dot: function(a, b, c, d)
+	{
+		return a*c+b*d;
+	},
+
+	cross: function(a, b, c, d)
+	{
+		return b*c - a*d;
+	},
+
+	/**
+	 * Returns magnitude of vector [x, y]
+	 */
+	magnitude: function(x, y)
+	{
+		return Math.sqrt(x*x + y*y);
+	},
+
+	normalize: function(point)
+	{
+	var
+		mag = j5.math.magnitude(point[0], point[1])
+	;
+		point[0] = point[0]/mag;
+		point[1] = point[1]/mag;
+
+		return point;
+	},
+
+	/**
+	 * Converts Degrees deg to Radians
+	 */
+	to_rad: function(deg)
+	{
+		return j5.math.PI180 * deg;
+	}
+},
+
+Matrix =
+/**
+ * 2D Transformation Matrix.
+ *
+ * [ a c e ]
+ * [ b d f ]
+ * [ 0 0 1 ]
+ */
+j5.math.Matrix = j5.Class.extend({
+
+	a: 1,
+	b: 0,
+	c: 0,
+	d: 1,
+	e: 0,
+	f: 0,
+
+	_cos: 1,
+	_sin: 0,
+
+	_rotation: 0,
+
+	init: function j5mathMatrix(a, b, c, d, e, f)
+	{
+		if (a!==undefined)
+		{
+			this.a = a; this.b = b; this.c = c; this.d = d; this.e = e; this.f = f;
+		}
+	},
+
+	get rotation() { return this._rotation; },
+	set rotation(val)
+	{
+		this._rotation = val;
+		this._cos = Math.cos(val);
+		this._sin = Math.sin(val);
+		return this.calc4();
+	},
+
+	_scaleX: 1,
+	get scaleX() { return this._scaleX; },
+	set scaleX(val)
+	{
+		this._scaleX = val;
+		this.a = this._scaleX * this._cos;
+		this.b = this._scaleX * this._sin;
+		return this;
+	},
+
+	_scaleY: 1,
+	get scaleY() { return this._scaleY; },
+	set scaleY(val)
+	{
+		this._scaleY = val;
+		this.c = -this._scaleY * this._sin;
+		this.d = this._scaleY * this._cos;
+		return this;
+	},
+
+	scale: function(sx, sy)
+	{
+		this.scaleX *= sx;
+		this.scaleY *= sy;
+		return this;
+	},
+
+	translate: function(dx, dy)
+	{
+		return this.multiply(1, 0, 0, 1, dx, dy);
+	},
+
+	rotate: function(a)
+	{
+		this.rotation += a;
+		return this;
+	},
+
+	calc4: function()
+	{
+		this.a = this._scaleX * this._cos;
+		this.b = this._scaleX * this._sin;
+		this.c = -this._scaleY * this._sin;
+		this.d = this._scaleY * this._cos;
+		return this;
+	},
+
+	multiply: function(g, h, i, j, k, l)
+	{
+	var
+		A = this.a, B = this.b, C = this.c,
+		D= this.d
+	;
+		this.a = A*g + C*h;
+		this.b = B*g + D*h;
+		this.c = A*i + C*j;
+		this.d = B*i + D*j;
+		this.e += A*k + C*l;
+		this.f += B*k + D*l;
+		return this;
+	},
+
+	clone: function()
+	{
+		return j5Math.matrix().multiply(this.a, this.b, this.c, this.d, this.e, this.f);
+	},
+
+	/**
+	 * Returns a new inverse matrix
+	 *
+	 * @return {j5.math.Matrix}
+	 */
+	inverse: function()
+	{
+	var
+		m = this.clone(),
+		adbc = this.a*this.d-this.b*this.c
+		//bcad = this.b*this.c-this.a*this.d
+	;
+		m.a = this.d / adbc;
+		m.b = this.b / -adbc;
+		m.c = this.c / -adbc;
+		m.d = this.a / adbc;
+		m.e = (this.d*this.e-this.c*this.f) / -adbc;
+		m.f = (this.b*this.e-this.a*this.f) / adbc;
+
+		return m;
+	},
+
+	product: function(M)
+	{
+		return this.clone().multiply(M.a, M.b, M.c, M.d, M.e, M.f);
+	},
+
+	reset: function()
+	{
+		this.a = 1; this.b = 0; this.c = 0;
+		this.d = 1; this.e = 0; this.f = 0;
+		this._scaleX = 1; this._scaleY = 1;
+		this._cos = 1; this._sin = 0;
+		this._rotation = 0;
+	},
+
+	x: function(x, y)
+	{
+		return this.a * x + this.c * y + this.e;
+	},
+
+	y: function(x, y)
+	{
+		return this.f + this.b * x + this.d * y;
+	},
+
+	/**
+	 * Applies only rotation and scaling transformations.
+	 */
+	draw: function(obj, x, y)
+	{
+		obj.x += this.a * x + this.c * y;
+		obj.y += this.b * x + this.d * y;
+	},
+
+	draw_x: function(x, y)
+	{
+		return this.a * x + this.c * y;
+	},
+
+	draw_y: function(x, y)
+	{
+		return this.b * x + this.d * y;
+	},
+
+	client_x: function(x, y)
+	{
+	var
+		adbc = this.a * this.d - this.b * this.c
+	;
+		return (this.d*x - this.c*y + this.c*this.f-this.d*this.e)/adbc;
+	},
+
+	client_y: function(x, y)
+	{
+	var
+		adbc = this.a * this.d - this.b * this.c
+	;
+		return (-this.b*x + this.a*y + this.b*this.e-this.a*this.f)/adbc;
+	}
+
+})
+;
+
+/** Returns a transformation matrix */
+j5.math.matrix = function(a,b,c,d,e,f) { return new Matrix(a,b,c,d,e,f); };
+
+})(this.j5);
+/**
  * j5g3 v0.9 - Javascript Graphics Engine
  * http://j5g3.com
  *
@@ -2130,3 +2741,205 @@ j5.win.CanvasGradient.prototype.at = function(offset, color)
 
 })(this, this.j5);
 
+/**
+ * j5fx v0.9 - Javascript Effects Module
+ * http://j5g3.com
+ *
+ * Copyright 2010-2013, Giancarlo F Bellido
+ *
+ * j5fx is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * j5fx is distributed in the hope that it will be useful
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Date: 2013-03-01 01:55:57 -0500
+ *
+ */
+
+(function(j5, undefined) {
+'use strict';
+
+/**
+ * j5fx Module.
+ *
+ * @namespace
+ */
+j5.fx = {
+
+	/**
+	 *
+	 * @namespace
+	 * Text effects algorithms. All effects require old draw method to be
+	 * in the _paint property
+	 *
+	 */
+	Text:
+	{
+		Neon: function(context)
+		{
+		var
+			color  = this.stroke || this.fill,
+			lw = this.lineWidth
+		;
+			context.globalAlpha = 0.20;
+			context.lineWidth = lw+6;
+			context.strokeText(this.text, this.cx, this.cy);
+
+			context.globalAlpha = 0.40;
+			context.lineWidth = lw+3;
+			context.strokeText(this.text, this.cx, this.cy);
+
+			context.globalAlpha = 1;
+			context.lineWidth = lw;
+			context.strokeText(this.text, this.cx, this.cy);
+
+			context.globalCompositeOperation='lighter';
+
+			context.fillStyle = color;
+			context.fillText(this.text, this.cx, this.cy);
+
+			context.fillStyle = '#eee';
+			context.globalAlpha = 0.6;
+			context.fillText(this.text, this.cx, this.cy);
+		},
+
+		Mirror: function(context)
+		{
+			this._paint(context);
+			context.scale(1, -1);
+
+			if (!this.gradient)
+			{
+				this.gradient = context.createLinearGradient(0,0,0,-100);
+				this.gradient.addColorStop(0, this.fill);
+				this.gradient.addColorStop(0.5, 'transparent');
+			}
+			context.fillStyle = this.gradient;
+			this._paint(context);
+		}
+	/*
+		Gradient: function()
+		{
+		}
+		*/
+
+	},
+
+	Shake: function(radius)
+	{
+	var
+		r2 = radius*2
+	;
+		return function(i, t) { return t===1 ? this.to[i] : -radius+j5.rand(r2); };
+	},
+
+	/**
+	 * @namespace
+	 */
+	Easing: (function()
+	{
+	var
+		E = {}, i, result = {},
+
+		fnFactory = function(i, fn)
+		{
+			result['EaseIn' + i] = fn;
+			result['EaseOut' + i] = function(p) { return 1 - fn(1-p); };
+			result['EaseInOut' + i] = function(p) {
+				return p < 0.5 ?
+					fn( p * 2 ) / 2 :
+					fn( p * -2 + 2 ) / -2 + 1;
+			};
+		}
+	;
+		(['Quad', 'Cubic', 'Quart', 'Quint', 'Expo']).forEach(function(name, i) {
+			E[name] = function(p) {
+				return Math.pow(p, i+2);
+			};
+		});
+
+		E.Sine = function (p) { return 1 - Math.cos( p * Math.PI / 2 ); };
+		E.Circ = function (p) { return 1 - Math.sqrt( 1 - p * p ); };
+		E.Elastic =  function(p) { return p === 0 || p === 1 ? p :
+			-Math.pow(2, 8 * (p - 1)) * Math.sin(( (p - 1) * 80 - 7.5) * Math.PI / 15);
+		};
+		E.Back = function(p) { return p * p * ( 3 * p - 2 ); };
+		E.Bounce = function (p) {
+			var pow2, result,
+			bounce = 4;
+
+			while ( p < ( ( pow2 = Math.pow( 2, --bounce ) ) - 1 ) / 11 ) {}
+
+			result = 1 / Math.pow( 4, 3 - bounce ) - 7.5625 *
+				Math.pow( ( pow2 * 3 - 2 ) / 22 - p, 2 );
+
+			return result;
+		};
+
+		for (i in E)
+			fnFactory(i, E[i]);
+
+		result.Linear = function(p) { return p; };
+		result.Swing = function(p) { return ( -Math.cos(p*Math.PI) / 2 ) + 0.5; };
+
+		return result;
+	})()
+
+};
+
+}(this.j5));
+
+/**
+ * Copyright 2010-2013, Giancarlo F Bellido.
+ *
+ * j5 v0.9 - Javascript Library
+ * http://j5g3.com
+ *
+ * j5 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * j5 is distributed in the hope that it will be useful
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with j5. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Date: 2013-03-01 01:55:57 -0500
+ *
+ */
+
+/*jshint smarttabs:true */
+(function(j5) {
+'use strict';
+
+/**
+ * Lists browser capabilities.
+ * @namespace
+ */
+j5.support = {
+
+	canvas: {
+	},
+
+	audio: {
+
+		mp3: j5.dom('audio').canPlayType('audio/mpeg'),
+		ogg: j5.dom('audio').canPlayType('audio/ogg')
+
+	}
+
+};
+
+})(this.j5);

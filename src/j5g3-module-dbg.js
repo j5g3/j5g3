@@ -2,17 +2,16 @@
  * Debug Module for j5g3
  */
 
-/*jshint white:false smarttabs:true */
 (function(j5, undefined)
 {
-var 
+var
 	g3 = j5.g3,
-	Debug = 
+	Debug =
 
 	/**
 	 * Debug Module for j5g3
 	 */
-	j5.g3.Debug = { }, 
+	j5.g3.Debug = { },
 	screen,
 	i, time
 ;
@@ -22,15 +21,15 @@ var
 		if (typeof(g3[i])==='function') g3[i].klass = i;
 
 	/* Add Timing and FPS */
-	Debug.oldGameLoop = g3.GameEngine.prototype._gameLoop;
+	Debug.oldGameLoop = g3.Engine.prototype._gameLoop;
 
-	g3.GameEngine.prototype._gameLoop = function()
+	g3.Engine.prototype._gameLoop = function()
 	{
 		time = (new Date()).getTime();
 		Debug.oldGameLoop.apply(this);
 		time = (new Date()).getTime() - time;
 
-		var 
+		var
 		    afps = 1000/time,
 		    fps = this.fps()
 		;
@@ -50,12 +49,12 @@ var
 		for (var i in props)
 		{
 			if ((typeof this[i] === 'function') && i.indexOf('on_')!==0)
-				j5.warn('Overriding function ' + i); 
+				j5.warn('Overriding function ' + i);
 			this[i] = props[i];
 		}
 	};
 
-	g3.Image.prototype._get_source = function(src) 
+	g3.Image.prototype._get_source = function(src)
 	{
 		var source = (typeof(src)==='string') ? j5.id(src) : src;
 
@@ -64,5 +63,5 @@ var
 		return source;
 	};
 
-})(j5);
+})(this.j5);
 
