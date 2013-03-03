@@ -3,6 +3,7 @@
 {
 var 
 	ss = j5g3.spritesheet('batman').grid(6, 7),
+	to = { x: 280 },
 	y = -10,
 	x = 0,
 	a, easing
@@ -13,7 +14,7 @@ var
 
 		this.stage.add([ 
 			a, 
-			j5g3.tween({ target: a, to: { x: 280 }, easing: j5g3.fx.Easing[easing] }),
+			j5g3.tween({ target: a, to: to, easing: j5g3.fx.Easing[easing] }),
 			j5g3.text({ text: easing, y: y+20, x: x+100, font: '20px Serif' })
 		]);
 

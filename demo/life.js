@@ -22,6 +22,7 @@ var
 		sprites: [ null ]
 	}), 
 
+	/* Returns 1 if cell is alive */
 	get = function(x, y)
 	{
 		x = x === COLS ? 0 : (x === -1 ? COLS-1 : x);
@@ -30,6 +31,7 @@ var
 		return (map.map[y] && map.map[y][x] && 1) || 0;
 	},
 
+	/* Returns sum of alive cells */
 	neighbours = function(x, y)
 	{
 		return get(x-1, y-1) + get(x, y-1) + get(x+1, y-1) + get(x+1, y) +

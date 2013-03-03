@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-02 22:56:16 -0500
+ * Date: 2013-03-03 03:45:11 -0500
  *
  */
 
@@ -824,6 +824,19 @@ Clip =
 j5g3.Clip = DisplayObject.extend(
 /** @scope j5g3.Clip.prototype */ {
 
+	/** @private */
+	frames: null,
+
+	/** 
+	 * @private 
+	 *
+	 * Stores current frame number
+	 */
+	_frame: 0,
+
+	/** @private */
+	_playing: true,
+
 	init: function j5g3Clip(properties)
 	{
 		if (properties instanceof Array)
@@ -833,9 +846,6 @@ j5g3.Clip = DisplayObject.extend(
 
 		if (!this.frames)
 			this.frames = [ [ ] ];
-
-		this._frame = 0;
-		this._playing = true;
 	},
 
 	/**
@@ -1004,16 +1014,24 @@ j5g3.Stage = Clip.extend({
 	canvas: null,
 
 	/**
-	 *
+	 * Current drawing canvas context.
 	 */
 	context: null,
 
 	/**
+	 * Context for display canvas.
 	 */
 	screen: null,
 
+	/**
+	 * Canvas used for rendering.
+	 */
 	renderCanvas: null,
 
+	/**
+	 * Enable smoothing.
+	 * @default false
+	 */
 	smoothing: false,
 
 	init: function j5g3Stage(p)
@@ -1024,13 +1042,11 @@ j5g3.Stage = Clip.extend({
 			this.canvas = 'screen';
 
 		this.canvas = j5g3.id(this.canvas);
-
 		this.renderCanvas = j5g3.dom('CANVAS');
-
 		this.context = this.renderCanvas.getContext('2d');
 		this.screen  = this.canvas.getContext('2d');
 
-		this.context.imageSmoothingEnabled = this.smoothing;
+		this.screen.imageSmoothingEnabled = this.context.imageSmoothingEnabled = this.smoothing;
 
 		this.resolution(
 			this.width || this.canvas.clientWidth,
@@ -1925,6 +1941,9 @@ j5g3.Engine = Class.extend({
 
 	version: '0.9',
 
+	/**
+	 * Whether or not to use animation frame. FPS is always 60.
+	 */
 	useAnimationFrame: false,
 
 	/* Frames per Second */
@@ -1941,7 +1960,10 @@ j5g3.Engine = Class.extend({
 		if (me.process)
 			window.clearInterval(me.process);
 
-		me.process = window.setInterval(me._scopedLoop, me.__fps);
+		if (me.useAnimationFrame)
+			me.process = window.requestAnimationFrame(me._rafScopedLoop);
+		else
+			me.process = window.setInterval(me._scopedLoop, me.__fps);
 	},
 
 	destroy: function()
@@ -1949,8 +1971,19 @@ j5g3.Engine = Class.extend({
 		if (this.process)
 			window.clearInterval(this.process);
 
+		this._rafScopedLoop = function() { };
+
 		if (this.on_destroy)
 			this.on_destroy();
+	},
+
+	/**
+	 * Game Loop for requestAnimationFrame 
+	 */
+	_rafGameLoop: function()
+	{
+		this.stage.draw();
+		window.requestAnimationFrame(this._rafScopedLoop);
 	},
 
 	/**
@@ -1984,6 +2017,7 @@ j5g3.Engine = Class.extend({
 		me.extend(config);
 
 		me._scopedLoop = me._gameLoop.bind(me);
+		me._rafScopedLoop= me._rafGameLoop.bind(me);
 
 		me.set_stage(new Stage(config.stage_settings))
 			.startFn(j5g3)

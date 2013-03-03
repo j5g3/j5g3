@@ -12,7 +12,30 @@ var
 	 */
 	j5g3.Debug = { },
 	screen,
-	i, time
+	i,
+
+	loop = function(fn)
+	{
+		return function()
+		{
+			this._oldTime = this._time;
+			this._time = (new Date()).getTime();
+
+			fn.apply(this);
+
+			if (!screen)
+			    screen = this.stage.canvas.getContext('2d');
+
+			screen.save();
+			screen.fillStyle = '#009900';
+			screen.font = 'bold 18px Arial';
+			screen.translate(0, 20);
+			screen.fillText(Math.floor(1000/(this._time-this._oldTime)) + " FPS", 0, 0);
+			screen.restore();
+		};
+	},
+
+	proto = j5g3.Engine.prototype
 ;
 
 	/* Assign klass name to klass property. */
@@ -20,28 +43,11 @@ var
 		if (typeof(j5g3[i])==='function') j5g3[i].klass = i;
 
 	/* Add Timing and FPS */
-	Debug.oldGameLoop = j5g3.Engine.prototype._gameLoop;
+	Debug.oldGameLoop = proto._gameLoop;
+	Debug.oldRafGameLoop = proto._rafGameLoop;
 
-	j5g3.Engine.prototype._gameLoop = function()
-	{
-		time = (new Date()).getTime();
-		Debug.oldGameLoop.apply(this);
-		time = (new Date()).getTime() - time;
-
-		var
-		    afps = 1000/time,
-		    fps = this.fps()
-		;
-		if (!screen)
-		    screen = this.stage.canvas.getContext('2d');
-
-		screen.save();
-		screen.fillStyle = '#009900';
-		screen.font = 'bold 18px Arial';
-		screen.translate(0, 20);
-		screen.fillText(Math.round(fps < afps ? fps : afps) + " FPS", 0, 0);
-		screen.restore();
-	};
+	proto._gameLoop = loop(Debug.oldGameLoop);
+	proto._rafGameLoop = loop(Debug.oldRafGameLoop);
 
 	j5g3.DisplayObject.prototype.extend = function(props)
 	{
