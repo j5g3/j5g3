@@ -1,4 +1,4 @@
-(function(j5, g3) {
+(function(j5g3) {
 var
 	ROWS = 12,
 	COLS = 15,
@@ -9,7 +9,7 @@ var
 	sprites = [null],
 	selected = [],
 	i,
-	map = j5.ary(COLS, ROWS, 0), 
+	map = j5g3.ary(COLS, ROWS, 0), 
 	stage = this.stage,
 
 	compare = function(s, x, y)
@@ -62,11 +62,11 @@ var
 ;
 	for (i=0; i<ROWS; i++)
 		for (a=0; a<COLS; a++)
-			map[i][a] = g3.circle({ 
+			map[i][a] = j5g3.circle({ 
 				x: TW/2 + a*TW, y: TH/2 + i*TH,
 				radius: (TW>TH ? TH : TW)/2 - 2, 
 				line_width: 3,
-				fill: COLORS[j5.irand(COLORS.length)]
+				fill: COLORS[j5g3.irand(COLORS.length)]
 			});
 	
 	stage.canvas.addEventListener('mousemove', mouse);

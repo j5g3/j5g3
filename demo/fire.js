@@ -1,5 +1,5 @@
 
-(function (j5, g3)
+(function (j5g3)
 {
 var 
 	x=0, y=0,
@@ -13,7 +13,7 @@ var
 
 	on_emit = function(clip)
 	{
-		clip.pos(x-RADIUSMIN+j5.rand(RADIUSMIN*2), y-RADIUSMIN+j5.rand(RADIUSMIN*2));
+		clip.pos(x-RADIUSMIN+j5g3.rand(RADIUSMIN*2), y-RADIUSMIN+j5g3.rand(RADIUSMIN*2));
 		clip.line_cap = null;
 		clip.line_join = null;
 		clip.line_width = SIZE;
@@ -22,20 +22,19 @@ var
 		clip.blue= 30;
 		clip.color_property = 'stroke';
 
-		this.add(g3.tween({ 
+		this.add(j5g3.tween({ 
 			auto_remove: true, duration: LIFE,
 			target: clip, to: { 
 				alpha: 0.1, 
-				y: y-RADIUS+j5.rand(RADIUS*2), 
-				x: x-RADIUS+j5.rand(RADIUS*2),
+				y: y-RADIUS+j5g3.rand(RADIUS*2), 
+				x: x-RADIUS+j5g3.rand(RADIUS*2),
 				red: 255, green: 0, blue: 0
 			} 
 		}));
 	},
 
-	e1 = g3.emitter({ 
-		//source: g3.dot({ lineWidth: SIZE, lineCap: null, lineJoin: null}), 
-		container_class: g3.Dot,
+	e1 = j5g3.emitter({ 
+		container_class: j5g3.Dot,
 		count: COUNT,
 		life: LIFE,
 		on_emit: on_emit

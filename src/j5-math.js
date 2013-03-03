@@ -1,38 +1,38 @@
 /**
- * j5-math v0.9 - Javascript Math Module
+ * j5g3-math v0.9 - Javascript Math Module
  * http://j5g3.com
  *
  * Copyright 2010-2012, Giancarlo F Bellido
  *
- * j5p4 is free software: you can redistribute it and/or modify
+ * j5g3 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * j5p4 is distributed in the hope that it will be useful
+ * j5g3 is distributed in the hope that it will be useful
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with j5. If not, see <http://www.gnu.org/licenses/>.
+ * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-01 01:55:57 -0500
+ * Date: 2013-03-02 22:56:16 -0500
  *
  */
 
-(function(j5, undefined) {
+(function(j5g3, undefined) {
 'use strict';
 
 var
-Math = j5.win.Math,
+Math = j5g3.win.Math,
 
 j5Math =
 
 /**
  * @namespace
  */
-j5.math = {
+j5g3.math = {
 	/** @const */ PI: Math.PI,
 	/** @const */ PI180: Math.PI / 180,
 
@@ -52,7 +52,7 @@ j5.math = {
 	/**
 	 * Transform points x,y using matrix and stores it in result
 	 *
-	 * @param {j5.Matrix} matrix
+	 * @param {j5g3.Matrix} matrix
 	 * @param x
 	 * @param y
 	 * @param {Array} result
@@ -97,7 +97,7 @@ j5.math = {
 	normalize: function(point)
 	{
 	var
-		mag = j5.math.magnitude(point[0], point[1])
+		mag = j5g3.math.magnitude(point[0], point[1])
 	;
 		point[0] = point[0]/mag;
 		point[1] = point[1]/mag;
@@ -110,7 +110,7 @@ j5.math = {
 	 */
 	to_rad: function(deg)
 	{
-		return j5.math.PI180 * deg;
+		return j5g3.math.PI180 * deg;
 	}
 },
 
@@ -122,7 +122,7 @@ Matrix =
  * [ b d f ]
  * [ 0 0 1 ]
  */
-j5.math.Matrix = j5.Class.extend({
+j5g3.math.Matrix = j5g3.Class.extend({
 
 	a: 1,
 	b: 0,
@@ -223,7 +223,7 @@ j5.math.Matrix = j5.Class.extend({
 	/**
 	 * Returns a new inverse matrix
 	 *
-	 * @return {j5.math.Matrix}
+	 * @return {j5g3.math.Matrix}
 	 */
 	inverse: function()
 	{
@@ -305,6 +305,6 @@ j5.math.Matrix = j5.Class.extend({
 ;
 
 /** Returns a transformation matrix */
-j5.math.matrix = function(a,b,c,d,e,f) { return new Matrix(a,b,c,d,e,f); };
+j5g3.math.matrix = function(a,b,c,d,e,f) { return new Matrix(a,b,c,d,e,f); };
 
-})(this.j5);
+})(this.j5g3);

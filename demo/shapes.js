@@ -1,5 +1,5 @@
 
-(function (j5, g3)
+(function (j5g3)
 {
 var
 	MAX = 10,
@@ -13,25 +13,25 @@ var
 
 	get_color = function()
 	{
-		return 'rgb(' + j5.irand(255) + ',' + j5.irand(255) + ', ' + j5.irand(255) + ')';
+		return 'rgb(' + j5g3.irand(255) + ',' + j5g3.irand(255) + ', ' + j5g3.irand(255) + ')';
 	},
 	create = function()
 	{
 		p = {
-			radius: 40 + j5.irand(30),
-			x: 50 + j5.irand(560),
-			y: 50 + j5.irand(400),
+			radius: 40 + j5g3.irand(30),
+			x: 50 + j5g3.irand(560),
+			y: 50 + j5g3.irand(400),
 			fill: get_color(),
-			scaleX: j5.rand(3),
-			scaleY: j5.rand(3),
+			scaleX: j5g3.rand(3),
+			scaleY: j5g3.rand(3),
 			line_width: 1,
 			stroke: get_color(),
-			rotation: j5.rand(Math.PI*2)
+			rotation: j5g3.rand(Math.PI*2)
 		};
 		
-		sides = 1 + j5.irand(8);
+		sides = 1 + j5g3.irand(8);
 
-		polygons.push(sides===2 ? g3.circle(p) : (sides===1 ? g3.rect(p) : g3.Polygon.create(sides, p)));
+		polygons.push(sides===2 ? j5g3.circle(p) : (sides===1 ? j5g3.rect(p) : j5g3.Polygon.create(sides, p)));
 		return polygons[polygons.length-1];
 	},
 	

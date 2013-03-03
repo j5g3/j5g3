@@ -1,6 +1,6 @@
 
 
-(function(j5, g3) {
+(function(j5g3) {
 
 var
 	NUM = 10,
@@ -11,18 +11,18 @@ var
 	angle = Math.PI*2/NUM,
 	speed = LIFE/NUM,
 
-	loader = g3.clip({ line_width: 25, line_join: 'round' }).align('center middle', this.stage),
+	loader = j5g3.clip({ line_width: 25, line_join: 'round' }).align('center middle', this.stage),
 	line
 ;
 	
 	for(; i<NUM; i++, a-=angle)
 	{
-		line = g3.line({ 
+		line = j5g3.line({ 
 			cx: 70, x2: 150, 
 			stroke: COLOR, rotation: a
 		});
 
-		tween = g3.tween({ 
+		tween = j5g3.tween({ 
 			target: line, t: i*speed,
 			duration: LIFE, from: { alpha: 1 }, to: { alpha: 0.2 } 
 		});

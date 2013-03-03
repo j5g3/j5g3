@@ -17,25 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-01 01:55:57 -0500
+ * Date: 2013-03-02 22:56:16 -0500
  *
  */
 
-(function(window, j5, undefined) {
+(function(window, j5g3, undefined) {
 'use strict';
 
 var
 	/* This is used by the cache mechanism. It is a canvas element. */
 	cache,
-	f = j5.factory,
-
-	g3 =
-	/**
-	 * Returns a new j5.g3.Engine
-	 */
-	j5.g3 = function j5g3(p) { return new Engine(p); },
-
-	Class = j5.Class,
+	f = j5g3.factory,
+	Class = j5g3.Class,
 
 Draw =
 
@@ -45,7 +38,7 @@ Draw =
  *
  * @namespace
  */
-j5.g3.Draw =
+j5g3.Draw =
 {
 	/**
 	 * Draws nothing
@@ -115,7 +108,7 @@ Paint =
  *
  * @namespace
  */
-j5.g3.Paint = {
+j5g3.Paint = {
 
 	/**
 	 * Paints image stored in this.source.
@@ -259,10 +252,10 @@ Cache =
  *
  * @namespace
  *
- * Caching algorithms for j5.g3.DisplayObjects
+ * Caching algorithms for j5g3.DisplayObjects
  *
  */
-j5.g3.Cache = {
+j5g3.Cache = {
 
 	/**
 	 * Caches content into a separate canvas. TODO Optimize
@@ -272,7 +265,7 @@ j5.g3.Cache = {
 	var
 		me = this,
 		pc = context,
-		cache_canvas = j5.dom('CANVAS')
+		cache_canvas = j5g3.dom('CANVAS')
 	;
 		w = w || me.width;
 		h = h || me.height;
@@ -318,7 +311,7 @@ Collision =
  * @namespace
  * Collision detection algorithms.
  */
-j5.g3.Collision = {
+j5g3.Collision = {
 
 	Circle: function(obj)
 	{
@@ -358,7 +351,7 @@ HitTest =
  * @namespace
  * Hit test algorithms. Assign to 'at' function.
  */
-j5.g3.HitTest = {
+j5g3.HitTest = {
 
 	Circle: function(x, y, M)
 	{
@@ -424,7 +417,7 @@ DisplayObject =
  * @class Base for all classes
  *
  */
-j5.g3.DisplayObject = Class.extend(/** @scope j5.g3.DisplayObject.prototype */ {
+j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 
 	/** @type {Image} Used by the draw function to paint the object */
 	source: null,
@@ -503,7 +496,7 @@ j5.g3.DisplayObject = Class.extend(/** @scope j5.g3.DisplayObject.prototype */ {
 
 	init: function j5g3DisplayObject(properties)
 	{
-		this.M = j5.math.matrix();
+		this.M = j5g3.math.matrix();
 
 		this.extend(properties);
 	},
@@ -559,7 +552,7 @@ j5.g3.DisplayObject = Class.extend(/** @scope j5.g3.DisplayObject.prototype */ {
 	/**
 	 * Sets object to dirty and forces paint
 	 *
-	 * @returns {j5.g3.DisplayObject} this.
+	 * @returns {j5g3.DisplayObject} this.
 	 */
 	invalidate : function()
 	{
@@ -658,7 +651,7 @@ j5.g3.DisplayObject = Class.extend(/** @scope j5.g3.DisplayObject.prototype */ {
 	 */
 	to_clip: function()
 	{
-		return j5.g3.clip({ frames: [[ this ]], width: this.width, height: this.height });
+		return j5g3.clip({ frames: [[ this ]], width: this.width, height: this.height });
 	},
 
 	cache: Cache.Canvas,
@@ -687,10 +680,10 @@ j5.g3.DisplayObject = Class.extend(/** @scope j5.g3.DisplayObject.prototype */ {
 	at: HitTest.Rect,
 
 	/**
-	 * Tests if object collides with another object obj. See j5.g3.Collision for available
+	 * Tests if object collides with another object obj. See j5g3.Collision for available
 	 * algorithms.
 	 *
-	 * @param {j5.DisplayObject} obj
+	 * @param {j5g3.DisplayObject} obj
 	 * @return {boolean}
 	 */
 	collides: Collision.AABB,
@@ -726,15 +719,15 @@ Image =
  * Constructor takes properties object, a string with the id of an
  * Image or an HTML Image Element.
  *
- * @extends j5.g3.DisplayObject
+ * @extends j5g3.DisplayObject
  */
-j5.g3.Image = DisplayObject.extend(
-/** @scope j5.g3.Image.prototype */ {
+j5g3.Image = DisplayObject.extend(
+/** @scope j5g3.Image.prototype */ {
 
 	init: function j5g3Image(properties)
 	{
 		if (typeof(properties)==='string')
-			properties = { source: j5.id(properties) };
+			properties = { source: j5g3.id(properties) };
 		else if (properties instanceof window.HTMLElement)
 			properties = { source: properties };
 
@@ -748,7 +741,7 @@ j5.g3.Image = DisplayObject.extend(
 
 	_get_source: function(src)
 	{
-		return (typeof(src)==='string') ? j5.id(src) : src;
+		return (typeof(src)==='string') ? j5g3.id(src) : src;
 	},
 
 	/**
@@ -771,9 +764,9 @@ j5.g3.Image = DisplayObject.extend(
 
 Text =
 /**
- * @class j5.g3.Text
+ * @class j5g3.Text
  */
-j5.g3.Text = DisplayObject.extend(/** @scope j5.g3.Text.prototype */{
+j5g3.Text = DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 
 	text: '',
 
@@ -803,20 +796,20 @@ j5.g3.Text = DisplayObject.extend(/** @scope j5.g3.Text.prototype */{
 
 	get_width : function()
 	{
-		return j5.g3.Cache.use(this._get_width, this);
+		return j5g3.Cache.use(this._get_width, this);
 	}
 }),
 
 Html =
 
-j5.g3.Html = DisplayObject.extend({
+j5g3.Html = DisplayObject.extend({
 
 	html: '',
 
 	init: function j5g3Html(properties)
 	{
 		if (typeof(properties) === 'string')
-			properties = { html: j5.dom(properties).innerHTML };
+			properties = { html: j5g3.dom(properties).innerHTML };
 
 		DisplayObject.apply(this, [ properties ]);
 	}
@@ -828,8 +821,8 @@ Clip =
 /**
  * @class Clip
  */
-j5.g3.Clip = DisplayObject.extend(
-/** @scope j5.g3.Clip.prototype */ {
+j5g3.Clip = DisplayObject.extend(
+/** @scope j5g3.Clip.prototype */ {
 
 	init: function j5g3Clip(properties)
 	{
@@ -875,7 +868,7 @@ j5.g3.Clip = DisplayObject.extend(
 	add: function(display_object)
 	{
 		// TODO We might need a getType function.
-		switch (j5.getType(display_object)) {
+		switch (j5g3.getType(display_object)) {
 		case 'function':
 			display_object = new Action(display_object);
 			break;
@@ -1003,7 +996,7 @@ Stage =
 /**
  * Root Clips
  */
-j5.g3.Stage = Clip.extend({
+j5g3.Stage = Clip.extend({
 
 	/**
 	 * Current canvas element.
@@ -1030,9 +1023,9 @@ j5.g3.Stage = Clip.extend({
 		if (!this.canvas)
 			this.canvas = 'screen';
 
-		this.canvas = j5.id(this.canvas);
+		this.canvas = j5g3.id(this.canvas);
 
-		this.renderCanvas = j5.dom('CANVAS');
+		this.renderCanvas = j5g3.dom('CANVAS');
 
 		this.context = this.renderCanvas.getContext('2d');
 		this.screen  = this.canvas.getContext('2d');
@@ -1073,7 +1066,7 @@ Tween =
  *
  * @property {Boolean}             auto_remove    Removes tween from clip at
  *           the end. Defaults to false.
- * @property {j5.g3.DisplayObject}  target         Object to animate.
+ * @property {j5g3.DisplayObject}  target         Object to animate.
  * @property {Object}              from           Start Value(s)
  * @property {Object}              to             Final Value(s)
  * @property {Number}              duration       Duration of tween
@@ -1085,7 +1078,7 @@ Tween =
  * @property {function}   on_stop
  *
  */
-j5.g3.Tween = Class.extend(/**@scope j5.g3.Tween.prototype */ {
+j5g3.Tween = Class.extend(/**@scope j5g3.Tween.prototype */ {
 
 	auto_remove: false,
 	repeat: Infinity,
@@ -1102,7 +1095,7 @@ j5.g3.Tween = Class.extend(/**@scope j5.g3.Tween.prototype */ {
 	visible: false,
 
 	/**
-	 * @param {(j5.g3.DisplayObject|Object)} properties DisplayObject
+	 * @param {(j5g3.DisplayObject|Object)} properties DisplayObject
 	 *        or an Object containing properties.
 	 */
 	init: function j5g3Tween(properties)
@@ -1240,12 +1233,12 @@ j5.g3.Tween = Class.extend(/**@scope j5.g3.Tween.prototype */ {
 		radius = radius || 3;
 		var r2 = radius*2;
 
-		return new j5.g3.Tween({
+		return new j5g3.Tween({
 			duration: duration || 10,
 			target: target,
 			auto_remove: true,
 			to: { x: 0, y: 0 },
-			apply_tween: function(i, v) { return v===1 ? this.to[i] : -radius+j5.rand(r2); }
+			apply_tween: function(i, v) { return v===1 ? this.to[i] : -radius+j5g3.rand(r2); }
 		});
 	}
 }),
@@ -1254,16 +1247,16 @@ Shape =
 
 /**
  *
- * j5.g3.Shape
+ * j5g3.Shape
  *
  * Base class for all shapes.
  *
  * @class
- * @extends j5.g3.DisplayObject
+ * @extends j5g3.DisplayObject
  *
  */
-j5.g3.Shape = DisplayObject.extend(
-/** @scope j5.g3.Shape.prototype */ {
+j5g3.Shape = DisplayObject.extend(
+/** @scope j5g3.Shape.prototype */ {
 
 	/**
 	 * Type of shape for collision handling.
@@ -1343,7 +1336,7 @@ j5.g3.Shape = DisplayObject.extend(
 }),
 
 Circle =
-j5.g3.Circle = Shape.extend(/**@scope j5.g3.Circle.prototype */ {
+j5g3.Circle = Shape.extend(/**@scope j5g3.Circle.prototype */ {
 
 	shape: 'circle',
 	radius: 0,
@@ -1366,7 +1359,7 @@ j5.g3.Circle = Shape.extend(/**@scope j5.g3.Circle.prototype */ {
 }),
 
 Line =
-j5.g3.Line = Shape.extend(/**@scope j5.g3.Line.prototype */{
+j5g3.Line = Shape.extend(/**@scope j5g3.Line.prototype */{
 
 	x2: 0,
 	y2: 0,
@@ -1384,7 +1377,7 @@ Polygon =
 /**
  * Polygon Class
  */
-j5.g3.Polygon = Shape.extend(/**@scope j5.g3.Polygon.prototype */{
+j5g3.Polygon = Shape.extend(/**@scope j5g3.Polygon.prototype */{
 
 	shape: 'polygon',
 	points: null,
@@ -1411,7 +1404,7 @@ j5.g3.Polygon = Shape.extend(/**@scope j5.g3.Polygon.prototype */{
 			a = i+2 < l ? i+2 : 0;
 			point[0] = points[a] - points[i];
 			point[1] = points[a+1] - points[i+1];
-			j5.math.normalize(point);
+			j5g3.math.normalize(point);
 
 			normals.push(point[1], -point[0]);
 		}
@@ -1451,7 +1444,7 @@ j5.g3.Polygon = Shape.extend(/**@scope j5.g3.Polygon.prototype */{
 			a += angle;
 		}
 
-		return new j5.g3.Polygon(p);
+		return new j5g3.Polygon(p);
 	}
 
 }),
@@ -1463,10 +1456,10 @@ Rect =
  * Displays a Rect
  *
  * @class
- * @extends j5.g3.Shape
+ * @extends j5g3.Shape
  *
  */
-j5.g3.Rect = Shape.extend(/**@scope j5.g3.Rect.prototype */{
+j5g3.Rect = Shape.extend(/**@scope j5g3.Rect.prototype */{
 
 	shape: 'polygon',
 
@@ -1492,9 +1485,9 @@ Dot =
  * Displays a Dot
  *
  * @class
- * @extends j5.g3.Shape
+ * @extends j5g3.Shape
  */
-j5.g3.Dot = Shape.extend(/**@scope j5.g3.Dot.prototype */{
+j5g3.Dot = Shape.extend(/**@scope j5g3.Dot.prototype */{
 
 	shape: 'circle',
 	line_cap: 'round',
@@ -1524,7 +1517,7 @@ Sprite =
  * @class Sprite
  *
  */
-j5.g3.Sprite = DisplayObject.extend({
+j5g3.Sprite = DisplayObject.extend({
 
 	init: function j5g3Sprite(p)
 	{
@@ -1541,32 +1534,32 @@ Spritesheet =
  * @class Spritesheet Class
  *
  * Constructor can take properties object, a string with the filename, an
- * HTML Image or j5 Image.
+ * HTML Image or j5g3 Image.
  *
  */
-j5.g3.Spritesheet = Class.extend(/** @scope j5.g3.Spritesheet.prototype */ {
+j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 
 	width: 0,
 	height: 0,
 
 	/**
 	 * Image of the spritesheet. If a string passed it will be converted
-	 * to a j5.g3.Image
+	 * to a j5g3.Image
 	 */
 	source: null,
 	sprites: null,
 
 	init: function j5g3Spritesheet(properties)
 	{
-		switch (j5.getType(properties)) {
-		case 'string': case 'dom': case 'j5':
+		switch (j5g3.getType(properties)) {
+		case 'string': case 'dom': case 'j5g3':
 			properties = { source: properties };
 			break;
 		case 'undefined':
 			properties = {};
 		}
 
-		switch (j5.getType(properties.source)) {
+		switch (j5g3.getType(properties.source)) {
 		case 'string': case 'dom':
 			properties.source = new Image(properties.source);
 			break;
@@ -1628,7 +1621,7 @@ j5.g3.Spritesheet = Class.extend(/** @scope j5.g3.Spritesheet.prototype */ {
 	 */
 	cut: function(x, y, w, h)
 	{
-		var s = new Sprite(j5.getType(x) === 'object' ?
+		var s = new Sprite(j5g3.getType(x) === 'object' ?
 			{ width: x.w, height: x.h, source: {
 				image: this.source.source, x: x.x, y: x.y, w: x.w, h: x.h
 			} }
@@ -1688,9 +1681,9 @@ Emitter =
 /**
  * @class Particle Emitter
  *
- * @extends j5.g3.Clip
+ * @extends j5g3.Clip
  */
-j5.g3.Emitter = Clip.extend(/**@scope j5.g3.Emitter.prototype */ {
+j5g3.Emitter = Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 
 	init: function j5g3Emitter(p)
 	{
@@ -1705,10 +1698,10 @@ j5.g3.Emitter = Clip.extend(/**@scope j5.g3.Emitter.prototype */ {
 
 	/**
 	 * Class of the object to Emit.
-	 * @default j5.g3.Clip
+	 * @default j5g3.Clip
 	 *
 	 */
-	container_class: j5.g3.Clip,
+	container_class: j5g3.Clip,
 
 	/**
 	 * Function used to replace the draw method for the emitted object.
@@ -1786,10 +1779,10 @@ Map =
  * Properties:
  *
  *
- * @extends j5.g3.DisplayObject
+ * @extends j5g3.DisplayObject
  *
  */
-j5.g3.Map = DisplayObject.extend(/**@scope j5.g3.Map.prototype */ {
+j5g3.Map = DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 
 	/** Array of sprites */
 	sprites: null,
@@ -1861,22 +1854,22 @@ Action =
  * Executes code on FrameEnter.
  *
  * @class
- * @extends j5.Class
+ * @extends j5g3.Class
  *
  */
-j5.g3.Action = Class.extend(
-/** @scope j5.g3.Action.prototype */ {
+j5g3.Action = Class.extend(
+/** @scope j5g3.Action.prototype */ {
 
 	_init: Class,
 
 	/**
 	 * Code to execute
 	 */
-	draw: j5.Void,
+	draw: j5g3.Void,
 
 	init: function j5g3Action(p)
 	{
-		if (j5.getType(p)==='function')
+		if (j5g3.getType(p)==='function')
 			p = { draw: p };
 
 		this._init(p);
@@ -1884,7 +1877,7 @@ j5.g3.Action = Class.extend(
 
 	remove: DisplayObject.prototype.remove
 
-}, /** @scope j5.g3.Action */ {
+}, /** @scope j5g3.Action */ {
 
 	/**
 	 * Rotates object forever. Clockwise by default.
@@ -1914,7 +1907,7 @@ j5.g3.Action = Class.extend(
 	 */
 	once: function(fn)
 	{
-		return g3.action(function() {
+		return j5g3.action(function() {
 			fn();
 			this.remove();
 		});
@@ -1928,7 +1921,7 @@ Engine =
  * @class
  * Engine class
  */
-j5.g3.Engine = Class.extend({
+j5g3.Engine = Class.extend({
 
 	version: '0.9',
 
@@ -1981,7 +1974,7 @@ j5.g3.Engine = Class.extend({
 		if (typeof(config)==='function')
 			config = { startFn: config };
 
-		cache = j5.dom('CANVAS');
+		cache = j5g3.dom('CANVAS');
 
 		me.fps(config.fps || me.__fps);
 
@@ -1993,7 +1986,7 @@ j5.g3.Engine = Class.extend({
 		me._scopedLoop = me._gameLoop.bind(me);
 
 		me.set_stage(new Stage(config.stage_settings))
-			.startFn(j5, g3)
+			.startFn(j5g3)
 		;
 	},
 
@@ -2046,9 +2039,9 @@ j5.g3.Engine = Class.extend({
 	var
 		img, ctx
 	;
-		switch(j5.getType(w)) {
+		switch(j5g3.getType(w)) {
 		case 'string':
-			img = j5.id(w); break;
+			img = j5g3.id(w); break;
 		case 'dom':
 			img = w; break;
 		case 'j5g3':
@@ -2074,35 +2067,36 @@ j5.g3.Engine = Class.extend({
 
 
 /* CLASSES */
-j5.g3.action = f(Action);
-j5.g3.clip   = f(Clip);
-j5.g3.dot    = f(Dot);
-j5.g3.image  = f(Image);
-j5.g3.rect   = f(Rect);
-j5.g3.sprite = f(Sprite);
-j5.g3.spritesheet = f(Spritesheet);
-j5.g3.text   = f(Text);
+j5g3.action = f(Action);
+j5g3.clip   = f(Clip);
+j5g3.dot    = f(Dot);
+j5g3.image  = f(Image);
+j5g3.rect   = f(Rect);
+j5g3.sprite = f(Sprite);
+j5g3.spritesheet = f(Spritesheet);
+j5g3.text   = f(Text);
 
 /**
  * Returns a Multiline Text object
  */
-j5.g3.mtext  = function(p) { var t = new Text(p); t.paint = Paint.MultilineText; return t; };
-j5.g3.tween  = f(Tween);
-j5.g3.emitter= f(Emitter);
-j5.g3.map    = f(Map);
-j5.g3.polygon= f(Polygon);
-j5.g3.circle = f(Circle);
-j5.g3.line   = f(Line);
-j5.g3.html   = f(Html);
+j5g3.mtext  = function(p) { var t = new Text(p); t.paint = Paint.MultilineText; return t; };
+j5g3.tween  = f(Tween);
+j5g3.emitter= f(Emitter);
+j5g3.map    = f(Map);
+j5g3.polygon= f(Polygon);
+j5g3.circle = f(Circle);
+j5g3.line   = f(Line);
+j5g3.html   = f(Html);
+j5g3.engine = f(Engine);
 
 /** Returns a CanvasGradient object. */
-j5.g3.gradient = function(x, y, w, h)
+j5g3.gradient = function(x, y, w, h)
 {
 	return cache.getContext('2d').createLinearGradient(x,y,w,h);
 };
 
 /** Returns a rgba CSS color string */
-j5.g3.rgba = function(r, g, b, a)
+j5g3.rgba = function(r, g, b, a)
 {
 	if (a===undefined)
 		a = 1;
@@ -2111,7 +2105,7 @@ j5.g3.rgba = function(r, g, b, a)
 };
 
 /** Returns a hsla CSS color string */
-j5.g3.hsla = function(h, s, l, a)
+j5g3.hsla = function(h, s, l, a)
 {
 	if (a===undefined)
 		a = 1;
@@ -2121,12 +2115,12 @@ j5.g3.hsla = function(h, s, l, a)
 
 
 // TODO This might not be a good idea.
-j5.win.CanvasGradient.prototype.at = function(offset, color)
+j5g3.win.CanvasGradient.prototype.at = function(offset, color)
 {
 	color = color || 'transparent';
 	this.addColorStop(offset, color);
 	return this;
 };
 
-})(this, this.j5);
+})(this, this.j5g3);
 

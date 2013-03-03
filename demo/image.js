@@ -9,21 +9,21 @@
  */
 
 ({
-	startFn: function (j5, g3)
+	startFn: function (j5g3)
 	{
 	var 
-		img = new g3.Image({ source: 'j5g3', x: 0, y: 200}),
-		rotate = new g3.Clip({ 
+		img = new j5g3.Image({ source: 'j5g3', x: 0, y: 200}),
+		rotate = new j5g3.Clip({ 
 			x: 300, y: 100,
-			scaleX: 0.5, scaleY: 0.5,
-			frames: [[ new g3.Image({source: 'j5g3', x:-125, y: -50}) ]]
-		}),
-		skew = g3.clip({ x: 300, y: 150, scaleX: 0.3, frames: [[ g3.image('j5g3') ]]}),
-		skew2= g3.clip({ x: 300, y: 250, scaleX: 0.3, frames: [[ g3.image('j5g3') ]]}),
-		update = g3.Action.rotate(rotate),
+			scaleX: 0.5, scaleY: 0.5
+		}).add(new j5g3.Image({source: 'j5g3', x:-125, y: -50})),
+
+		skew = j5g3.clip({ x: 300, y: 150, scaleX: 0.3 }).add(j5g3.image('j5g3')),
+		skew2= j5g3.clip({ x: 300, y: 250, scaleX: 0.3 }).add(j5g3.image('j5g3')),
+		update = j5g3.Action.rotate(rotate),
 
 		sx=0, sy=0,
-		do_skew = g3.action(function() { skew.skewX = (sx+=0.05); skew2.skewY = (sy+=0.05); })
+		do_skew = j5g3.action(function() { skew.skewX = (sx+=0.05); skew2.skewY = (sy+=0.05); })
 	;
 
 		this.stage.canvas.style.backgroundColor = 'white';

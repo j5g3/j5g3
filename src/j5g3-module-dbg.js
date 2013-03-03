@@ -2,28 +2,27 @@
  * Debug Module for j5g3
  */
 
-(function(j5, undefined)
+(function(j5g3, undefined)
 {
 var
-	g3 = j5.g3,
 	Debug =
 
 	/**
 	 * Debug Module for j5g3
 	 */
-	j5.g3.Debug = { },
+	j5g3.Debug = { },
 	screen,
 	i, time
 ;
 
 	/* Assign klass name to klass property. */
-	for(i in g3)
-		if (typeof(g3[i])==='function') g3[i].klass = i;
+	for(i in j5g3)
+		if (typeof(j5g3[i])==='function') j5g3[i].klass = i;
 
 	/* Add Timing and FPS */
-	Debug.oldGameLoop = g3.Engine.prototype._gameLoop;
+	Debug.oldGameLoop = j5g3.Engine.prototype._gameLoop;
 
-	g3.Engine.prototype._gameLoop = function()
+	j5g3.Engine.prototype._gameLoop = function()
 	{
 		time = (new Date()).getTime();
 		Debug.oldGameLoop.apply(this);
@@ -44,24 +43,24 @@ var
 		screen.restore();
 	};
 
-	g3.DisplayObject.prototype.extend = function(props)
+	j5g3.DisplayObject.prototype.extend = function(props)
 	{
 		for (var i in props)
 		{
 			if ((typeof this[i] === 'function') && i.indexOf('on_')!==0)
-				j5.warn('Overriding function ' + i);
+				j5g3.warn('Overriding function ' + i);
 			this[i] = props[i];
 		}
 	};
 
-	g3.Image.prototype._get_source = function(src)
+	j5g3.Image.prototype._get_source = function(src)
 	{
-		var source = (typeof(src)==='string') ? j5.id(src) : src;
+		var source = (typeof(src)==='string') ? j5g3.id(src) : src;
 
 		if (source===null)
 			throw "Could not load Image '" + src + "'";
 		return source;
 	};
 
-})(this.j5);
+})(this.j5g3);
 

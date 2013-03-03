@@ -2,7 +2,7 @@
 function onload()
 {
 var
-	list = j5.id('demos'),
+	list = j5g3.id('demos'),
 	url, g3, demoObj,
 	demo = location.hash.substr(1),
 	onAjax = function(code)
@@ -13,9 +13,9 @@ var
 		demoObj = eval(code); 
 
 		// Clear all styles
-		j5.id('screen').setAttribute('style', '');
+		j5g3.id('screen').setAttribute('style', '');
 
-		g3 = j5.g3(demoObj);
+		g3 = j5g3.engine(demoObj);
 	}
 ;
 	list.onchange = function()
@@ -24,7 +24,7 @@ var
 		location.hash = '#' + this.value;
 
 
-		j5.io.get(url, onAjax);
+		j5g3.io.get(url, onAjax);
 	}
 
 	window.view_source = function()
@@ -39,4 +39,4 @@ var
 	list.onchange();
 }
 
-j5.ready(onload);
+j5g3.ready(onload);

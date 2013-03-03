@@ -1,5 +1,5 @@
 
-(function(j5, g3) {
+(function(j5g3) {
 var
 	LW = 8,
 	NUM = 50,
@@ -10,10 +10,10 @@ var
 	on_emit = function(clip)
 	{
 		clip.radius = 1;
-		clip.stroke= g3.hsla(i<255 ? i+=STEP : i=0, 80, 50);
+		clip.stroke= j5g3.hsla(i<255 ? i+=STEP : i=0, 80, 50);
 		clip.line_width = LW;
 
-		this.add(g3.tween({
+		this.add(j5g3.tween({
 			target: clip, duration: NUM,
 			auto_remove: true, to: {
 				alpha: 0,
@@ -21,9 +21,8 @@ var
 			}
 		}));
 	},
-	emitter = g3.emitter({
-		//source: g3.circle({ radius: 1 }),
-		container_class: g3.Circle,
+	emitter = j5g3.emitter({
+		container_class: j5g3.Circle,
 		count: 1,
 		life: NUM,
 		x: this.stage.width/2,

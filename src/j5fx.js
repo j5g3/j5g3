@@ -1,15 +1,15 @@
 /**
- * j5fx v0.9 - Javascript Effects Module
+ * j5g3.fx v0.9 - Javascript Effects Module
  * http://j5g3.com
  *
  * Copyright 2010-2013, Giancarlo F Bellido
  *
- * j5fx is free software: you can redistribute it and/or modify
+ * j5g3.fx is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * j5fx is distributed in the hope that it will be useful
+ * j5g3.fx is distributed in the hope that it will be useful
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
@@ -17,19 +17,19 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-01 01:55:57 -0500
+ * Date: 2013-03-02 22:56:16 -0500
  *
  */
 
-(function(j5, undefined) {
+(function(j5g3, undefined) {
 'use strict';
 
 /**
- * j5fx Module.
+ * j5g3.fx Module.
  *
  * @namespace
  */
-j5.fx = {
+j5g3.fx = {
 
 	/**
 	 *
@@ -95,7 +95,7 @@ j5.fx = {
 	var
 		r2 = radius*2
 	;
-		return function(i, t) { return t===1 ? this.to[i] : -radius+j5.rand(r2); };
+		return function(i, t) { return t===1 ? this.to[i] : -radius+j5g3.rand(r2); };
 	},
 
 	/**
@@ -152,5 +152,5 @@ j5.fx = {
 
 };
 
-}(this.j5));
+}(this.j5g3));
 

@@ -1,13 +1,13 @@
 /*
  * Based on Fabien Sanglard's post at http://fabiensanglard.net/Tunnel/index.php
  */
-(function (j5, document, undefined) {
+(function (j5g3, document, undefined) {
 
 var
 	WIDTH = this.stage.width,
 	HEIGHT= this.stage.height,
 
-	txtimg = j5.id('tunnel'), 
+	txtimg = j5g3.id('tunnel'), 
 
 	TEXTUREHEIGHT = txtimg.height,
 	TEXTUREWIDTH  = txtimg.width,

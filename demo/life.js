@@ -1,4 +1,4 @@
-(function(j5, g3)
+(function(j5g3)
 {
 var
 	COLS = 80,
@@ -14,9 +14,9 @@ var
 
 	a, x, y,
 
-	map = g3.map({ 
-		map: j5.ary(COLS, ROWS, 0),
-		_map: j5.ary(COLS, ROWS, 0),
+	map = j5g3.map({ 
+		map: j5g3.ary(COLS, ROWS, 0),
+		_map: j5g3.ary(COLS, ROWS, 0),
 		tw: W,
 		th: H,
 		sprites: [ null ]
@@ -55,19 +55,15 @@ var
 ;
 
 	for (a=0; a<START; a++)
-		map.map[j5.irand(ROWS)][j5.irand(COLS)] = 1;
+		map.map[j5g3.irand(ROWS)][j5g3.irand(COLS)] = 1;
 
-	// Generate Colors
-	//x = Math.round((255-STARTCOLOR) / COLORS);
-	// x is lightning change
 	x = Math.round((MAXLIGHT-MINLIGHT)/COLORS);
-	// y is the hue change
 	y = Math.round(360/COLORS);
+
 	for (a=1; a<=COLORS; a++)
 	{
-		//y = STARTCOLOR + x * a;
-		map.sprites.push(g3.rect({ 
-			fill: g3.hsla(STARTCOLOR + y*a, 100, MINLIGHT + x*a),
+		map.sprites.push(j5g3.rect({ 
+			fill: j5g3.hsla(STARTCOLOR + y*a, 100, MINLIGHT + x*a),
 			width: W, height: H
 		}));
 	}

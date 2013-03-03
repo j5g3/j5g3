@@ -1,23 +1,23 @@
 /**
  * @license Copyright 2010-2012, Giancarlo F Bellido.
  *
- * j5 v0.9 - Javascript Library
+ * j5g3 v0.9 - Javascript Library
  * http://j5g3.com
  *
- * j5 is free software: you can redistribute it and/or modify
+ * j5g3 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * j5 is distributed in the hope that it will be useful
+ * j5g3 is distributed in the hope that it will be useful
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with j5. If not, see <http://www.gnu.org/licenses/>.
+ * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-01 01:55:57 -0500
+ * Date: 2013-03-02 22:56:16 -0500
  *
  */
 
@@ -31,8 +31,8 @@ describe = Object.getOwnPropertyDescriptor,
 HTMLAudioElement = window.HTMLAudioElement,
 HTMLElement = window.HTMLElement,
 
-/** @namespace j5 */
-j5 = {
+/** @namespace j5g3 */
+j5g3 = {
 
 	/** @type {Window} */
 	win: window,
@@ -71,14 +71,14 @@ j5 = {
 	 *
 	 * @return {Array}
 	 */
-	clone: function j5clone(ary)
+	clone: function j5g3clone(ary)
 	{
 	var
 		i = 0, l=ary.length, current, result=[]
 	;
 		for (;i < l; i++)
 			result.push((current=ary[i]) instanceof Array ?
-				j5clone(current) :
+				j5g3clone(current) :
 				current
 			);
 
@@ -177,7 +177,7 @@ j5 = {
 
 	/**
 	 * Gets type of obj. It returns 'dom' for HTML DOM objects, 'audio'
-	 * for HTMLAudioElement's and 'j5' for j5.Class descendants.
+	 * for HTMLAudioElement's and 'j5g3' for j5g3.Class descendants.
 	 */
 	getType: function(obj)
 	{
@@ -188,7 +188,7 @@ j5 = {
 			if (obj instanceof Array) return 'array';
 			if (obj instanceof HTMLAudioElement) return 'audio';
 			if (obj instanceof HTMLElement) return 'dom';
-			if (obj instanceof j5.Class) return 'j5';
+			if (obj instanceof j5g3.Class) return 'j5g3';
 		}
 
 		return result;
@@ -204,11 +204,11 @@ j5 = {
 Class =
 
 /**
- * j5 Base class
+ * j5g3 Base class
  * @constructor
  * @param {Object} p
  */
-j5.Class = function j5Class(p) {
+j5g3.Class = function j5g3Class(p) {
 	this.extend(p);
 };
 
@@ -219,7 +219,7 @@ j5.Class = function j5Class(p) {
  * @param {string} uri
  *
  */
-j5.dom.src= function(tag, uri)
+j5g3.dom.src= function(tag, uri)
 {
 var
 	el = document.createElement(tag)
@@ -233,9 +233,9 @@ var
  *
  * @param {string} uri
  */
-j5.dom.image= function(uri)
+j5g3.dom.image= function(uri)
 {
-	return j5.dom.src('img', uri);
+	return j5g3.dom.src('img', uri);
 };
 
 
@@ -248,7 +248,7 @@ j5.dom.image= function(uri)
  * @param {Object=} static_methods Static Methods.
  *
  */
-j5.Class.extend = function(methods, static_methods)
+j5g3.Class.extend = function(methods, static_methods)
 {
 /*jshint maxstatements:20 */
 var
@@ -289,13 +289,13 @@ var
 /**
  * Extends this instance with properties from p
  */
-j5.Class.prototype.extend = function(p)
+j5g3.Class.prototype.extend = function(p)
 {
 	for (var i in p)
 		this[i] = p[i];
 };
 
-window.j5 = j5;
+window.j5g3 = j5g3;
 
 })(this, this.document);
 

@@ -1,5 +1,5 @@
 
-(function (j5, g3)
+(function (j5g3)
 {
 var
 	/** @const */ MAP_WIDTH = 21,
@@ -9,14 +9,14 @@ var
 	/** @const */ MOUSE_MOVE = 150,
 	/** @const */ MOUSE_RATE = 0.1,
 
-	terrain = g3.spritesheet('iso-terrain').grid(10, 10, 1),
+	terrain = j5g3.spritesheet('iso-terrain').grid(10, 10, 1),
 
 	i, a,
 	pt, x, y, prev,
 
 	/* Initialize Map to zero so the animation is possible */
-	mapa = j5.ary(MAP_WIDTH, MAP_HEIGHT, 0), 
-	rand = j5.irand,
+	mapa = j5g3.ary(MAP_WIDTH, MAP_HEIGHT, 0), 
+	rand = j5g3.irand,
 	stage = this.stage,
 
 	/**
@@ -97,7 +97,7 @@ var
 		else if (map.y > -16) map.y = -16;
 	},
 
-	map = g3.map({ 
+	map = j5g3.map({ 
 		x: -32, y: -16, 
 		sprites: terrain.sprites, 
 		th: 32,
@@ -114,7 +114,7 @@ var
 		stage.canvas.removeEventListener('mousemove', mouse);
 	}
 
-	map.paint = g3.Paint.Isometric;
+	map.paint = j5g3.Paint.Isometric;
 	stage.add([map, update]);
 	setTimeout(genmap, 250);
 	this.run();
