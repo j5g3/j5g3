@@ -1,11 +1,11 @@
 
-j5.ready(function() {
+j5g3.ready(function() {
 
-	module('j5');
+	module('j5g3-core');
 	test('Core', function() {
 
 	var 
-		Base = j5.Class.extend({
+		Base = j5g3.Class.extend({
 			init: function(a)
 			{
 				this.extend(a);// document.write(this.className+':'+a+"\n");
@@ -72,7 +72,7 @@ j5.ready(function() {
 	test('DOM', function()
 	{
 	var
-		e = j5.dom('DIV')
+		e = j5g3.dom('DIV')
 	;
 		equal(e.tagName, 'DIV');
 	});

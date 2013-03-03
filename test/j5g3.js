@@ -1,17 +1,17 @@
 
-j5.ready(function() {
-	j5.g3(function(j5, g3) {
+j5g3.ready(function() {
+	j5g3.engine(function(j5g3) {
 
 		module('j5g3');
 
 		test('Core', function() {
-			ok(j5);
+			ok(j5g3);
 		});
 
 		test('Class Constructor', function()
 		{
-			var img = j5.id('img'),
-			    I = new g3.DisplayObject({ source: img })
+			var img = j5g3.id('img'),
+			    I = new j5g3.DisplayObject({ source: img })
 			;
 
 			equal(I.source, img);
@@ -19,8 +19,8 @@ j5.ready(function() {
 
 		test('Class Properties', function()
 		{
-			var a = new g3.DisplayObject,
-			    b = new g3.DisplayObject({ source: 'img' }),
+			var a = new j5g3.DisplayObject,
+			    b = new j5g3.DisplayObject({ source: 'img' }),
 			    c = b.set({x: 5})
 			;
 			a.extend({ x: 10 });
@@ -37,13 +37,13 @@ j5.ready(function() {
 		{
 		var 
 			src = 'img',
-			img = j5.id(src),
-			a = new g3.Image(src),
-			b = g3.image(src),
-			c = g3.image(img),
-			d = g3.image({ source: src })
+			img = j5g3.id(src),
+			a = new j5g3.Image(src),
+			b = j5g3.image(src),
+			c = j5g3.image(img),
+			d = j5g3.image({ source: src })
 		;
-			ok(a.source.src.indexOf('explosion17'));
+			ok(a.source.src.indexOf('explosion')>=0);
 			equal(b.source, a.source);
 			equal(c.source, d.source);
 			equal(c.width, 320);
@@ -56,7 +56,7 @@ j5.ready(function() {
 		test('Image Drawing', function()
 		{
 		var
-			a = g3.image('img')
+			a = j5g3.image('img')
 		;	
 			ok(a);
 		});
@@ -65,9 +65,9 @@ j5.ready(function() {
 		test('Clip Construction', function()
 		{
 		var
-			c = g3.image('img'),
-			a = g3.clip([[ c ]]),
-			b = g3.clip()
+			c = j5g3.image('img'),
+			a = j5g3.clip([[ c ]]),
+			b = j5g3.clip()
 		;
 			ok(a.frames);
 			ok(b.frames);
@@ -79,10 +79,10 @@ j5.ready(function() {
 		test('Clip - Adding Objects', function()
 		{
 		var
-			c = g3.clip(),
+			c = j5g3.clip(),
 			src = 'img',
-			img = j5.id(src),
-			imgo= g3.image(img)
+			img = j5g3.id(src),
+			imgo= j5g3.image(img)
 		;
 
 			equal(c.frame().length, 0);
@@ -94,7 +94,7 @@ j5.ready(function() {
 
 			c.add(function() { });
 			equal(c.frame().length, 3);
-			ok(c.frame()[2] instanceof g3.Action);
+			ok(c.frame()[2] instanceof j5g3.Action);
 			c.add(src);
 			equal(c.frame()[3].source, imgo.source);
 			c.add({ source: src });
@@ -108,7 +108,7 @@ j5.ready(function() {
 		test('Clip - Adding Frames', function()
 		{
 		var
-			c = g3.clip()
+			c = j5g3.clip()
 		;
 			c.add_frame();
 			equal(c.frame().length, 0);
@@ -121,7 +121,7 @@ j5.ready(function() {
 		test('Clip - Misc Methods', function()
 		{
 		var
-			c = g3.clip()
+			c = j5g3.clip()
 		;
 			c.add([ 'img', 'soccer']);
 			c.add_frame(['img', 'soccer']);
@@ -138,8 +138,8 @@ j5.ready(function() {
 		test('Text Construction', function()
 		{
 		var
-			t = g3.text(),
-			t2= g3.text('Hello World')
+			t = j5g3.text(),
+			t2= j5g3.text('Hello World')
 		;
 			ok(t);
 			equal(t2.text, 'Hello World');
@@ -154,9 +154,9 @@ j5.ready(function() {
 		test('Tween Construction', function()
 		{
 		var
-			img = g3.image('img'),
-			t = g3.tween(),
-			t2= g3.tween(img)
+			img = j5g3.image('img'),
+			t = j5g3.tween(),
+			t2= j5g3.tween(img)
 		;
 			equal(t2.target, img);
 			equal(t.t, 0);
@@ -171,9 +171,9 @@ j5.ready(function() {
 		test('Spritesheet Constructor', function()
 		{
 		var
-			img=g3.image('soccer'),
-			s = g3.spritesheet('soccer'),
-			s2= g3.spritesheet(img)
+			img=j5g3.image('soccer'),
+			s = j5g3.spritesheet('soccer'),
+			s2= j5g3.spritesheet(img)
 		;
 
 			equal(s.sprites.length, 0);
@@ -185,8 +185,8 @@ j5.ready(function() {
 		test('Spritesheet - Adding Sprites', function()
 		{
 		var
-			s = g3.spritesheet('soccer'),
-			s2= g3.spritesheet('soccer')
+			s = j5g3.spritesheet('soccer'),
+			s2= j5g3.spritesheet('soccer')
 		;
 			s.grid(5, 5);
 			equal(s.sprites.length, 25);
@@ -203,7 +203,7 @@ j5.ready(function() {
 		test('Spritesheet - Clipping', function()
 		{
 		var
-			s = g3.spritesheet('soccer').grid(5, 5),
+			s = j5g3.spritesheet('soccer').grid(5, 5),
 			a = s.clip(0, 1, 2),
 			b = s.clip_array([ 0, 2 ])
 		;

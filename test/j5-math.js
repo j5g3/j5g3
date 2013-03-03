@@ -1,5 +1,5 @@
 
-j5.ready(function() {
+j5g3.ready(function() {
 
 	module('j5-math');
 
@@ -26,13 +26,13 @@ var
 
 	test('Matrix', function() {
 	var
-		m = j5.math.matrix(),
+		m = j5g3.math.matrix(),
 		m2 = svg.createSVGMatrix(),
 		m3, m4,
 
 		initM = function(a, b, c, d, e, f)
 		{
-			m = j5.math.matrix(a,b,c,d,e,f);
+			m = j5g3.math.matrix(a,b,c,d,e,f);
 			m2 = svgM(a, b, c, d, e, f);
 		}
 	;
@@ -80,8 +80,8 @@ var
 
 		compareM(m, m2);
 
-		m = j5.math.matrix(11, 12, 13, 14, 15, 16);
-		m2= j5.math.matrix(-4, 5, 2, 99, 23, -99);
+		m = j5g3.math.matrix(11, 12, 13, 14, 15, 16);
+		m2= j5g3.math.matrix(-4, 5, 2, 99, 23, -99);
 		m3= svgM(11, 12, 13 ,14, 15, 16);
 		m4= svgM(-4, 5, 2, 99, 23, -99);
 
@@ -90,8 +90,8 @@ var
 
 		compareM(m, m2);
 
-		m = j5.math.matrix(11, 12, 13, 14, 15, 16);
-		m2= j5.math.matrix(-4, 5, 2, 99, 23, -99);
+		m = j5g3.math.matrix(11, 12, 13, 14, 15, 16);
+		m2= j5g3.math.matrix(-4, 5, 2, 99, 23, -99);
 		m = m.product(m2.inverse());
 		m2= m3.multiply(m4.inverse());
 

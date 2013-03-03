@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-03 03:45:11 -0500
+ * Date: 2013-03-03 14:54:07 -0500
  *
  */
 
@@ -313,6 +313,9 @@ Collision =
  */
 j5g3.Collision = {
 
+	/**
+	 * Circle Collision
+	 */
 	Circle: function(obj)
 	{
 	var
