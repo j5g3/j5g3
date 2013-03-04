@@ -5,7 +5,7 @@
 (function(j5g3, undefined)
 {
 var
-	Debug =
+	dbg =
 
 	/**
 	 * Debug Module for j5g3
@@ -17,68 +17,56 @@ var
 			throw new Error(msg);
 		},
 
-		override: function(Klass, property, fn)
+		fn: function(Klass, fn_name, pre, post)
 		{
 		var
-			name = Klass.name + '.' + property
+			fn = Klass.prototype[fn_name]
 		;
-			Debug[name] = Klass.prototype[property];
-			Klass.prototype['__' + property] = Debug[name];
+			Klass.prototype[fn_name] = function()
+			{
+			var
+				args = arguments,
+				result
+			;
+				if (pre) pre.apply(this, args);
+				result = fn.apply(this, args);
+				if (post) post.apply(this, args);
 
-			Klass.prototype[property] = fn;
+				return result;
+			};
 		}
 	},
 
-	screen,
-
-	loop = function(fn)
+	loop = function()
 	{
-		return function()
-		{
-			this._oldTime = this._time;
-			this._time = (new Date()).getTime();
+	var
+		screen = this.stage.screen
+	;
+		this._oldTime = this._time;
+		this._time = (new Date()).getTime();
 
-			fn.apply(this);
-
-			if (screen===undefined)
-			    screen = this.stage.canvas.getContext('2d');
-
-			screen.save();
-			screen.fillStyle = '#009900';
-			screen.font = 'bold 18px Arial';
-			screen.translate(0, 20);
-			screen.fillText(Math.floor(1000/(this._time-this._oldTime)) + " FPS", 0, 0);
-			screen.restore();
-		};
-	},
-
-
-	proto = j5g3.Engine.prototype
+		screen.save();
+		screen.fillStyle = '#009900';
+		screen.font = 'bold 18px Arial';
+		screen.translate(0, 20);
+		screen.fillText(Math.floor(1000/(this._time-this._oldTime)) + " FPS", 0, 0);
+		screen.restore();
+	}
 ;
-	/* Add Timing and FPS */
-	Debug.oldGameLoop = proto._gameLoop;
-	Debug.oldRafGameLoop = proto._rafGameLoop;
+	dbg.fn(j5g3.Engine, '_gameLoop', null, loop);
+	dbg.fn(j5g3.Engine, '_rafGameLoop', null, loop);
 
-	proto._gameLoop = loop(Debug.oldGameLoop);
-	proto._rafGameLoop = loop(Debug.oldRafGameLoop);
 
-	Debug.override(j5g3.DisplayObject, 'remove', function()
+	dbg.fn(j5g3.DisplayObject, 'remove', function()
 	{
 		if (this.parent === null)
-		{
-			j5g3.log(this);
-			Debug.error("Trying to remove object without parent.");
-		}
-
-		this.__remove();
+			dbg.error("Trying to remove object without parent.");
 	});
 
-	Debug.override(j5g3.DisplayObject, 'stretch', function(sx, sy)
+	dbg.fn(j5g3.DisplayObject, 'stretch', function()
 	{
 		if (!this.width || !this.height)
-			Debug.error("Objects without width or height cannot be stretched.");
-
-		return this.__stretch(sx, sy);
+			dbg.error("Objects without width or height cannot be stretched.");
 	});
 
 	j5g3.DisplayObject.prototype.extend = function(props)
@@ -100,7 +88,8 @@ var
 		var source = (typeof(src)==='string') ? j5g3.id(src) : src;
 
 		if (source===null)
-			Debug.error("Could not load Image '" + src + "'");
+			dbg.error("Could not load Image '" + src + "'");
+
 		return source;
 	};
 
