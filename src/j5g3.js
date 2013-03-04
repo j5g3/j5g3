@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-03 14:54:07 -0500
+ * Date: 2013-03-03 22:11:32 -0500
  *
  */
 
@@ -414,6 +414,195 @@ j5g3.HitTest = {
 
 },
 
+Matrix =
+/**
+ * 2D Transformation Matrix.
+ *
+ * [ a c e ]
+ * [ b d f ]
+ * [ 0 0 1 ]
+ */
+j5g3.Matrix = Class.extend({
+
+	a: 1,
+	b: 0,
+	c: 0,
+	d: 1,
+	e: 0,
+	f: 0,
+
+	_cos: 1,
+	_sin: 0,
+
+	_rotation: 0,
+
+	init: function j5g3Matrix(a, b, c, d, e, f)
+	{
+		if (a!==undefined)
+		{
+			this.a = a; this.b = b; this.c = c; this.d = d; this.e = e; this.f = f;
+		}
+	},
+
+	get rotation() { return this._rotation; },
+	set rotation(val)
+	{
+		this._rotation = val;
+		this._cos = Math.cos(val);
+		this._sin = Math.sin(val);
+		return this.calc4();
+	},
+
+	_scaleX: 1,
+	get scaleX() { return this._scaleX; },
+	set scaleX(val)
+	{
+		this._scaleX = val;
+		this.a = this._scaleX * this._cos;
+		this.b = this._scaleX * this._sin;
+		return this;
+	},
+
+	_scaleY: 1,
+	get scaleY() { return this._scaleY; },
+	set scaleY(val)
+	{
+		this._scaleY = val;
+		this.c = -this._scaleY * this._sin;
+		this.d = this._scaleY * this._cos;
+		return this;
+	},
+
+	scale: function(sx, sy)
+	{
+		this.scaleX *= sx;
+		this.scaleY *= sy;
+		return this;
+	},
+
+	translate: function(dx, dy)
+	{
+		return this.multiply(1, 0, 0, 1, dx, dy);
+	},
+
+	rotate: function(a)
+	{
+		this.rotation += a;
+		return this;
+	},
+
+	calc4: function()
+	{
+		this.a = this._scaleX * this._cos;
+		this.b = this._scaleX * this._sin;
+		this.c = -this._scaleY * this._sin;
+		this.d = this._scaleY * this._cos;
+		return this;
+	},
+
+	multiply: function(g, h, i, j, k, l)
+	{
+	var
+		A = this.a, B = this.b, C = this.c,
+		D= this.d
+	;
+		this.a = A*g + C*h;
+		this.b = B*g + D*h;
+		this.c = A*i + C*j;
+		this.d = B*i + D*j;
+		this.e += A*k + C*l;
+		this.f += B*k + D*l;
+		return this;
+	},
+
+	clone: function()
+	{
+		return j5g3.matrix().multiply(this.a, this.b, this.c, this.d, this.e, this.f);
+	},
+
+	/**
+	 * Returns a new inverse matrix
+	 *
+	 * @return {j5g3.Matrix}
+	 */
+	inverse: function()
+	{
+	var
+		m = this.clone(),
+		adbc = this.a*this.d-this.b*this.c
+		//bcad = this.b*this.c-this.a*this.d
+	;
+		m.a = this.d / adbc;
+		m.b = this.b / -adbc;
+		m.c = this.c / -adbc;
+		m.d = this.a / adbc;
+		m.e = (this.d*this.e-this.c*this.f) / -adbc;
+		m.f = (this.b*this.e-this.a*this.f) / adbc;
+
+		return m;
+	},
+
+	product: function(M)
+	{
+		return this.clone().multiply(M.a, M.b, M.c, M.d, M.e, M.f);
+	},
+
+	reset: function()
+	{
+		this.a = 1; this.b = 0; this.c = 0;
+		this.d = 1; this.e = 0; this.f = 0;
+		this._scaleX = 1; this._scaleY = 1;
+		this._cos = 1; this._sin = 0;
+		this._rotation = 0;
+	},
+
+	x: function(x, y)
+	{
+		return this.a * x + this.c * y + this.e;
+	},
+
+	y: function(x, y)
+	{
+		return this.f + this.b * x + this.d * y;
+	},
+
+	/**
+	 * Applies only rotation and scaling transformations.
+	 */
+	draw: function(obj, x, y)
+	{
+		obj.x += this.a * x + this.c * y;
+		obj.y += this.b * x + this.d * y;
+	},
+
+	draw_x: function(x, y)
+	{
+		return this.a * x + this.c * y;
+	},
+
+	draw_y: function(x, y)
+	{
+		return this.b * x + this.d * y;
+	},
+
+	client_x: function(x, y)
+	{
+	var
+		adbc = this.a * this.d - this.b * this.c
+	;
+		return (this.d*x - this.c*y + this.c*this.f-this.d*this.e)/adbc;
+	},
+
+	client_y: function(x, y)
+	{
+	var
+		adbc = this.a * this.d - this.b * this.c
+	;
+		return (-this.b*x + this.a*y + this.b*this.e-this.a*this.f)/adbc;
+	}
+
+}),
+
 DisplayObject =
 
 /**
@@ -499,7 +688,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 
 	init: function j5g3DisplayObject(properties)
 	{
-		this.M = j5g3.math.matrix();
+		this.M = new Matrix();
 
 		this.extend(properties);
 	},
@@ -1127,6 +1316,9 @@ j5g3.Tween = Class.extend(/**@scope j5g3.Tween.prototype */ {
 		this.extend(properties);
 	},
 
+	/**
+	 * Pause Tween
+	 */
 	pause: function()
 	{
 		this._olddraw = this.draw;
@@ -1191,6 +1383,8 @@ j5g3.Tween = Class.extend(/**@scope j5g3.Tween.prototype */ {
 		target = me.target,
 		i
 	;
+		if (me.duration===me.t)
+			me.vf = 1;
 
 		for (i in me.to)
 			// TODO See if calling apply_tween affects performance.
@@ -1412,6 +1606,17 @@ j5g3.Polygon = Shape.extend(/**@scope j5g3.Polygon.prototype */{
 			this.calculate_normals();
 	},
 
+	normalize: function(point)
+	{
+	var
+		mag = Math.sqrt(point[0]*point[0] + point[1]*point[1])
+	;
+		point[0] = point[0]/mag;
+		point[1] = point[1]/mag;
+
+		return point;
+	},
+
 	calculate_normals: function()
 	{
 	var
@@ -1423,7 +1628,7 @@ j5g3.Polygon = Shape.extend(/**@scope j5g3.Polygon.prototype */{
 			a = i+2 < l ? i+2 : 0;
 			point[0] = points[a] - points[i];
 			point[1] = points[a+1] - points[i+1];
-			j5g3.math.normalize(point);
+			this.normalize(point);
 
 			normals.push(point[1], -point[0]);
 		}
@@ -2117,6 +2322,7 @@ j5g3.text   = f(Text);
  * Returns a Multiline Text object
  */
 j5g3.mtext  = function(p) { var t = new Text(p); t.paint = Paint.MultilineText; return t; };
+j5g3.matrix = f(Matrix);
 j5g3.tween  = f(Tween);
 j5g3.emitter= f(Emitter);
 j5g3.map    = f(Map);
