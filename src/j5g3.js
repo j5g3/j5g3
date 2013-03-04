@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-04 04:28:43 -0500
+ * Date: 2013-03-04 05:43:06 -0500
  *
  */
 
@@ -776,6 +776,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 
 			this.parent = this.previous = null;
 		}
+		return this;
 	},
 
 	/**
@@ -1375,6 +1376,15 @@ j5g3.Tween = DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 		return this.from[i] + ( this.easing(v) * (this.to[i]-this.from[i]));
 	},
 
+	_remove: DisplayObject.prototype.remove,
+
+	remove: function()
+	{
+		if (this.on_remove)
+			this.on_remove();
+		this._remove();
+	},
+
 	_calculate: function()
 	{
 	var
@@ -1797,6 +1807,30 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	},
 
 	/**
+	 * Returns array containing sprites
+	 */
+	select: function(sprites)
+	{
+	var
+		result = []
+	;
+		this.each(sprites, function(s) { result.push(s); });
+
+		return result;
+	},
+
+	each: function(sprites, fn)
+	{
+	var
+		i=0, l=sprites.length
+	;
+		for (; i < l; i++)
+			fn(this.sprite(sprites[i]));
+
+		return this;
+	},
+
+	/**
 	 * Creates clip from spritesheet indexes. 
 	 *
 	 * @param {Array} sprites Array of sprites to insert into clip.
@@ -1804,23 +1838,15 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	clip: function(sprites)
 	{
 	var
-		s = this._sprites,
-		i,
-		sprite,
-		// Make sure clip starts with no frames...
 		clip = j5g3.clip().remove_frame(),
 		w=0, h=0
 	;
+		this.each(sprites, function(sprite) {
+			clip.add_frame(sprite);
 
-		for (i = 0; i < sprites.length; i++)
-		{
-			clip.add_frame(
-				new Sprite((typeof(sprite=sprites[i]) === 'number') ?
-					(sprite=s[sprite]) : sprite)
-			);
 			if (sprite.width > w) w = sprite.width;
 			if (sprite.height> h) h = sprite.height;
-		}
+		});
 
 		return clip.size(w, h);
 	},

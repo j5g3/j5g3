@@ -62,15 +62,23 @@ var
 	proto._gameLoop = loop(Debug.oldGameLoop);
 	proto._rafGameLoop = loop(Debug.oldRafGameLoop);
 
-	Debug.override(j5g3.Clip, 'remove_child', function(child)
+	Debug.override(j5g3.DisplayObject, 'remove', function()
 	{
-		if (this.is_drawing)
-			j5g3.warn("Removing object while rendering", child);
+		if (this.parent === null)
+		{
+			j5g3.log(this);
+			Debug.error("Trying to remove object without parent.");
+		}
 
-		if (child.parent === null)
-			Debug.error("Trying to remove child without parent.");
+		this.__remove();
+	});
 
-		this.__remove_child(child);
+	Debug.override(j5g3.DisplayObject, 'stretch', function(sx, sy)
+	{
+		if (!this.width || !this.height)
+			Debug.error("Objects without width or height cannot be stretched.");
+
+		return this.__stretch(sx, sy);
 	});
 
 	j5g3.DisplayObject.prototype.extend = function(props)

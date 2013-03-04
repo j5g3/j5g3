@@ -215,14 +215,14 @@ j5g3.ready(function() {
 			s2= j5g3.spritesheet('soccer')
 		;
 			s.grid(5, 5);
-			equal(s.sprites.length, 25);
+			equal(s._sprites.length, 25);
 
 			s2.cut(0,0,10,10);
-			equal(s2.sprites.length, 1);
+			equal(s2._sprites.length, 1);
 			s2.cut(0,0,10,10);
-			equal(s2.sprites.length, 2);
+			equal(s2._sprites.length, 2);
 			s2.push(0,0,10,10);
-			equal(s2.sprites.length, 3);
+			equal(s2._sprites.length, 3);
 			
 		});
 
