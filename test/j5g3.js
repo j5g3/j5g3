@@ -61,79 +61,105 @@ j5g3.ready(function() {
 			ok(a);
 		});
 
-
 		test('Clip Construction', function()
 		{
 		var
-			c = j5g3.image('img'),
-			a = j5g3.clip([[ c ]]),
-			b = j5g3.clip()
+			a = j5g3.clip()
 		;
-			ok(a.frames);
-			ok(b.frames);
-			equal(b.frames.length, a.frames.length);
-			equal(a.frames[0].length, 1);
-			equal(b.frames[0].length, 0);
+			ok(a);
+			ok(a.frame());
 		});
 
 		test('Clip - Adding Objects', function()
 		{
 		var
-			c = j5g3.clip(),
-			src = 'img',
-			img = j5g3.id(src),
-			imgo= j5g3.image(img)
+			a = j5g3.clip(),
+			aa = j5g3.image('img'),
+			ab = j5g3.image('img'),
+			ac = j5g3.image('img'),
+			frame = a.frame()
 		;
 
-			equal(c.frame().length, 0);
-			c.add(img);
-			equal(c.frame().length, 1);
-			c.add(imgo);
-			equal(c.frame().length, 2);
-			ok(c.frame()[1]===imgo);
+			a.add([ aa, ab, ac ]);
 
-			c.add(function() { });
-			equal(c.frame().length, 3);
-			ok(c.frame()[2] instanceof j5g3.Action);
-			c.add(src);
-			equal(c.frame()[3].source, imgo.source);
-			c.add({ source: src });
-			equal(c.frame()[4].source, imgo.source);
-			c.add({ source: img });
-			equal(c.frame()[5].source, imgo.source);
-			c.add([ src, img, imgo ]);
-			equal(c.frame().length, 9);
+			ok(frame);
+			equal(frame.next, aa);
+			equal(frame.previous, ac);
+			equal(aa.next, ab);
+			equal(ab.next, ac);
+			equal(ac.next, frame);
+
+			a.add_frame([ aa, ab, ac ]);
+			frame = a.frame();
+
+			equal(frame.next, aa);
+			equal(frame.previous, ac);
+			equal(aa.next, ab);
+			equal(aa.previous, frame);
+			equal(ab.next, ac);
+			equal(ab.previous, aa);
+			equal(ac.next, frame);
+			equal(ac.previous, ab);
+
+			a.next_frame();
+			frame = a.frame();
+
+			equal(frame.next, frame);
+			equal(frame.previous, frame);
+
+		});
+
+		test('Clip - Removing Objects', function()
+		{
+		var
+			a = j5g3.clip(),
+			aa = j5g3.image('img'),
+			ab = j5g3.image('img'),
+			ac = j5g3.image('img'),
+			frame = a.frame();
+		;
+			a.add([aa, ab, ac]);
+			ab.remove();
+
+			equal(frame.next, aa);
+			equal(aa.next, ac);
+			equal(aa.previous, frame);
+			equal(ac.next, frame);
+			equal(ac.previous, aa);
+
+			ac.remove();
+			equal(frame.next, aa);
+			equal(frame.previous, aa);
+			equal(aa.next, frame);
+			equal(aa.previous, frame);
+
+			aa.remove();
+			equal(frame.next, frame);
+			equal(frame.previous, frame);
 		});
 
 		test('Clip - Adding Frames', function()
 		{
 		var
-			c = j5g3.clip()
+			c = j5g3.clip(),
+			img = j5g3.image('img'),
+			frame, frame2 = c.frame()
 		;
 			c.add_frame();
-			equal(c.frame().length, 0);
-			equal(c.frames.length, 2);
-			c.add_frame('img');
-			equal(c.frame().length, 1);
-			equal(c.frames.length, 3);
+			frame = c.frame();
+
+			equal(frame.next, frame);
+			equal(frame.previous, frame);
+
+			c.next_frame();
+			equal(c.frame(), frame2);
+			ok(frame !== frame2);
+
+			c.add_frame(img);
+			frame = c.frame();
+			equal(frame.next, img);
+			equal(img.next, frame);
 		});
-
-		test('Clip - Misc Methods', function()
-		{
-		var
-			c = j5g3.clip()
-		;
-			c.add([ 'img', 'soccer']);
-			c.add_frame(['img', 'soccer']);
-
-			equal(c.children().length, 4);
-
-			c.scaleT(2);
-			equal(c.frames.length, 4);
-			c.scaleT(4);
-			equal(c.frames.length, 8);
-		});
-
 
 		test('Text Construction', function()
 		{
@@ -204,19 +230,19 @@ j5g3.ready(function() {
 		{
 		var
 			s = j5g3.spritesheet('soccer').grid(5, 5),
-			a = s.clip(0, 1, 2),
-			b = s.clip_array([ 0, 2 ])
+			a = s.clip([0, 1, 2])
 		;
-			equal(a.frames.length, 3);
-			equal(b.frames.length, 2);
+			equal(a._frames.length, 3);
 		});
 
 		test('Collision', function()
 		{
 		var
-			A = 
-			do_test = function() {
-				
+			a, b,
+			do_test = function(A, B) {
+				a = j5g3.rect({ fill: 'red', width: 100, height: 50 }).set(A),
+				b = j5g3.rect({ fill: 'green', width: 50, height: 30 }).set(B),
+				ok(a.collides(b));				
 			}
 		;
 			do_test({ x: 20, y: 20 }, { x: 100, y: 30 });

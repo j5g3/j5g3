@@ -14,16 +14,16 @@ var
 		clip.pos(x+j5g3.rand(60)-30, y+j5g3.rand(60)-30)
 		    .scale(0.5, 0.5)
 		;
-
+		clip.source = ([diamond, star])[j5g3.irand(2)];
+		clip.line_width = 6;
 		clip.stroke= ([ 'white', 'red', 'yellow', 'cyan' ])[Math.floor(j5g3.rand(4))];
 		clip.rotation = j5g3.rand(3);
 
 		this.add(j5g3.tween({ auto_remove: true, target: clip, duration: duration, to: { alpha: 0 } }))
 	},
 
-	e1 = j5g3.emitter({ source: j5g3.dot(6), life: duration, on_emit: on_emit }),
-	e2 = j5g3.emitter({ source: j5g3.image(star), life: duration, on_emit: on_emit }),
-	e3 = j5g3.emitter({ source: j5g3.image(diamond), life: duration, on_emit: on_emit }),
+	e1 = j5g3.emitter({ source: j5g3.Dot, life: duration, on_emit: on_emit }),
+	e2 = j5g3.emitter({ source: j5g3.Image, life: duration, on_emit: on_emit }),
 
 	mouse = function(evt)
 	{
@@ -41,7 +41,7 @@ var
 	}
 
 	canvas.addEventListener('mousemove', mouse);
-	this.stage.add([ e1, e2, e3]);
+	this.stage.add([ e1, e2 ]);
 
 	this.fps(60).run();						
 

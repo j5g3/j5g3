@@ -22,7 +22,7 @@ var
 		}));
 	},
 	emitter = j5g3.emitter({
-		container_class: j5g3.Circle,
+		source: j5g3.Circle,
 		count: 1,
 		life: NUM,
 		x: this.stage.width/2,

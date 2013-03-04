@@ -111,7 +111,7 @@ var
 
 	i, xi, collision
 ;
-	map = j5g3.map({ sprites: ss.sprites, tw: 42, th: 18, x: 5, y: 60 });
+	map = j5g3.map({ tw: 42, th: 18, x: 5, y: 60 });
 	audio.pong.volume = 0.2;
 
 	ss.cut(0,0,1,1);
@@ -124,12 +124,14 @@ var
 		map.map.push(j5g3.ary(15, 0, i*2+1));
 	}
 
+	map.sprites = ss.sprites();
+
 	ss.cut(0, 174, 50, 12);
-	player = ss.clip(17).pos(320-PLAYERW2, 450);
+	player = ss.clip([ 17 ]).pos(320-PLAYERW2, 450);
 	player.at = j5g3.HitTest.Rect;
 
 	ss.cut(42, 146, 14, 14);
-	ball = ss.clip(18).pos(320, 300).set({ shape: 'circle', fx: 0, fy: MAXV });
+	ball = ss.clip([ 18 ]).pos(320, 300).set({ shape: 'circle', fx: 0, fy: MAXV });
 
 	canvas.style.backgroundColor = '#330033';
 	canvas.addEventListener('mousemove', mousemove);

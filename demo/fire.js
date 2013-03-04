@@ -34,7 +34,7 @@ var
 	},
 
 	e1 = j5g3.emitter({ 
-		container_class: j5g3.Dot,
+		source: j5g3.Dot,
 		count: COUNT,
 		life: LIFE,
 		on_emit: on_emit

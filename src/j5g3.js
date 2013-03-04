@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-03 22:11:32 -0500
+ * Date: 2013-03-04 04:28:43 -0500
  *
  */
 
@@ -142,12 +142,10 @@ j5g3.Paint = {
 	{
 	var
 		frame = this.frame(),
-		i = 0,
-		l = frame.length
+		next = frame
 	;
-
-		for (i=0; i<l;i++)
-			frame[i].draw(context);
+		while ((next=next.next) !== frame)
+			next.draw(context);
 
 		if (this._playing)
 			this.next_frame();
@@ -371,11 +369,11 @@ j5g3.HitTest = {
 		M = M ? M.product(this.M) : this.M.clone();
 	var
 		frame = this.frame(),
-		i = frame.length,
+		previous = frame,
 		result
 	;
-		while (i--)
-			if ((result = frame[i].at(x, y, M)))
+		while ((previous = previous.previous) !== frame)
+			if ((result = previous.at(x, y, M)))
 				break;
 
 		return result;
@@ -614,11 +612,20 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	/** @type {Image} Used by the draw function to paint the object */
 	source: null,
 
-	shape: 'rect',
+	/** 
+	 * Next display object to render 
+	 * @type {j5g3.DisplayObject}
+	 */
+	next: null,
+	/** 
+	 * Previous display object 
+	 * @type {j5g3.DisplayObject}
+	 */
+	previous: null,
 
 	/**
-	 * Parent. By default the parent will always be the Root object
-	 * @type Object
+	 * Parent clip
+	 * @type {j5g3.Clip}
 	 */
 	parent: null,
 
@@ -686,14 +693,17 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	/** Miter limit */
 	miter_limit: null,
 
+	dirty: true,
+
+	/** True if display object is being currently drawn */
+	is_drawing: false,
+
 	init: function j5g3DisplayObject(properties)
 	{
 		this.M = new Matrix();
 
 		this.extend(properties);
 	},
-
-	dirty: true,
 
 	/**
 	 * Save Transform Matrix and apply transformations.
@@ -704,6 +714,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 		me = this,
 		m = this.M
 	;
+		me.is_drawing = true;
 		context.save();
 
 		if (me.alpha!==1) context.globalAlpha *= me.alpha;
@@ -726,6 +737,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	end: function(context)
 	{
 		context.restore();
+		this.drawing = false;
 	},
 
 	/**
@@ -750,6 +762,20 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	{
 		this.dirty = true;
 		return this;
+	},
+
+	/**
+	 * Removes DisplayObject from container
+	 */
+	remove: function()
+	{
+		if (this.parent)
+		{
+			this.previous.next = this.next;
+			this.next.previous = this.previous;
+
+			this.parent = this.previous = null;
+		}
 	},
 
 	/**
@@ -819,12 +845,6 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 		return this;
 	},
 
-	remove: function()
-	{
-		this.parent.remove_child(this);
-		return this;
-	},
-
 	visible: function()
 	{
 		return this.alpha > 0;
@@ -843,7 +863,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	 */
 	to_clip: function()
 	{
-		return j5g3.clip({ frames: [[ this ]], width: this.width, height: this.height });
+		return j5g3.clip({width: this.width, height: this.height }).add(this);
 	},
 
 	cache: Cache.Canvas,
@@ -1017,7 +1037,7 @@ j5g3.Clip = DisplayObject.extend(
 /** @scope j5g3.Clip.prototype */ {
 
 	/** @private */
-	frames: null,
+	_frames: null,
 
 	/** 
 	 * @private 
@@ -1031,13 +1051,10 @@ j5g3.Clip = DisplayObject.extend(
 
 	init: function j5g3Clip(properties)
 	{
-		if (properties instanceof Array)
-			properties = { frames: properties };
-
 		DisplayObject.apply(this, [ properties ]);
 
-		if (!this.frames)
-			this.frames = [ [ ] ];
+		this._frames = [];
+		this.add_frame();
 	},
 
 	/**
@@ -1045,15 +1062,15 @@ j5g3.Clip = DisplayObject.extend(
 	 */
 	frame: function()
 	{
-		return this.frames[this._frame];
+		return this._frames[this._frame];
 	},
 
 	/**
 	 * Sets next frame index.
 	 */
-	next_frame : function()
+	next_frame: function()
 	{
-		this._frame = (this._frame < this.frames.length-1) ? this._frame + 1 : 0;
+		this._frame = (this._frame < this._frames.length-1) ? this._frame + 1 : 0;
 	},
 
 	paint : Paint.Container,
@@ -1082,31 +1099,65 @@ j5g3.Clip = DisplayObject.extend(
 				this.add(display_object[i]);
 			return this;
 		case 'audio':
-			// Create On the Fly display obejct for audio
-			// TODO We might have an Audio class... If we need to.
-			//display_object = { parent: window.property('parent'),
-			//draw: function() { display_object.play(); } };
 			// TODO
 			break;
 		case 'dom': case 'object':
 			display_object = new Image(display_object);
 			break;
-		case 'undefined':
+		case 'undefined': case 'null':
 			throw "Trying to add undefined object to clip.";
 		}
 
+		return this.add_object(display_object);
+	},
+
+	add_object: function(display_object)
+	{
+	var
+		frame = this.frame()
+	;
+
+		if (display_object.parent)
+		{
+			j5g3.warn('Trying to add DisplayObject without removing first.', display_object);
+			display_object.remove();
+		}
+
+		frame.previous.next = display_object;
+		display_object.previous = frame.previous;
+		display_object.next = frame;
 		display_object.parent = this;
-		display_object._parent_frame = this.frame();
-		display_object._parent_frame.push(display_object);
+		frame.previous = display_object;
 
 		return this;
 	},
 
+	/**
+	 * Adds a frame with objects inside.
+	 */
 	add_frame: function(objects)
 	{
-		this._frame = this.frames.length;
-		this.frames.push([]);
+	var
+		frame = { }
+	;
+		frame.previous = frame.next = frame;
+
+		this._frame = this._frames.length;
+		this._frames.push(frame);
+
 		return objects ? this.add(objects) : this;
+	},
+
+	/**
+	 * Removes frame
+	 */
+	remove_frame: function(frame)
+	{
+		frame = frame===undefined ? this._frame : frame;
+		this._frames.splice(frame, 1);
+		this._frame = frame-1;
+
+		return this;
 	},
 
 	/**
@@ -1119,19 +1170,22 @@ j5g3.Clip = DisplayObject.extend(
 	},
 
 	/**
-	 * Returns all children in all frames
+	 * Iterates over all the clip's children. Note: Not in order.
 	 */
-	children: function()
+	each: function(fn)
 	{
-		var fs = this.frames, l=fs.length, i=0, a, children=[], cf, cfl;
-		for(;i<l;i++)
+	var
+		l = this._frames.length,
+		frame, next
+	;
+		while (l--)
 		{
-			cf = fs[i]; cfl=cf.length;
-			for (a=0; a<cfl; a++)
-				children.push(cf[a]);
+			next = frame = this._frames[l];
+			while ((next=next.next) !== frame)
+				fn(next);
 		}
 
-		return children;
+		return this;
 	},
 
 	/**
@@ -1139,57 +1193,13 @@ j5g3.Clip = DisplayObject.extend(
 	 */
 	align_children : function(alignment)
 	{
-		var frm = this.children(), i=frm.length;
-
-		while (i--)
-			if (frm[i].align)
-				frm[i].align(alignment, this);
-
-		return this;
+		return this.each(function(c) { if (c.align) c.align(alignment); });
 	},
 
 	/**
 	 * Returns element at position x,y
 	 */
-	at: HitTest.Container,
-
-	/**
-	 * Removes child.
-	 */
-	remove_child: function(child)
-	{
-	var
-		paint = this.paint
-	;
-		/* Replace original paint function with this, so the removal happens
-		 * before painting and it doesn't affect rendering.
-		 * TODO There is probably a better way to handle this.
-		 */
-		child.parent = null;
-		this.paint = function(context) {
-			child._parent_frame.splice(child._parent_frame.indexOf(child), 1);
-			this.paint = paint;
-			this.paint(context);
-		};
-	},
-
-	/**
-	 * Scales the time coordinate of the clip. Stretches or reduces frames.
-	 */
-	scaleT: function(t)
-	{
-	var
-		frames = [],
-		of = this._oframes || (this._oframes = this.frames),
-		l = Math.floor(of.length*t),
-		i=0
-	;
-		for (; i<l; i++)
-			frames.push(of[Math.floor(i/t)]);
-
-		this.frames = frames;
-		return this;
-	}
+	at: HitTest.Container
 
 }),
 
@@ -1286,12 +1296,11 @@ Tween =
  * @property {function}   on_stop
  *
  */
-j5g3.Tween = Class.extend(/**@scope j5g3.Tween.prototype */ {
+j5g3.Tween = DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 
 	auto_remove: false,
 	repeat: Infinity,
 	duration: 100,
-	parent: null,
 	is_playing: false,
 	from: null,
 	target: null,
@@ -1361,16 +1370,6 @@ j5g3.Tween = Class.extend(/**@scope j5g3.Tween.prototype */ {
 
 	easing: function(p) { return p; },
 
-	remove: function()
-	{
-		this.parent.remove_child(this);
-
-		if (this.on_remove)
-			this.on_remove();
-
-		return this;
-	},
-
 	apply_tween: function(i, v)
 	{
 		return this.from[i] + ( this.easing(v) * (this.to[i]-this.from[i]));
@@ -1427,12 +1426,6 @@ j5g3.Tween = Class.extend(/**@scope j5g3.Tween.prototype */ {
 		me.vf= 0;
 
 		me.draw = me._calculate;
-		return this;
-	},
-
-	set_to: function(to)
-	{
-		this.to = to;
 		return this;
 	},
 
@@ -1771,7 +1764,11 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	 * to a j5g3.Image
 	 */
 	source: null,
-	sprites: null,
+
+	/**
+	 * @private
+	 */
+	_sprites: null,
 
 	init: function j5g3Spritesheet(properties)
 	{
@@ -1796,33 +1793,31 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 			properties.height = properties.source.height;
 
 		this.extend(properties);
-		this.sprites = this.sprites || [];
+		this._sprites = [];
 	},
 
 	/**
-	 * Creates clip from spritesheet indexes. Takes a variable number of arguments.
+	 * Creates clip from spritesheet indexes. 
+	 *
+	 * @param {Array} sprites Array of sprites to insert into clip.
 	 */
-	clip: function()
+	clip: function(sprites)
 	{
-		return this.clip_array(arguments);
-	},
-
-	clip_array: function(sprites)
-	{
-		var s = this.sprites,
-		    i,
-		    sprite,
-		    // Make sure clip starts with no frames...
-		    clip = new Clip({ frames: [] }),
-		    w=0, h=0
-		;
+	var
+		s = this._sprites,
+		i,
+		sprite,
+		// Make sure clip starts with no frames...
+		clip = j5g3.clip().remove_frame(),
+		w=0, h=0
+	;
 
 		for (i = 0; i < sprites.length; i++)
 		{
-			clip.add_frame([
-				(typeof(sprite=sprites[i]) === 'number') ?
-					(sprite=s[sprite]) : sprite
-			]);
+			clip.add_frame(
+				new Sprite((typeof(sprite=sprites[i]) === 'number') ?
+					(sprite=s[sprite]) : sprite)
+			);
 			if (sprite.width > w) w = sprite.width;
 			if (sprite.height> h) h = sprite.height;
 		}
@@ -1845,7 +1840,7 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	 */
 	cut: function(x, y, w, h)
 	{
-		var s = new Sprite(j5g3.getType(x) === 'object' ?
+		var s = (j5g3.getType(x) === 'object' ?
 			{ width: x.w, height: x.h, source: {
 				image: this.source.source, x: x.x, y: x.y, w: x.w, h: x.h
 			} }
@@ -1855,9 +1850,9 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 			} }
 		);
 
-		this.sprites.push(s);
+		this._sprites.push(s);
 
-		return s;
+		return new Sprite(s);
 	},
 
 	/**
@@ -1883,11 +1878,31 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	},
 
 	/**
-	 * Returns sprite at index
+	 * Returns a new Sprite object based on index
+	 *
+	 * @return {j5g3.Sprite}
 	 */
 	sprite: function(index)
 	{
-		return this.sprites[index];
+		return new Sprite(this._sprites[index]);
+	},
+
+	/**
+	 * Returns all sprites as objects in an array.
+	 *
+	 * @return {Array}
+	 */
+	sprites: function()
+	{
+	var
+		i = 0,
+		l = this._sprites.length,
+		sprites = []
+	;
+		for (; i<l; i++)
+			sprites.push(this.sprite(i));
+
+		return sprites;
 	},
 
 	/**
@@ -1895,7 +1910,7 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	 */
 	map: function(tw, th)
 	{
-		return new Map({ sprites: this.sprites, tw: tw, th: th });
+		return new Map({ sprites: this.sprites(), tw: tw, th: th });
 	}
 
 }),
@@ -1915,17 +1930,11 @@ j5g3.Emitter = Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 	},
 
 	/**
-	 * DisplayObject to be used when emitting particles. It will be
-	 * enclosed in a clip.
-	 */
-	source: null,
-
-	/**
 	 * Class of the object to Emit.
 	 * @default j5g3.Clip
 	 *
 	 */
-	container_class: j5g3.Clip,
+	source: j5g3.Clip,
 
 	/**
 	 * Function used to replace the draw method for the emitted object.
@@ -1959,11 +1968,8 @@ j5g3.Emitter = Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 	spawn: function()
 	{
 	var
-		clip = new this.container_class()
+		clip = new this.source()
 	;
-		if (this.source)
-			clip.add(this.source);
-
 		clip._life = this.life;
 		clip._emitter_draw = clip.draw;
 		clip.draw = this.container_draw;
@@ -1976,8 +1982,7 @@ j5g3.Emitter = Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 	var
 		clip = this.spawn()
 	;
-		this.add(clip);
-		this.on_emit(clip);
+		this.add(clip).on_emit(clip);
 	},
 
 	_paint: Paint.Container,
@@ -2105,38 +2110,15 @@ j5g3.Action = Class.extend(
 
 	/**
 	 * Rotates object forever. Clockwise by default.
+	 *
+	 * @param {j5g3.DisplayObject} obj Object to rotate.
 	 */
 	rotate: function(obj)
 	{
 		return function() {
 			obj.rotation = obj.rotation < 6.1 ? obj.rotation+0.1 : 0;
 		};
-	},
-
-	stop: function()
-	{
-		this.parent.stop();
-	},
-
-	/**
-	 * Removes the clip
-	 */
-	Remove: function()
-	{
-		this.parent.remove();
-	},
-
-	/**
-	 * Action to run once and remove itself
-	 */
-	once: function(fn)
-	{
-		return j5g3.action(function() {
-			fn();
-			this.remove();
-		});
 	}
-
 
 }),
 

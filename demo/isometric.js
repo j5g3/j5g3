@@ -99,7 +99,7 @@ var
 
 	map = j5g3.map({ 
 		x: -32, y: -16, 
-		sprites: terrain.sprites, 
+		sprites: terrain.sprites(), 
 		th: 32,
 		tw: 64,
 		map: mapa, 

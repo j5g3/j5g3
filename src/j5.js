@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-03 22:11:32 -0500
+ * Date: 2013-03-04 04:28:43 -0500
  *
  */
 
@@ -185,6 +185,7 @@ j5g3 = {
 
 		if (result === 'object')
 		{
+			if (obj === null) return 'null';
 			if (obj instanceof Array) return 'array';
 			if (obj instanceof HTMLAudioElement) return 'audio';
 			if (obj instanceof HTMLElement) return 'dom';

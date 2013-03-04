@@ -10,7 +10,7 @@ var
 ;
 	for (easing in j5g3.fx.Easing)
 	{
-		a = ss.clip(16,17,18,19,20,21,22,23,24,25).pos(x, y+=20).scaleT(2).scale(0.2, 0.2);
+		a = ss.clip([ 16,17,18,19,20,21,22,23,24,25 ]).pos(x, y+=20).scale(0.2, 0.2);
 
 		this.stage.add([ 
 			a, 

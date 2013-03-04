@@ -10,9 +10,26 @@ var
 	/**
 	 * Debug Module for j5g3
 	 */
-	j5g3.Debug = { },
+	j5g3.dbg = {
+
+		error: function(msg)
+		{
+			throw new Error(msg);
+		},
+
+		override: function(Klass, property, fn)
+		{
+		var
+			name = Klass.name + '.' + property
+		;
+			Debug[name] = Klass.prototype[property];
+			Klass.prototype['__' + property] = Debug[name];
+
+			Klass.prototype[property] = fn;
+		}
+	},
+
 	screen,
-	i,
 
 	loop = function(fn)
 	{
@@ -23,7 +40,7 @@ var
 
 			fn.apply(this);
 
-			if (!screen)
+			if (screen===undefined)
 			    screen = this.stage.canvas.getContext('2d');
 
 			screen.save();
@@ -35,13 +52,9 @@ var
 		};
 	},
 
+
 	proto = j5g3.Engine.prototype
 ;
-
-	/* Assign klass name to klass property. */
-	for(i in j5g3)
-		if (typeof(j5g3[i])==='function') j5g3[i].klass = i;
-
 	/* Add Timing and FPS */
 	Debug.oldGameLoop = proto._gameLoop;
 	Debug.oldRafGameLoop = proto._rafGameLoop;
@@ -49,12 +62,27 @@ var
 	proto._gameLoop = loop(Debug.oldGameLoop);
 	proto._rafGameLoop = loop(Debug.oldRafGameLoop);
 
+	Debug.override(j5g3.Clip, 'remove_child', function(child)
+	{
+		if (this.is_drawing)
+			j5g3.warn("Removing object while rendering", child);
+
+		if (child.parent === null)
+			Debug.error("Trying to remove child without parent.");
+
+		this.__remove_child(child);
+	});
+
 	j5g3.DisplayObject.prototype.extend = function(props)
 	{
 		for (var i in props)
 		{
 			if ((typeof this[i] === 'function') && i.indexOf('on_')!==0)
-				j5g3.warn('Overriding function ' + i);
+				j5g3.warn('Overriding function ' + i, this);
+
+			if (i[0]==='_')
+				j5g3.warn('Overriding private member ' + i, this);
+
 			this[i] = props[i];
 		}
 	};
@@ -64,7 +92,7 @@ var
 		var source = (typeof(src)==='string') ? j5g3.id(src) : src;
 
 		if (source===null)
-			throw "Could not load Image '" + src + "'";
+			Debug.error("Could not load Image '" + src + "'");
 		return source;
 	};
 
