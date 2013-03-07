@@ -134,7 +134,7 @@ var
 
 		pop: function()
 		{
-			if (this.selected.length)
+			if (this.selected.length > 1)
 			{
 				this.selected.forEach(this.popBubble.bind(this));
 				this.score.text = parseInt(this.score.text) + this.getPoints(this.selected.length);
