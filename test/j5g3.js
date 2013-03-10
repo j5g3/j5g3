@@ -83,29 +83,29 @@ j5g3.ready(function() {
 			a.add([ aa, ab, ac ]);
 
 			ok(frame);
-			equal(frame.next, aa);
-			equal(frame.previous, ac);
-			equal(aa.next, ab);
-			equal(ab.next, ac);
-			equal(ac.next, frame);
+			strictEqual(frame.next, aa);
+			strictEqual(frame.previous, ac);
+			strictEqual(aa.next, ab);
+			strictEqual(ab.next, ac);
+			strictEqual(ac.next, frame);
 
 			a.add_frame([ aa, ab, ac ]);
 			frame = a.frame();
 
-			equal(frame.next, aa);
-			equal(frame.previous, ac);
-			equal(aa.next, ab);
-			equal(aa.previous, frame);
-			equal(ab.next, ac);
-			equal(ab.previous, aa);
-			equal(ac.next, frame);
-			equal(ac.previous, ab);
+			strictEqual(frame.next, aa);
+			strictEqual(frame.previous, ac);
+			strictEqual(aa.next, ab);
+			strictEqual(aa.previous, frame);
+			strictEqual(ab.next, ac);
+			strictEqual(ab.previous, aa);
+			strictEqual(ac.next, frame);
+			strictEqual(ac.previous, ab);
 
 			a.next_frame();
 			frame = a.frame();
 
-			equal(frame.next, frame);
-			equal(frame.previous, frame);
+			strictEqual(frame.next, frame);
+			strictEqual(frame.previous, frame);
 
 		});
 

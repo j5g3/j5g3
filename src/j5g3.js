@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-06 19:46:06 -0500
+ * Date: 2013-03-09 23:45:19 -0500
  *
  */
 
@@ -356,22 +356,21 @@ j5g3.HitTest = {
 
 	Circle: function(x, y, M)
 	{
-		M = M ? M.product(this.M) : this.M;
-	var
-		dx = M.client_x(x, y),
-		dy = M.client_y(x, y)
-	;
-		return (dx*dx+dy*dy<=this.radius*this.radius) ? this : false;
+		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
+		M.to_client(x, y);
+
+		return (M.x*M.x+M.y*M.y <= this.radius*this.radius) ? this : false;
 	},
 
 	Container: function(x, y, M)
 	{
-		M = M ? M.product(this.M) : this.M.clone();
 	var
 		frame = this.frame(),
 		previous = frame,
 		result
 	;
+		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
+
 		while ((previous = previous.previous) !== frame)
 			if ((result = previous.at(x, y, M)))
 				break;
@@ -381,28 +380,26 @@ j5g3.HitTest = {
 
 	Rect: function(x, y, M)
 	{
-		M = M ? M.product(this.M) : this.M;
-	var
-		dx = M.client_x(x, y),
-		dy = M.client_y(x, y)
-	;
-		return ((dx>0 && dx<this.width)&&(dy>0 && dy<this.height)) ? this : false;
+		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
+		M.to_client(x, y);
+
+		return ((M.x>0 && M.x<this.width)&&(M.y>0 && M.y<this.height)) ? this : false;
 	},
 
 	Polygon: function(x, y, M)
 	{
-		M = M ? M.product(this.M) : this.M;
 	var
-		dx = M.client_x(x, y),
-		dy = M.client_y(x, y),
 		points = this.points,
 		normals = this.normals,
 		i = 0, l = points.length,
 		dot
 	;
+		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
+		M.to_client(x, y);
+
 		for (; i<l; i+=2)
 		{
-			dot = normals[i]*(dx-points[i]) + normals[i+1]*(dy-points[i+1]);
+			dot = normals[i]*(M.x-points[i]) + normals[i+1]*(M.y-points[i+1]);
 			if (dot > 0.0)
 				return false;
 		}
@@ -412,13 +409,93 @@ j5g3.HitTest = {
 
 },
 
+MatrixLite =
+
+/**
+ * Light 2D Transformation Matrix for DisplayObjects. Use j5g3.Matrix to 
+ * perform operations. e and f are always 0.
+ *
+ * [ a c ]
+ * [ b d ]
+ *
+ * @extend {j5g3.Class}
+ */
+j5g3.MatrixLite = Class.extend({
+
+	a: 1,
+	b: 0,
+	c: 0,
+	d: 1,
+
+	_cos: 1,
+	_sin: 0,
+
+	scaleX: 1,
+	scaleY: 1,
+
+	init: function j5g3MatrixLite(a, b, c, d)
+	{
+		if (a!==undefined)
+		{
+			this.a = a; this.b = b; this.c = c; this.d = d;
+		}
+	},
+
+	/** Sets Matrix rotation and calculates a,b,c and d values. */
+	setRotation: function(val)
+	{
+		this._cos = Math.cos(val);
+		this._sin = Math.sin(val);
+
+		return this.calc4();
+	},
+
+	setScaleX: function(sx)
+	{
+		this.scaleX = sx;
+		this.a = sx * this._cos;
+		this.b = sx * this._sin;
+		return this;
+	},
+
+	setScaleY: function(sy)
+	{
+		this.scaleY = sy;
+		this.c = -sy * this._sin;
+		this.d = sy * this._cos;
+		return this;
+	},
+
+	scale: function(sx, sy)
+	{
+		return this.setScaleX(sx).setScaleY(sy);
+	},
+
+	calc4: function()
+	{
+		this.a = this.scaleX * this._cos;
+		this.b = this.scaleX * this._sin;
+		this.c = -this.scaleY * this._sin;
+		this.d = this.scaleY * this._cos;
+		return this;
+	},
+
+	/**
+	 * Returns a copy of this matrix as a j5g3.Matrix object.
+	 *
+	 * @return {j5g3.Matrix}
+	 */
+	to_m: function(x, y)
+	{
+		return new j5g3.Matrix(this.a, this.b, this.c, this.d, x || 0, y || 0);
+	}
+}),
+
 Matrix =
+
 /**
  * 2D Transformation Matrix.
- *
- * [ a c e ]
- * [ b d f ]
- * [ 0 0 1 ]
+ * @extend j5g3.Class
  */
 j5g3.Matrix = Class.extend({
 
@@ -429,73 +506,13 @@ j5g3.Matrix = Class.extend({
 	e: 0,
 	f: 0,
 
-	_cos: 1,
-	_sin: 0,
-
-	_rotation: 0,
-
 	init: function j5g3Matrix(a, b, c, d, e, f)
 	{
 		if (a!==undefined)
 		{
-			this.a = a; this.b = b; this.c = c; this.d = d; this.e = e; this.f = f;
+			this.a = a; this.b = b; this.c = c;
+			this.d = d; this.e = e; this.f = f;
 		}
-	},
-
-	get rotation() { return this._rotation; },
-	set rotation(val)
-	{
-		this._rotation = val;
-		this._cos = Math.cos(val);
-		this._sin = Math.sin(val);
-		return this.calc4();
-	},
-
-	_scaleX: 1,
-	get scaleX() { return this._scaleX; },
-	set scaleX(val)
-	{
-		this._scaleX = val;
-		this.a = this._scaleX * this._cos;
-		this.b = this._scaleX * this._sin;
-		return this;
-	},
-
-	_scaleY: 1,
-	get scaleY() { return this._scaleY; },
-	set scaleY(val)
-	{
-		this._scaleY = val;
-		this.c = -this._scaleY * this._sin;
-		this.d = this._scaleY * this._cos;
-		return this;
-	},
-
-	scale: function(sx, sy)
-	{
-		this.scaleX *= sx;
-		this.scaleY *= sy;
-		return this;
-	},
-
-	translate: function(dx, dy)
-	{
-		return this.multiply(1, 0, 0, 1, dx, dy);
-	},
-
-	rotate: function(a)
-	{
-		this.rotation += a;
-		return this;
-	},
-
-	calc4: function()
-	{
-		this.a = this._scaleX * this._cos;
-		this.b = this._scaleX * this._sin;
-		this.c = -this._scaleY * this._sin;
-		this.d = this._scaleY * this._cos;
-		return this;
 	},
 
 	multiply: function(g, h, i, j, k, l)
@@ -510,6 +527,7 @@ j5g3.Matrix = Class.extend({
 		this.d = B*i + D*j;
 		this.e += A*k + C*l;
 		this.f += B*k + D*l;
+
 		return this;
 	},
 
@@ -528,7 +546,6 @@ j5g3.Matrix = Class.extend({
 	var
 		m = this.clone(),
 		adbc = this.a*this.d-this.b*this.c
-		//bcad = this.b*this.c-this.a*this.d
 	;
 		m.a = this.d / adbc;
 		m.b = this.b / -adbc;
@@ -540,63 +557,50 @@ j5g3.Matrix = Class.extend({
 		return m;
 	},
 
-	product: function(M)
+	/**
+	 * Multiplies matrix by M and optional x and y
+	 *
+	 * @return {j5g3.Matrix}
+	 */
+	product: function(M, x, y)
 	{
-		return this.clone().multiply(M.a, M.b, M.c, M.d, M.e, M.f);
+		return this.clone().multiply(M.a, M.b, M.c, M.d, M.e || x || 0, M.f || y || 0);
 	},
 
+	/**
+	 * Resets matrix.
+	 */
 	reset: function()
 	{
 		this.a = 1; this.b = 0; this.c = 0;
 		this.d = 1; this.e = 0; this.f = 0;
-		this._scaleX = 1; this._scaleY = 1;
-		this._cos = 1; this._sin = 0;
-		this._rotation = 0;
-	},
 
-	x: function(x, y)
-	{
-		return this.a * x + this.c * y + this.e;
-	},
-
-	y: function(x, y)
-	{
-		return this.f + this.b * x + this.d * y;
+		return this;
 	},
 
 	/**
-	 * Applies only rotation and scaling transformations.
+	 * Applies only rotation and scaling transformations. Stores it in this.x, this.y.
 	 */
-	draw: function(obj, x, y)
+	to_world: function(x, y)
 	{
-		obj.x += this.a * x + this.c * y;
-		obj.y += this.b * x + this.d * y;
+		this.x = this.a * x + this.c * y + this.e;
+		this.y = this.b * x + this.d * y + this.f;
+
+		return this;
 	},
 
-	draw_x: function(x, y)
-	{
-		return this.a * x + this.c * y;
-	},
-
-	draw_y: function(x, y)
-	{
-		return this.b * x + this.d * y;
-	},
-
-	client_x: function(x, y)
+	/**
+	 * Finds client x and y and stores it in this.x, this.y respectively.
+	 */
+	to_client: function(x, y)
 	{
 	var
 		adbc = this.a * this.d - this.b * this.c
 	;
-		return (this.d*x - this.c*y + this.c*this.f-this.d*this.e)/adbc;
-	},
+		this.x = (this.d*x - this.c*y + this.c*this.f-this.d*this.e)/adbc;
+		this.y = (-this.b*x + this.a*y + this.b*this.e-this.a*this.f)/adbc;
 
-	client_y: function(x, y)
-	{
-	var
-		adbc = this.a * this.d - this.b * this.c
-	;
-		return (-this.b*x + this.a*y + this.b*this.e-this.a*this.f)/adbc;
+		return this;
 	}
 
 }),
@@ -612,13 +616,13 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	/** @type {Image} Used by the draw function to paint the object */
 	source: null,
 
-	/** 
-	 * Next display object to render 
+	/**
+	 * Next display object to render
 	 * @type {j5g3.DisplayObject}
 	 */
 	next: null,
-	/** 
-	 * Previous display object 
+	/**
+	 * Previous display object
 	 * @type {j5g3.DisplayObject}
 	 */
 	previous: null,
@@ -635,12 +639,10 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	M: null,
 
 	/** @type {number} X position */
-	set x(val) { this.M.e = val; },
-	get x() { return this.M.e; },
+	x: 0,
 
 	/** @type {number} Y position */
-	set y(val) { this.M.f = val; },
-	get y() { return this.M.f; },
+	y: 0,
 
 	/** @type {number} Offset X for rotation. */
 	cx: 0,
@@ -651,36 +653,38 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	/** @type {number|null} Height */
 	height: null,
 
+	_rotation: 0,
+
 	/** @type {number} Rotation */
-	set rotation(val) { this.M.rotation = val; },
-	get rotation() { return this.M._rotation; },
+	set rotation(val) { this.M.setRotation((this._rotation = val)); },
+	get rotation() { return this._rotation; },
 
 	/** @type {number} X Scale */
-	set scaleX(val) { this.M.scaleX = val; },
-	get scaleX() { return this.M._scaleX; },
+	set scaleX(val) { this.M.setScaleX(val); },
+	get scaleX() { return this.M.scaleX; },
 
 	/** @type {number} Y Scale */
-	set scaleY(val) { this.M.scaleY = val; },
-	get scaleY() { return this.M._scaleY; },
+	set scaleY(val) { this.M.setScaleY(val); },
+	get scaleY() { return this.M.scaleY; },
 
 	/** @type {number} Alpha transparency value */
 	alpha: 1,
 
-	/** Blending Mode */
+	/** @type {string} Blending Mode */
 	blending: null,
 
 	/**
-	 * Stroke style.
+	 * @type {string} Stroke style.
 	 */
 	stroke: null,
 
 	/**
-	 * Fill Style
+	 * @type {string} Fill Style
 	 */
 	fill: null,
 
 	/**
-	 * Font
+	 * @type {string} Font
 	 */
 	font: null,
 
@@ -700,7 +704,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 
 	init: function j5g3DisplayObject(properties)
 	{
-		this.M = new Matrix();
+		this.M = new MatrixLite();
 
 		this.extend(properties);
 	},
@@ -728,7 +732,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 		if (me.line_join!==null) context.lineJoin = me.line_join;
 		if (me.miter_limit!==null) context.miterLimit = me.miter_limit;
 
-		context.transform(m.a, m.b, m.c, m.d, m.e, m.f);
+		context.transform(m.a, m.b, m.c, m.d, me.x, me.y);
 	},
 
 	/**
@@ -1040,8 +1044,8 @@ j5g3.Clip = DisplayObject.extend(
 	/** @private */
 	_frames: null,
 
-	/** 
-	 * @private 
+	/**
+	 * @private
 	 *
 	 * Stores current frame number
 	 */
@@ -1117,13 +1121,6 @@ j5g3.Clip = DisplayObject.extend(
 	var
 		frame = this.frame()
 	;
-
-		if (display_object.parent)
-		{
-			j5g3.warn('Trying to add DisplayObject without removing first.', display_object);
-			display_object.remove();
-		}
-
 		frame.previous.next = display_object;
 		display_object.previous = frame.previous;
 		display_object.next = frame;
@@ -1244,7 +1241,7 @@ j5g3.Stage = Clip.extend({
 		if (!this.canvas)
 			this.canvas = 'screen';
 
-		this.canvas = j5g3.id(this.canvas);
+		this.canvas = j5g3.id(this.canvas) || j5g3.dom('CANVAS');
 		this.renderCanvas = j5g3.dom('CANVAS');
 		this.context = this.renderCanvas.getContext('2d');
 		this.screen  = this.canvas.getContext('2d');
@@ -1831,7 +1828,7 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	},
 
 	/**
-	 * Creates clip from spritesheet indexes. 
+	 * Creates clip from spritesheet indexes.
 	 *
 	 * @param {Array} sprites Array of sprites to insert into clip.
 	 */
@@ -2194,7 +2191,7 @@ j5g3.Engine = Class.extend({
 	},
 
 	/**
-	 * Game Loop for requestAnimationFrame 
+	 * Game Loop for requestAnimationFrame
 	 */
 	_rafGameLoop: function()
 	{

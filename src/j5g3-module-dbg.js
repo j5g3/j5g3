@@ -56,6 +56,10 @@ var
 	dbg.fn(j5g3.Engine, '_gameLoop', null, loop);
 	dbg.fn(j5g3.Engine, '_rafGameLoop', null, loop);
 
+	j5g3.Class.prototype.toString = function()
+	{
+		return this.constructor.name;
+	};
 
 	dbg.fn(j5g3.DisplayObject, 'remove', function()
 	{
@@ -68,6 +72,23 @@ var
 		if (!this.width || !this.height)
 			dbg.error("Objects without width or height cannot be stretched.");
 	});
+
+	dbg.fn(j5g3.Clip, 'add_object', function(display_object)
+	{
+		if (display_object.parent)
+		{
+			j5g3.warn('Trying to add DisplayObject without removing first.', display_object);
+			display_object.remove();
+		}
+	});
+
+	j5g3.id = function(id) {
+		var result = j5g3.win.document.getElementById(id);
+		if (!result)
+			j5g3.warn('Could not find element with ID: ' + id);
+
+		return result;
+	};
 
 	j5g3.DisplayObject.prototype.extend = function(props)
 	{

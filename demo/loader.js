@@ -11,10 +11,22 @@ var
 	angle = Math.PI*2/NUM,
 	speed = LIFE/NUM,
 
-	loader = j5g3.clip({ line_width: 25, line_join: 'round' }).align('center middle', this.stage),
+	loader_clip = j5g3.clip({ line_width: 25, line_join: 'round' }).align('center middle', this.stage),
+	text = j5g3.text({ x: -50, y: 10, font: '30px Arial', fill: 'white' }),
+	loader = j5g3.loader(),
+
 	line
 ;
-	
+
+	loader.img('img/explosion.png');
+	loader.img('img/mountains.png');
+	loader.img('img/trees.png');
+	loader.audio('audio/pop.ogg');
+	loader.audio('audio/line.ogg');
+	loader.audio('audio/rotate.ogg');
+	loader.script('pong.js');
+	loader.script('breakout.js');
+
 	for(; i<NUM; i++, a-=angle)
 	{
 		line = j5g3.line({ 
@@ -27,9 +39,14 @@ var
 			duration: LIFE, from: { alpha: 1 }, to: { alpha: 0.2 } 
 		});
 
-		loader.add([ line, tween ]);
+		loader_clip.add([ line, tween ]);
 	}
 
-	this.stage.add(loader);
+	loader_clip.add(text);
+
+	loader.on_progress = function(p) { console.log(p); };
+	loader.ready(function() { text.text = 'READY'; });
+
+	this.stage.add(loader_clip);
 	this.fps(32).run();
 })
