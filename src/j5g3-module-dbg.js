@@ -2,7 +2,7 @@
  * Debug Module for j5g3
  */
 
-(function(j5g3, undefined)
+(function(window, j5g3, undefined)
 {
 var
 	dbg =
@@ -15,6 +15,30 @@ var
 		error: function(msg)
 		{
 			throw new Error(msg);
+		},
+
+		/**
+		 * Wrapper for window.console.log().
+		 */
+		log: function()
+		{
+			window.console.log.apply(window.console, arguments); return this;
+		},
+
+		/**
+		 * Wrapper for window.console.info().
+		 */
+		info: function()
+		{
+			window.console.info.apply(window.console, arguments); return this;
+		},
+
+		/**
+		 * Wrapper for window.console.warn().
+		 */
+		warn: function()
+		{
+			window.console.warn.apply(window.console, arguments); return this;
 		},
 
 		fn: function(Klass, fn_name, pre, post)
@@ -77,15 +101,15 @@ var
 	{
 		if (display_object.parent)
 		{
-			j5g3.warn('Trying to add DisplayObject without removing first.', display_object);
+			dbg.warn('Trying to add DisplayObject without removing first.', display_object);
 			display_object.remove();
 		}
 	});
 
 	j5g3.id = function(id) {
-		var result = j5g3.win.document.getElementById(id);
+		var result = window.document.getElementById(id);
 		if (!result)
-			j5g3.warn('Could not find element with ID: ' + id);
+			dbg.warn('Could not find element with ID: ' + id);
 
 		return result;
 	};
@@ -95,10 +119,10 @@ var
 		for (var i in props)
 		{
 			if ((typeof this[i] === 'function') && i.indexOf('on_')!==0)
-				j5g3.warn('Overriding function ' + i, this);
+				dbg.warn('Overriding function ' + i, this);
 
 			if (i[0]==='_')
-				j5g3.warn('Overriding private member ' + i, this);
+				dbg.warn('Overriding private member ' + i, this);
 
 			this[i] = props[i];
 		}
@@ -114,5 +138,5 @@ var
 		return source;
 	};
 
-})(this.j5g3);
+})(this, this.j5g3);
 

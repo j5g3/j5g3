@@ -4,10 +4,6 @@ j5g3.ready(function() {
 
 		module('j5g3');
 
-		test('Core', function() {
-			ok(j5g3);
-		});
-
 		test('Class Constructor', function()
 		{
 			var img = j5g3.id('img'),
@@ -67,7 +63,7 @@ j5g3.ready(function() {
 			a = j5g3.clip()
 		;
 			ok(a);
-			ok(a.frame());
+			ok(a.frame);
 		});
 
 		test('Clip - Adding Objects', function()
@@ -77,7 +73,7 @@ j5g3.ready(function() {
 			aa = j5g3.image('img'),
 			ab = j5g3.image('img'),
 			ac = j5g3.image('img'),
-			frame = a.frame()
+			frame = a.frame
 		;
 
 			a.add([ aa, ab, ac ]);
@@ -90,7 +86,7 @@ j5g3.ready(function() {
 			strictEqual(ac.next, frame);
 
 			a.add_frame([ aa, ab, ac ]);
-			frame = a.frame();
+			frame = a.frame;
 
 			strictEqual(frame.next, aa);
 			strictEqual(frame.previous, ac);
@@ -102,7 +98,7 @@ j5g3.ready(function() {
 			strictEqual(ac.previous, ab);
 
 			a.next_frame();
-			frame = a.frame();
+			frame = a.frame;
 
 			strictEqual(frame.next, frame);
 			strictEqual(frame.previous, frame);
@@ -116,7 +112,7 @@ j5g3.ready(function() {
 			aa = j5g3.image('img'),
 			ab = j5g3.image('img'),
 			ac = j5g3.image('img'),
-			frame = a.frame();
+			frame = a.frame
 		;
 			a.add([aa, ab, ac]);
 			ab.remove();
@@ -143,20 +139,20 @@ j5g3.ready(function() {
 		var
 			c = j5g3.clip(),
 			img = j5g3.image('img'),
-			frame, frame2 = c.frame()
+			frame, frame2 = c.frame
 		;
 			c.add_frame();
-			frame = c.frame();
+			frame = c.frame;
 
 			equal(frame.next, frame);
 			equal(frame.previous, frame);
 
 			c.next_frame();
-			equal(c.frame(), frame2);
+			equal(c.frame, frame2);
 			ok(frame !== frame2);
 
 			c.add_frame(img);
-			frame = c.frame();
+			frame = c.frame;
 			equal(frame.next, img);
 			equal(img.next, frame);
 		});
@@ -247,8 +243,6 @@ j5g3.ready(function() {
 		;
 			do_test({ x: 20, y: 20 }, { x: 100, y: 30 });
 			do_test({ x: 20, y: 100 }, { x:120, y:110 });
-			do_test({ x: 20, y: 180 }, { x: 130, y: 190 });
-			do_test({ x: 20, y: 260 }, { x: 121, y: 270 });
 			do_test({ x: 20, y: 340, scaleX: 0.5 }, { x: 100, y: 350 });
 			do_test({ x: 20, y: 420 }, { x: 100, y: 430, scaleX: 0.5 });
 

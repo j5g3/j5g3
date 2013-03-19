@@ -26,9 +26,9 @@ var
 		secs.rotation = pi + pi / 30 * _secs;
 	},
 
-	hour  = j5g3.image({ source: resources.hour, x: -10, y: 210, scaleY: -1}).to_clip(),
-	mins  = j5g3.image({ source: resources.min, x: -10, y: 220, scaleY: -1}).to_clip(), 
-	secs  = j5g3.image({ source: resources.sec, x: -10, y: 190, scaleY: -1}).to_clip()
+	hour  = j5g3.image({ source: resources.hour, x: -10, y: 210, sy: -1}).to_clip(),
+	mins  = j5g3.image({ source: resources.min, x: -10, y: 220, sy: -1}).to_clip(), 
+	secs  = j5g3.image({ source: resources.sec, x: -10, y: 190, sy: -1}).to_clip()
 ;
 	
 	this.stage.add([ hour, mins, secs, update ])

@@ -22,8 +22,8 @@ var
 			x: 50 + j5g3.irand(560),
 			y: 50 + j5g3.irand(400),
 			stroke: get_color(),
-			scaleX: 1+j5g3.rand(1),
-			scaleY: 1+j5g3.rand(1),
+			sx: 1+j5g3.rand(1),
+			sy: 1+j5g3.rand(1),
 			rotation: j5g3.irand(3.14)
 		};
 		

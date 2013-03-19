@@ -1,5 +1,5 @@
 /**
- * j5g3 v0.9 - Javascript Graphics Engine
+ * j5g3 v0.9.0 - Javascript Graphics Engine
  * http://j5g3.com
  *
  * Copyright 2010-2012, Giancarlo F Bellido
@@ -17,20 +17,247 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-09 23:45:19 -0500
+ * Date: 2013-03-19 02:03:53 -0400
  *
  */
 
-(function(window, j5g3, undefined) {
+(function(window, undefined) {
 'use strict';
 
 var
 	/* This is used by the cache mechanism. It is a canvas element. */
+	document = window.document,
 	cache,
-	f = j5g3.factory,
-	Class = j5g3.Class,
 
-Draw =
+	extend= function(a, b)
+	{
+		for (var i in b)
+			a[i] = b[i];
+
+		return a;
+	},
+
+	j5g3 = window.j5g3 = function() { },
+
+	f= j5g3.factory = function(Klass)
+	{
+		return function(properties) { return new Klass(properties); };
+	}
+;
+	/**
+	 * j5g3 Base class
+	 * @constructor
+	 * @param {Object} p
+	 */
+	j5g3.Class = function j5g3Class(p) {
+		this.extend(p);
+	};
+
+extend(j5g3, {/** @scope j5g3 */
+
+	/**
+	 * Returns a DOM element by ID.
+	 *
+	 * @param {string} id Id of DOM Element
+	 */
+	id: function(id) { return document.getElementById(id); },
+
+	/**
+	 * Adds a callback to the body onLoad event.
+	 */
+	ready: function(fn) { window.addEventListener('load', fn, false); },
+
+	/**
+	 * @return {number} A random number from 0 to max
+	 */
+	rand: function(max) { return Math.random() * max; },
+
+	/**
+	 * @return {number} A random integer number from 0 to max.
+	 */
+	irand: function(max) { return Math.floor(Math.random() * max); },
+
+	/**
+	 * Creates an array of w*h dimensions initialized with value v
+	 *
+	 * @return {Array} Array
+	 */
+	ary: function(w, h, v)
+	{
+	/*jshint maxdepth:4 */
+		var result = [], x;
+
+		if (h)
+			while (h--)
+			{
+				result[h] = [];
+				for (x=0; x<w; x++)
+					result[h][x]=v;
+			}
+		else
+			while (w--)
+				result.push(v);
+
+		return result;
+	},
+
+	/**
+	 * Returns a DOM element.
+	 * @namespace
+	 *
+	 * @param {string} tagname
+	 */
+	dom: function(tagname)
+	{
+		return document.createElement(tagname);
+	},
+
+	/**
+	 * Returns a canvas with w, h dimensions.
+	 */
+	canvas: function(w, h)
+	{
+	var
+		result = j5g3.dom('CANVAS')
+	;
+		result.setAttribute('width', w);
+		result.setAttribute('height', h);
+
+		return result;
+	},
+
+	/**
+	 * Gets type of obj. It returns 'dom' for HTML DOM objects, 'audio'
+	 * for HTMLAudioElement's and 'j5g3' for j5g3.Class descendants.
+	 */
+	getType: function(obj)
+	{
+		var result = typeof(obj);
+
+		if (result === 'object')
+		{
+			if (obj === null) return 'null';
+			if (obj instanceof Array) return 'array';
+			if (obj instanceof window.HTMLAudioElement) return 'audio';
+			if (obj instanceof window.HTMLElement) return 'dom';
+			if (obj instanceof j5g3.Class) return 'j5g3';
+		}
+
+		return result;
+	},
+
+	/** Returns a CanvasGradient object. */
+	gradient: function(x, y, w, h)
+	{
+		return cache.getContext('2d').createLinearGradient(x,y,w,h);
+	},
+
+	/** Returns a rgba CSS color string */
+	rgba: function(r, g, b, a)
+	{
+		if (a===undefined)
+			a = 1;
+
+		return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+	},
+
+	/** Returns a hsla CSS color string */
+	hsla: function(h, s, l, a)
+	{
+		if (a===undefined)
+			a = 1;
+
+		return 'hsla(' + h + ',' + s + '%,' + l + '%,' + a + ')';
+	},
+
+	/**
+	 * Void function. Does nothing. Used to avoid creating a new empty function.
+	 */
+	Void: function() { }
+
+});
+
+/**
+ * Returns a new DOM Element with tag tag and src attribute src.
+ *
+ * @param {string} tag
+ * @param {string} uri
+ *
+ */
+j5g3.dom.src= function(tag, uri)
+{
+var
+	el = document.createElement(tag)
+;
+	el.setAttribute('src', uri);
+	return el;
+};
+
+/**
+ * Returns an HTML Image object from a URI uri
+ *
+ * @param {string} uri
+ */
+j5g3.dom.image= function(uri)
+{
+	return j5g3.dom.src('img', uri);
+};
+
+/**
+ *
+ * Uses methods.init as the constructor. If not passed it will define a function
+ * and call the base constructor. Sets 'super' as the base class.
+ *
+ * @param {Object} methods Class instance methods.
+ * @param {Object=} static_methods Static Methods.
+ *
+ */
+j5g3.Class.extend = function(methods, static_methods)
+{
+/*jshint maxstatements:20 */
+var
+	i,
+	_super  = this,
+	init   = methods.init || function() { _super.apply(this, arguments); },
+	/** @constructor @ignore */
+	Subclass= function() { },
+	/** @type {Object} */
+	method
+;
+	Subclass.prototype = _super.prototype;
+
+	init.prototype = new Subclass();
+	init.prototype.constructor = init;
+	init.prototype.base = _super.prototype;
+
+	init.extend = j5g3.Class.extend;
+
+	for(i in methods)
+		if (methods.hasOwnProperty(i))
+		{
+			// TODO Maybe not use ECMA5 properties
+			method = Object.getOwnPropertyDescriptor(methods, i);
+			Object.defineProperty(init.prototype, i, method);
+		}
+
+	for (i in static_methods)
+		if (static_methods.hasOwnProperty(i))
+		{
+			method = Object.getOwnPropertyDescriptor(static_methods, i);
+			Object.defineProperty(init, i, method);
+		}
+
+	return init;
+};
+
+/**
+ * Extends this instance with properties from p
+ */
+j5g3.Class.prototype.extend = function(p)
+{
+	for (var i in p)
+		this[i] = p[i];
+};
 
 /**
  * This are all the core drawing algorithms. "this" will point to the current
@@ -97,9 +324,7 @@ j5g3.Draw =
 			this.x, this.y, this.width, this.height
 		);
 	}
-},
-
-Paint =
+};
 
 /**
  * Paint Algorithms. Use this to draw you custom objects after all
@@ -141,7 +366,7 @@ j5g3.Paint = {
 	Container: function (context)
 	{
 	var
-		frame = this.frame(),
+		frame = this.frame,
 		next = frame
 	;
 		while ((next=next.next) !== frame)
@@ -173,7 +398,7 @@ j5g3.Paint = {
 		for (;i<l;i++)
 		{
 			context.fillText(text[i], this.cx, this.cy + y);
-			y += this.lineHeight;
+			y += this.line_height;
 		}
 	},
 
@@ -242,9 +467,7 @@ j5g3.Paint = {
 
 	}
 
-},
-
-Cache =
+};
 
 /**
  *
@@ -280,7 +503,7 @@ j5g3.Cache = {
 		me.source = cache_canvas;
 
 		me._oldPaint= me.draw;
-		me.draw = Draw.Cache;
+		me.draw = j5g3.Draw.Cache;
 
 		context = pc;
 
@@ -301,9 +524,7 @@ j5g3.Cache = {
 		return result;
 	}
 
-},
-
-Collision =
+};
 
 /**
  * @namespace
@@ -344,9 +565,7 @@ j5g3.Collision = {
 		return !(l2 > r1 || r2 < l1 || t2 > b1 || b2 < t1);
 	}
 
-},
-
-HitTest =
+};
 
 /**
  * @namespace
@@ -365,7 +584,7 @@ j5g3.HitTest = {
 	Container: function(x, y, M)
 	{
 	var
-		frame = this.frame(),
+		frame = this.frame,
 		previous = frame,
 		result
 	;
@@ -407,9 +626,7 @@ j5g3.HitTest = {
 		return this;
 	}
 
-},
-
-MatrixLite =
+};
 
 /**
  * Light 2D Transformation Matrix for DisplayObjects. Use j5g3.Matrix to 
@@ -420,7 +637,7 @@ MatrixLite =
  *
  * @extend {j5g3.Class}
  */
-j5g3.MatrixLite = Class.extend({
+j5g3.MatrixLite = j5g3.Class.extend({
 
 	a: 1,
 	b: 0,
@@ -489,15 +706,13 @@ j5g3.MatrixLite = Class.extend({
 	{
 		return new j5g3.Matrix(this.a, this.b, this.c, this.d, x || 0, y || 0);
 	}
-}),
-
-Matrix =
+});
 
 /**
  * 2D Transformation Matrix.
  * @extend j5g3.Class
  */
-j5g3.Matrix = Class.extend({
+j5g3.Matrix = j5g3.Class.extend({
 
 	a: 1,
 	b: 0,
@@ -603,15 +818,13 @@ j5g3.Matrix = Class.extend({
 		return this;
 	}
 
-}),
-
-DisplayObject =
+});
 
 /**
  * @class Base for all classes
  *
  */
-j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
+j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 
 	/** @type {Image} Used by the draw function to paint the object */
 	source: null,
@@ -621,6 +834,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	 * @type {j5g3.DisplayObject}
 	 */
 	next: null,
+
 	/**
 	 * Previous display object
 	 * @type {j5g3.DisplayObject}
@@ -660,12 +874,12 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	get rotation() { return this._rotation; },
 
 	/** @type {number} X Scale */
-	set scaleX(val) { this.M.setScaleX(val); },
-	get scaleX() { return this.M.scaleX; },
+	set sx(val) { this.M.setScaleX(val); },
+	get sx() { return this.M.scaleX; },
 
 	/** @type {number} Y Scale */
-	set scaleY(val) { this.M.setScaleY(val); },
-	get scaleY() { return this.M.scaleY; },
+	set sy(val) { this.M.setScaleY(val); },
+	get sy() { return this.M.scaleY; },
 
 	/** @type {number} Alpha transparency value */
 	alpha: 1,
@@ -704,7 +918,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 
 	init: function j5g3DisplayObject(properties)
 	{
-		this.M = new MatrixLite();
+		this.M = new j5g3.MatrixLite();
 
 		this.extend(properties);
 	},
@@ -750,7 +964,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	 * function. Replace this function if you need to add extra
 	 * functionality to the draw process, ie: transformations or keyboard handling.
 	 */
-	draw: Draw.Default,
+	draw: j5g3.Draw.Default,
 
 	/**
 	 * This property is used to store the old paint method when assigning effects.
@@ -871,7 +1085,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 		return j5g3.clip({width: this.width, height: this.height }).add(this);
 	},
 
-	cache: Cache.Canvas,
+	cache: j5g3.Cache.Canvas,
 
 	/**
 	 * Restores Paint Method
@@ -894,7 +1108,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	/**
 	 * Tests if point at x, y is inside the DisplayObject.
 	 */
-	at: HitTest.Rect,
+	at: j5g3.HitTest.Rect,
 
 	/**
 	 * Tests if object collides with another object obj. See j5g3.Collision for available
@@ -903,15 +1117,15 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 	 * @param {j5g3.DisplayObject} obj
 	 * @return {boolean}
 	 */
-	collides: Collision.AABB,
+	collides: j5g3.Collision.AABB,
 
 	/**
 	 * Sets scaleX and scaleY values.
 	 */
 	scale: function(sx, sy)
 	{
-		this.scaleX = sx;
-		this.scaleY = sy;
+		this.sx = sx;
+		this.sy = sy;
 		return this;
 	},
 
@@ -926,9 +1140,7 @@ j5g3.DisplayObject = Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
 		return this;
 	}
 
-}),
-
-Image =
+});
 
 /**
  * @class Image Class
@@ -938,7 +1150,7 @@ Image =
  *
  * @extends j5g3.DisplayObject
  */
-j5g3.Image = DisplayObject.extend(
+j5g3.Image = j5g3.DisplayObject.extend(
 /** @scope j5g3.Image.prototype */ {
 
 	init: function j5g3Image(properties)
@@ -948,13 +1160,13 @@ j5g3.Image = DisplayObject.extend(
 		else if (properties instanceof window.HTMLElement)
 			properties = { source: properties };
 
-		DisplayObject.apply(this, [ properties ]);
+		j5g3.DisplayObject.apply(this, [ properties ]);
 
 		if (this.source)
 			this.set_source(this.source);
 	},
 
-	paint: Paint.Image,
+	paint: j5g3.Paint.Image,
 
 	_get_source: function(src)
 	{
@@ -977,30 +1189,29 @@ j5g3.Image = DisplayObject.extend(
 		return this.invalidate();
 	}
 
-}),
+});
 
-Text =
 /**
  * @class j5g3.Text
  */
-j5g3.Text = DisplayObject.extend(/** @scope j5g3.Text.prototype */{
+j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 
 	text: '',
 
 	/**
 	 * Default line height only for Draw.MultilineText
 	 */
-	lineHeight: 12,
+	line_height: 12,
 
 	init: function j5g3Text(properties)
 	{
 		if (typeof properties === 'string')
 			properties = { text: properties };
 
-		DisplayObject.apply(this, [properties]);
+		j5g3.DisplayObject.apply(this, [properties]);
 	},
 
-	paint : Paint.Text,
+	paint : j5g3.Paint.Text,
 
 	_get_width: function(obj, context)
 	{
@@ -1015,11 +1226,13 @@ j5g3.Text = DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 	{
 		return j5g3.Cache.use(this._get_width, this);
 	}
-}),
+});
 
-Html =
-
-j5g3.Html = DisplayObject.extend({
+/**
+ * Display HTML
+ * TODO
+ */
+j5g3.Html = j5g3.DisplayObject.extend({
 
 	html: '',
 
@@ -1028,17 +1241,15 @@ j5g3.Html = DisplayObject.extend({
 		if (typeof(properties) === 'string')
 			properties = { html: j5g3.dom(properties).innerHTML };
 
-		DisplayObject.apply(this, [ properties ]);
+		j5g3.DisplayObject.apply(this, [ properties ]);
 	}
 
-}),
-
-Clip =
+});
 
 /**
  * @class Clip
  */
-j5g3.Clip = DisplayObject.extend(
+j5g3.Clip = j5g3.DisplayObject.extend(
 /** @scope j5g3.Clip.prototype */ {
 
 	/** @private */
@@ -1056,29 +1267,33 @@ j5g3.Clip = DisplayObject.extend(
 
 	init: function j5g3Clip(properties)
 	{
-		DisplayObject.apply(this, [ properties ]);
+		j5g3.DisplayObject.apply(this, [ properties ]);
 
 		this._frames = [];
 		this.add_frame();
+
+		if (this.setup!==undefined)
+			this.setup();
 	},
 
+	/** Function to call after construction */
+	setup: undefined,
+
 	/**
-	 * Returns current frame objects.
+	 * Current frame objects.
 	 */
-	frame: function()
-	{
-		return this._frames[this._frame];
-	},
+	frame: null,
 
 	/**
 	 * Sets next frame index.
 	 */
 	next_frame: function()
 	{
-		this._frame = (this._frame < this._frames.length-1) ? this._frame + 1 : 0;
+		this._frame = (this._frame===this._frames.length-1) ? 0 : (this._frame + 1);
+		this.frame = this._frames[this._frame];
 	},
 
-	paint : Paint.Container,
+	paint: j5g3.Paint.Container,
 
 	stop: function() { this._playing = false; return this;},
 	play: function() { this._playing = true; return this; },
@@ -1094,10 +1309,10 @@ j5g3.Clip = DisplayObject.extend(
 		// TODO We might need a getType function.
 		switch (j5g3.getType(display_object)) {
 		case 'function':
-			display_object = new Action(display_object);
+			display_object = new j5g3.Action(display_object);
 			break;
 		case 'string':
-			display_object = new Image({ source: display_object });
+			display_object = new j5g3.Image({ source: display_object });
 			break;
 		case 'array':
 			for (var i=0; i < display_object.length; i++)
@@ -1107,7 +1322,7 @@ j5g3.Clip = DisplayObject.extend(
 			// TODO
 			break;
 		case 'dom': case 'object':
-			display_object = new Image(display_object);
+			display_object = new j5g3.Image(display_object);
 			break;
 		case 'undefined': case 'null':
 			throw "Trying to add undefined object to clip.";
@@ -1119,7 +1334,7 @@ j5g3.Clip = DisplayObject.extend(
 	add_object: function(display_object)
 	{
 	var
-		frame = this.frame()
+		frame = this.frame
 	;
 		frame.previous.next = display_object;
 		display_object.previous = frame.previous;
@@ -1140,8 +1355,8 @@ j5g3.Clip = DisplayObject.extend(
 	;
 		frame.previous = frame.next = frame;
 
-		this._frame = this._frames.length;
 		this._frames.push(frame);
+		this.go(this._frames.length-1);
 
 		return objects ? this.add(objects) : this;
 	},
@@ -1153,7 +1368,7 @@ j5g3.Clip = DisplayObject.extend(
 	{
 		frame = frame===undefined ? this._frame : frame;
 		this._frames.splice(frame, 1);
-		this._frame = frame-1;
+		this.go(frame-1);
 
 		return this;
 	},
@@ -1163,7 +1378,7 @@ j5g3.Clip = DisplayObject.extend(
 	 */
 	go: function(frame)
 	{
-		this._frame = frame;
+		this.frame = this._frames[this._frame = frame];
 		return this;
 	},
 
@@ -1197,16 +1412,14 @@ j5g3.Clip = DisplayObject.extend(
 	/**
 	 * Returns element at position x,y
 	 */
-	at: HitTest.Container
+	at: j5g3.HitTest.Container
 
-}),
-
-Stage =
+});
 
 /**
  * Root Clips
  */
-j5g3.Stage = Clip.extend({
+j5g3.Stage = j5g3.Clip.extend({
 
 	/**
 	 * Current canvas element.
@@ -1236,12 +1449,11 @@ j5g3.Stage = Clip.extend({
 
 	init: function j5g3Stage(p)
 	{
-		Clip.apply(this, [p]);
+		j5g3.Clip.apply(this, [p]);
 
 		if (!this.canvas)
-			this.canvas = 'screen';
+			this.canvas = j5g3.id('screen') || j5g3.dom('CANVAS');
 
-		this.canvas = j5g3.id(this.canvas) || j5g3.dom('CANVAS');
 		this.renderCanvas = j5g3.dom('CANVAS');
 		this.context = this.renderCanvas.getContext('2d');
 		this.screen  = this.canvas.getContext('2d');
@@ -1271,11 +1483,23 @@ j5g3.Stage = Clip.extend({
 		return this.size(w, h);
 	},
 
-	draw: Draw.Root
+	/**
+	 * Basic event handling. Attaches handler to canvas event.
+	 */
+	on: function(event, handler, scope)
+	{
+		handler.scoped = handler.bind(scope || this);
+		this.canvas.addEventListener(event, handler.scoped);
+	},
 
-}),
+	un: function(event, handler)
+	{
+		this.canvas.removeEventListener(event, handler.scoped);
+	},
 
-Tween =
+	draw: j5g3.Draw.Root
+
+});
 
 /**
  * @class Tween Class
@@ -1290,11 +1514,10 @@ Tween =
  * @property {Number}              repeat         How many times to repeat.
  * @property {Number}              t              Current Time of the animation.
  *
- * @property {function}   on_remove
  * @property {function}   on_stop
  *
  */
-j5g3.Tween = DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
+j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 
 	auto_remove: false,
 	repeat: Infinity,
@@ -1306,8 +1529,11 @@ j5g3.Tween = DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 	t: 0,
 	/* EVENTS */
 	on_stop: null,
+
+	/**
+	 * Callback
+	 */
 	on_remove: null,
-	visible: false,
 
 	/**
 	 * @param {(j5g3.DisplayObject|Object)} properties DisplayObject
@@ -1315,7 +1541,7 @@ j5g3.Tween = DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 	 */
 	init: function j5g3Tween(properties)
 	{
-		if (properties instanceof Class)
+		if (properties instanceof j5g3.Class)
 			properties = { target: properties };
 
 		this.draw = this.start;
@@ -1373,7 +1599,7 @@ j5g3.Tween = DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 		return this.from[i] + ( this.easing(v) * (this.to[i]-this.from[i]));
 	},
 
-	_remove: DisplayObject.prototype.remove,
+	_remove: j5g3.DisplayObject.prototype.remove,
 
 	remove: function()
 	{
@@ -1454,9 +1680,7 @@ j5g3.Tween = DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 			apply_tween: function(i, v) { return v===1 ? this.to[i] : -radius+j5g3.rand(r2); }
 		});
 	}
-}),
-
-Shape =
+});
 
 /**
  *
@@ -1468,7 +1692,7 @@ Shape =
  * @extends j5g3.DisplayObject
  *
  */
-j5g3.Shape = DisplayObject.extend(
+j5g3.Shape = j5g3.DisplayObject.extend(
 /** @scope j5g3.Shape.prototype */ {
 
 	/**
@@ -1507,10 +1731,10 @@ j5g3.Shape = DisplayObject.extend(
 
 	init: function j5g3Shape(p)
 	{
-		DisplayObject.apply(this, [p]);
+		j5g3.DisplayObject.apply(this, [p]);
 	},
 
-	_begin: DisplayObject.prototype.begin,
+	_begin: j5g3.DisplayObject.prototype.begin,
 
 	begin: function(context)
 	{
@@ -1546,10 +1770,12 @@ j5g3.Shape = DisplayObject.extend(
 		context.stroke();
 	}
 
-}),
+});
 
-Circle =
-j5g3.Circle = Shape.extend(/**@scope j5g3.Circle.prototype */ {
+/**
+ * Draws a circle
+ */
+j5g3.Circle = j5g3.Shape.extend(/**@scope j5g3.Circle.prototype */ {
 
 	shape: 'circle',
 	radius: 0,
@@ -1559,7 +1785,7 @@ j5g3.Circle = Shape.extend(/**@scope j5g3.Circle.prototype */ {
 
 	init: function j5g3Circle(p)
 	{
-		Shape.apply(this, [ p ]);
+		j5g3.Shape.apply(this, [ p ]);
 	},
 
 	paintPath: function(context)
@@ -1568,11 +1794,13 @@ j5g3.Circle = Shape.extend(/**@scope j5g3.Circle.prototype */ {
 		context.arc(this.cx, this.cy, this.radius, 0, 2*Math.PI, false);
 	},
 
-	at: HitTest.Circle
-}),
+	at: j5g3.HitTest.Circle
+});
 
-Line =
-j5g3.Line = Shape.extend(/**@scope j5g3.Line.prototype */{
+/**
+ * Draws a line
+ */
+j5g3.Line = j5g3.Shape.extend(/**@scope j5g3.Line.prototype */{
 
 	x2: 0,
 	y2: 0,
@@ -1583,14 +1811,12 @@ j5g3.Line = Shape.extend(/**@scope j5g3.Line.prototype */{
 		context.lineTo(this.x2, this.y2);
 	}
 
-}),
-
-Polygon =
+});
 
 /**
  * Polygon Class
  */
-j5g3.Polygon = Shape.extend(/**@scope j5g3.Polygon.prototype */{
+j5g3.Polygon = j5g3.Shape.extend(/**@scope j5g3.Polygon.prototype */{
 
 	shape: 'polygon',
 	points: null,
@@ -1598,7 +1824,7 @@ j5g3.Polygon = Shape.extend(/**@scope j5g3.Polygon.prototype */{
 
 	init: function j5g3Polygon(p)
 	{
-		Shape.apply(this, [p]);
+		j5g3.Shape.apply(this, [p]);
 
 		if (this.points===null)
 			this.points = [];
@@ -1648,7 +1874,7 @@ j5g3.Polygon = Shape.extend(/**@scope j5g3.Polygon.prototype */{
 			context.lineTo(P[i], P[i+1]);
 	},
 
-	at: HitTest.Polygon
+	at: j5g3.HitTest.Polygon
 
 }, {
 	/**
@@ -1671,9 +1897,7 @@ j5g3.Polygon = Shape.extend(/**@scope j5g3.Polygon.prototype */{
 		return new j5g3.Polygon(p);
 	}
 
-}),
-
-Rect =
+});
 
 /**
  *
@@ -1683,13 +1907,13 @@ Rect =
  * @extends j5g3.Shape
  *
  */
-j5g3.Rect = Shape.extend(/**@scope j5g3.Rect.prototype */{
+j5g3.Rect = j5g3.Shape.extend(/**@scope j5g3.Rect.prototype */{
 
 	shape: 'polygon',
 
 	init: function j5g3Rect(p)
 	{
-		Shape.apply(this, [p]);
+		j5g3.Shape.apply(this, [p]);
 		if (this.width===null)
 		{
 			this.height = this.width = this.radius*2;
@@ -1702,16 +1926,15 @@ j5g3.Rect = Shape.extend(/**@scope j5g3.Rect.prototype */{
 		context.strokeRect(this.cx, this.cy, this.width, this.height);
 	}
 
-}),
+});
 
-Dot =
 /**
  * Displays a Dot
  *
  * @class
  * @extends j5g3.Shape
  */
-j5g3.Dot = Shape.extend(/**@scope j5g3.Dot.prototype */{
+j5g3.Dot = j5g3.Shape.extend(/**@scope j5g3.Dot.prototype */{
 
 	shape: 'circle',
 	line_cap: 'round',
@@ -1726,7 +1949,7 @@ j5g3.Dot = Shape.extend(/**@scope j5g3.Dot.prototype */{
 		if (typeof(p) === 'number' )
 			p = { line_width: p };
 
-		Shape.apply(this, [p]);
+		j5g3.Shape.apply(this, [p]);
 	},
 
 	paint: function(context)
@@ -1734,25 +1957,22 @@ j5g3.Dot = Shape.extend(/**@scope j5g3.Dot.prototype */{
 		context.strokeRect(0, 0, 1, 1);
 	}
 
-}),
+});
 
-Sprite =
 /**
  * @class Sprite
  *
  */
-j5g3.Sprite = DisplayObject.extend({
+j5g3.Sprite = j5g3.DisplayObject.extend({
 
 	init: function j5g3Sprite(p)
 	{
-		DisplayObject.apply(this, [ p ]);
+		j5g3.DisplayObject.apply(this, [ p ]);
 	},
 
-	paint: Paint.Sprite
+	paint: j5g3.Paint.Sprite
 
-}),
-
-Spritesheet =
+});
 
 /**
  * @class Spritesheet Class
@@ -1761,7 +1981,7 @@ Spritesheet =
  * HTML Image or j5g3 Image.
  *
  */
-j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
+j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 
 	width: 0,
 	height: 0,
@@ -1789,7 +2009,7 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 
 		switch (j5g3.getType(properties.source)) {
 		case 'string': case 'dom':
-			properties.source = new Image(properties.source);
+			properties.source = new j5g3.Image(properties.source);
 			break;
 		}
 
@@ -1875,7 +2095,7 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 
 		this._sprites.push(s);
 
-		return new Sprite(s);
+		return new j5g3.Sprite(s);
 	},
 
 	/**
@@ -1907,7 +2127,7 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	 */
 	sprite: function(index)
 	{
-		return new Sprite(this._sprites[index]);
+		return new j5g3.Sprite(this._sprites[index]);
 	},
 
 	/**
@@ -1936,20 +2156,18 @@ j5g3.Spritesheet = Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 		return new Map({ sprites: this.sprites(), tw: tw, th: th });
 	}
 
-}),
-
-Emitter =
+});
 
 /**
  * @class Particle Emitter
  *
  * @extends j5g3.Clip
  */
-j5g3.Emitter = Clip.extend(/**@scope j5g3.Emitter.prototype */ {
+j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 
 	init: function j5g3Emitter(p)
 	{
-		Clip.apply(this, [p]);
+		j5g3.Clip.apply(this, [p]);
 	},
 
 	/**
@@ -2008,7 +2226,7 @@ j5g3.Emitter = Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 		this.add(clip).on_emit(clip);
 	},
 
-	_paint: Paint.Container,
+	_paint: j5g3.Paint.Container,
 
 	paint: function(context)
 	{
@@ -2021,9 +2239,7 @@ j5g3.Emitter = Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 		this._paint(context);
 	}
 
-}),
-
-Map =
+});
 
 /**
  * @class Maps an array to a spritesheet.
@@ -2034,7 +2250,7 @@ Map =
  * @extends j5g3.DisplayObject
  *
  */
-j5g3.Map = DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
+j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 
 	/** Array of sprites */
 	sprites: null,
@@ -2050,7 +2266,7 @@ j5g3.Map = DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 
 	init: function j5g3Map(p)
 	{
-		DisplayObject.apply(this, [p]);
+		j5g3.DisplayObject.apply(this, [p]);
 
 		if (this.map===null)
 			this.map = [];
@@ -2092,15 +2308,13 @@ j5g3.Map = DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 	 */
 	set_iso: function()
 	{
-		this.paint = Paint.Isometric;
+		this.paint = j5g3.Paint.Isometric;
 		return this;
 	},
 
-	paint: Paint.Map
+	paint: j5g3.Paint.Map
 
-}),
-
-Action =
+});
 
 /**
  * Executes code on FrameEnter.
@@ -2109,10 +2323,10 @@ Action =
  * @extends j5g3.Class
  *
  */
-j5g3.Action = Class.extend(
+j5g3.Action = j5g3.Class.extend(
 /** @scope j5g3.Action.prototype */ {
 
-	_init: Class,
+	_init: j5g3.Class,
 
 	/**
 	 * Code to execute
@@ -2127,7 +2341,7 @@ j5g3.Action = Class.extend(
 		this._init(p);
 	},
 
-	remove: DisplayObject.prototype.remove
+	remove: j5g3.DisplayObject.prototype.remove
 
 }, /** @scope j5g3.Action */ {
 
@@ -2143,21 +2357,20 @@ j5g3.Action = Class.extend(
 		};
 	}
 
-}),
+});
 
-Engine =
 /**
  * @class
  * Engine class
  */
-j5g3.Engine = Class.extend({
+j5g3.Engine = j5g3.Class.extend({
 
-	version: '0.9',
+	version: '0.9.0',
 
 	/**
 	 * Whether or not to use animation frame. FPS is always 60.
 	 */
-	useAnimationFrame: false,
+	use_animation_frame: false,
 
 	/* Frames per Second */
 	__fps: 31,
@@ -2173,7 +2386,7 @@ j5g3.Engine = Class.extend({
 		if (me.process)
 			window.clearInterval(me.process);
 
-		if (me.useAnimationFrame)
+		if (me.use_animation_frame)
 			me.process = window.requestAnimationFrame(me._rafScopedLoop);
 		else
 			me.process = window.setInterval(me._scopedLoop, me.__fps);
@@ -2227,20 +2440,15 @@ j5g3.Engine = Class.extend({
 		if (config.fps)
 			delete config.fps;
 
-		me.extend(config);
+		j5g3.Class.apply(me, [ config ]);
 
 		me._scopedLoop = me._gameLoop.bind(me);
 		me._rafScopedLoop= me._rafGameLoop.bind(me);
 
-		me.set_stage(new Stage(config.stage_settings))
-			.startFn(j5g3)
-		;
-	},
+		if (!this.stage)
+			me.stage = new j5g3.Stage(this.stage_settings);
 
-	set_stage: function(stage)
-	{
-		this.stage = stage;
-		return this;
+		me.startFn(j5g3);
 	},
 
 	/**
@@ -2309,66 +2517,59 @@ j5g3.Engine = Class.extend({
 		);
 	}
 
-})
-;
+});
 
+// Shortcuts
 
-/* CLASSES */
-j5g3.action = f(Action);
-j5g3.clip   = f(Clip);
-j5g3.dot    = f(Dot);
-j5g3.image  = f(Image);
-j5g3.rect   = f(Rect);
-j5g3.sprite = f(Sprite);
-j5g3.spritesheet = f(Spritesheet);
-j5g3.text   = f(Text);
+/** @return j5g3.Action */
+j5g3.action = f(j5g3.Action);
+/** @return j5g3.Clip */
+j5g3.clip   = f(j5g3.Clip);
+/** @return j5g3.Dot */
+j5g3.dot    = f(j5g3.Dot);
+/** @return j5g3.Image */
+j5g3.image  = f(j5g3.Image);
+/** @return j5g3.Rect */
+j5g3.rect   = f(j5g3.Rect);
+/** @return j5g3.Sprite */
+j5g3.sprite = f(j5g3.Sprite);
+/** @return j5g3.Spritesheet */
+j5g3.spritesheet = f(j5g3.Spritesheet);
+/** @return j5g3.Text */
+j5g3.text   = f(j5g3.Text);
 
 /**
  * Returns a Multiline Text object
+ * @return j5g3.Text 
  */
-j5g3.mtext  = function(p) { var t = new Text(p); t.paint = Paint.MultilineText; return t; };
-j5g3.matrix = f(Matrix);
-j5g3.tween  = f(Tween);
-j5g3.emitter= f(Emitter);
-j5g3.map    = f(Map);
-j5g3.polygon= f(Polygon);
-j5g3.circle = f(Circle);
-j5g3.line   = f(Line);
-j5g3.html   = f(Html);
-j5g3.engine = f(Engine);
-
-/** Returns a CanvasGradient object. */
-j5g3.gradient = function(x, y, w, h)
-{
-	return cache.getContext('2d').createLinearGradient(x,y,w,h);
-};
-
-/** Returns a rgba CSS color string */
-j5g3.rgba = function(r, g, b, a)
-{
-	if (a===undefined)
-		a = 1;
-
-	return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
-};
-
-/** Returns a hsla CSS color string */
-j5g3.hsla = function(h, s, l, a)
-{
-	if (a===undefined)
-		a = 1;
-
-	return 'hsla(' + h + ',' + s + '%,' + l + '%,' + a + ')';
-};
+j5g3.mtext  = function(p) { var t = new j5g3.Text(p); t.paint = j5g3.Paint.MultilineText; return t; };
+/** @return j5g3.Matrix */
+j5g3.matrix = f(j5g3.Matrix);
+/** @return j5g3.Tween */
+j5g3.tween  = f(j5g3.Tween);
+/** @return j5g3.Emitter */
+j5g3.emitter= f(j5g3.Emitter);
+/** @return j5g3.Map */
+j5g3.map    = f(j5g3.Map);
+/** @return j5g3.Polygon */
+j5g3.polygon= f(j5g3.Polygon);
+/** @reutnr j5g3.Circle */
+j5g3.circle = f(j5g3.Circle);
+/** @return j5g3.Line */
+j5g3.line   = f(j5g3.Line);
+/** @return j5g3.Html */
+j5g3.html   = f(j5g3.Html);
+/** @return j5g3.Engine */
+j5g3.engine = f(j5g3.Engine);
 
 
 // TODO This might not be a good idea.
-j5g3.win.CanvasGradient.prototype.at = function(offset, color)
+window.CanvasGradient.prototype.at = function(offset, color)
 {
 	color = color || 'transparent';
 	this.addColorStop(offset, color);
 	return this;
 };
 
-})(this, this.j5g3);
+})(this);
 

@@ -22,8 +22,8 @@ var
 			x: 50 + j5g3.irand(560),
 			y: 50 + j5g3.irand(400),
 			fill: get_color(),
-			scaleX: j5g3.rand(3),
-			scaleY: j5g3.rand(3),
+			sx: j5g3.rand(3),
+			sy: j5g3.rand(3),
 			line_width: 1,
 			stroke: get_color(),
 			rotation: j5g3.rand(Math.PI*2)

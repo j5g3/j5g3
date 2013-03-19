@@ -1,5 +1,5 @@
 /**
- * j5g3.fx v0.9 - Javascript Effects Module
+ * j5g3.fx v0.9.0 - Javascript Effects Module
  * http://j5g3.com
  *
  * Copyright 2010-2013, Giancarlo F Bellido
@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-09 23:45:19 -0500
+ * Date: 2013-03-19 02:03:53 -0400
  *
  */
 
