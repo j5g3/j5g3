@@ -198,8 +198,8 @@ var
 
 		onDestroy: function()
 		{
-			this.canvas.removeEventListener('mousemove', mouse);
-			this.canvas.removeEventListener('click', click);
+			this.canvas.removeEventListener('mousemove', this._onMouseMove);
+			this.canvas.removeEventListener('click', this._onClick);
 		},
 
 		init: function(engine)
