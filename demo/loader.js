@@ -18,14 +18,9 @@ var
 	line
 ;
 
-	loader.img('img/explosion.png');
-	loader.img('img/mountains.png');
-	loader.img('img/trees.png');
+	loader.img('img/tunnel.jpg');
 	loader.audio('audio/pop.ogg');
-	loader.audio('audio/line.ogg');
-	loader.audio('audio/rotate.ogg');
 	loader.script('pong.js');
-	loader.script('breakout.js');
 
 	for(; i<NUM; i++, a-=angle)
 	{
@@ -44,9 +39,15 @@ var
 
 	loader_clip.add(text);
 
-	loader.on_progress = function(p) { console.log(p); };
+	loader.on_progress = function(p) { 
+		text.text = Math.round(p*100) + '%';
+	};
 	loader.ready(function() { text.text = 'READY'; });
 
+	this.on_destroy = function()
+	{
+		loader.destroy();
+	}
 	this.stage.add(loader_clip);
 	this.fps(32).run();
 })

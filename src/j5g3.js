@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-19 02:03:53 -0400
+ * Date: 2013-03-20 12:37:09 -0400
  *
  */
 
@@ -37,7 +37,13 @@ var
 		return a;
 	},
 
-	j5g3 = window.j5g3 = function() { },
+	j5g3 = window.j5g3 = function(engine)
+	{
+		window.addEventListener('load', function()
+		{
+			new j5g3.Engine(engine);
+		});
+	},
 
 	f= j5g3.factory = function(Klass)
 	{
