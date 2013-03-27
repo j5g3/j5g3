@@ -17,25 +17,34 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-20 12:37:09 -0400
+ * Date: 2013-03-27 16:43:40 -0400
  *
  */
-
-/*jshint smarttabs:true */
 (function(j5g3) {
 'use strict';
 
-/**
- * Lists browser capabilities.
- * @namespace
- */
-j5g3.support = {
+var
+	audioEl = j5g3.dom('audio')
+;
 
-	audio: {
-		mp3: j5g3.dom('audio').canPlayType('audio/mpeg'),
-		ogg: j5g3.dom('audio').canPlayType('audio/ogg')
+	/**
+	 * J5G3 Browser Capabilities module.
+	 * @namespace
+	 */
+	j5g3.support = {
+		audio: {}
+	};
+
+	if (audioEl && audioEl.canPlayType)
+	{
+		j5g3.support.audio = {
+			/** Audio tag supports mp3 */
+			mp3: audioEl.canPlayType('audio/mpeg'),
+			/** Audio tag supports ogg */
+			ogg: audioEl.canPlayType('audio/ogg'),
+			/** Audio tag supports mp4 */
+			mp4: audioEl.canPlayType('audio/mp4')
+		};
 	}
-
-};
 
 })(this.j5g3);
