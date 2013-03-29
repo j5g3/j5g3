@@ -243,12 +243,12 @@ j5g3.ready(function() {
 		;
 			do_test({ x: 20, y: 20 }, { x: 100, y: 30 });
 			do_test({ x: 20, y: 100 }, { x:120, y:110 });
-			do_test({ x: 20, y: 340, scaleX: 0.5 }, { x: 100, y: 350 });
-			do_test({ x: 20, y: 420 }, { x: 100, y: 430, scaleX: 0.5 });
+			do_test({ x: 20, y: 340, sx: 0.5 }, { x: 100, y: 350 });
+			do_test({ x: 20, y: 420 }, { x: 100, y: 430, sx: 0.5 });
 
-			do_test({ x: 320, y: 20 }, { x: 400, y: 30, scaleX: -2 });
-			do_test({ x: 320, y: 100, scaleX: 0.3 }, { x: 400, y: 110, scaleX: -1 });
-			do_test({ x: 320, y: 180, scaleX: 0.5 }, { x: 400, y: 190, scaleX: -0.5 });
+			do_test({ x: 320, y: 20 }, { x: 400, y: 30, sx: -2 });
+			do_test({ x: 320, y: 100, sx: 0.3 }, { x: 400, y: 110, sx: -1 });
+			do_test({ x: 320, y: 180, sx: 0.5 }, { x: 400, y: 190, sx: -0.5 });
 		});
 
 	});

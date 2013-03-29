@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-27 17:04:02 -0400
+ * Date: 2013-03-29 14:41:25 -0400
  *
  */
 
@@ -82,12 +82,6 @@ j5g3.fx = {
 			context.fillStyle = this.gradient;
 			this._paint(context);
 		}
-	/*
-		Gradient: function()
-		{
-		}
-		*/
-
 	},
 
 	Shake: function(radius)

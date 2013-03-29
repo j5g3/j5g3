@@ -1,4 +1,6 @@
 /**
+ * @license
+ *
  * j5g3 v0.9.0 - Javascript Graphics Engine
  * http://j5g3.com
  *
@@ -17,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-27 17:04:02 -0400
+ * Date: 2013-03-29 14:41:25 -0400
  *
  */
 
@@ -25,18 +27,20 @@
 'use strict';
 
 var
-	/* This is used by the cache mechanism. It is a canvas element. */
 	document = window.document,
+	/* This is used by the cache mechanism. It is a canvas element. */
 	cache,
 
 	extend= function(a, b)
 	{
 		for (var i in b)
 			a[i] = b[i];
-
-		return a;
 	},
 
+	/** 
+	 * @namespace 
+	 * Creates a new Engine instance on window.load event.
+	 */
 	j5g3 = window.j5g3 = function(engine)
 	{
 		window.addEventListener('load', function()
@@ -135,8 +139,10 @@ extend(j5g3, {/** @scope j5g3 */
 	/**
 	 * Gets type of obj. It returns 'dom' for HTML DOM objects, 'audio'
 	 * for HTMLAudioElement's and 'j5g3' for j5g3.Class descendants.
+	 *
+	 * @return {String}
 	 */
-	getType: function(obj)
+	get_type: function(obj)
 	{
 		var result = typeof(obj);
 
@@ -158,7 +164,7 @@ extend(j5g3, {/** @scope j5g3 */
 		return cache.getContext('2d').createLinearGradient(x,y,w,h);
 	},
 
-	/** Returns a rgba CSS color string */
+	/** @return {String} A rgba CSS color string */
 	rgba: function(r, g, b, a)
 	{
 		if (a===undefined)
@@ -167,19 +173,14 @@ extend(j5g3, {/** @scope j5g3 */
 		return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
 	},
 
-	/** Returns a hsla CSS color string */
+	/** @return {String} A hsla CSS color string */
 	hsla: function(h, s, l, a)
 	{
 		if (a===undefined)
 			a = 1;
 
 		return 'hsla(' + h + ',' + s + '%,' + l + '%,' + a + ')';
-	},
-
-	/**
-	 * Void function. Does nothing. Used to avoid creating a new empty function.
-	 */
-	Void: function() { }
+	}
 
 });
 
@@ -642,8 +643,9 @@ j5g3.HitTest = {
  * [ b d ]
  *
  * @extend {j5g3.Class}
+ * @class
  */
-j5g3.MatrixLite = j5g3.Class.extend({
+j5g3.MatrixLite = j5g3.Class.extend(/** @scope j5g3.MatrixLite.prototype */{
 
 	a: 1,
 	b: 0,
@@ -716,9 +718,10 @@ j5g3.MatrixLite = j5g3.Class.extend({
 
 /**
  * 2D Transformation Matrix.
+ * @class
  * @extend j5g3.Class
  */
-j5g3.Matrix = j5g3.Class.extend({
+j5g3.Matrix = j5g3.Class.extend(/** @scope j5g3.Matrix.prototype */{
 
 	a: 1,
 	b: 0,
@@ -980,9 +983,9 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	/**
 	 * Sets object to dirty and forces paint
 	 *
-	 * @returns {j5g3.DisplayObject} this.
+	 * @return {j5g3.DisplayObject} this.
 	 */
-	invalidate : function()
+	invalidate: function()
 	{
 		this.dirty = true;
 		return this;
@@ -1142,7 +1145,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	 */
 	rotate: function(a)
 	{
-		this.rotation = a;
+		this.rotation += a;
 		return this;
 	}
 
@@ -1236,6 +1239,8 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 
 /**
  * Display HTML
+ * @class
+ * @extend j5g3.DisplayObject
  * TODO
  */
 j5g3.Html = j5g3.DisplayObject.extend({
@@ -1312,8 +1317,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	 */
 	add: function(display_object)
 	{
-		// TODO We might need a getType function.
-		switch (j5g3.getType(display_object)) {
+		switch (j5g3.get_type(display_object)) {
 		case 'function':
 			display_object = new j5g3.Action(display_object);
 			break;
@@ -1424,8 +1428,10 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 
 /**
  * Root Clips
+ * @class
+ * @extend j5g3.Clip
  */
-j5g3.Stage = j5g3.Clip.extend({
+j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 
 	/**
 	 * Current canvas element.
@@ -1689,285 +1695,7 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 });
 
 /**
- *
- * j5g3.Shape
- *
- * Base class for all shapes.
- *
- * @class
- * @extends j5g3.DisplayObject
- *
- */
-j5g3.Shape = j5g3.DisplayObject.extend(
-/** @scope j5g3.Shape.prototype */ {
-
-	/**
-	 * Type of shape for collision handling.
-	 * 'circle', 'segment', 'polygon'
-	 */
-	shape: null,
-
-	/**
-	 * Red value for fill attribute. Make sure to set all three for
-	 * colors to work. 0 to 255.
-	 */
-	red: undefined,
-
-	/**
-	 * Green value for fill attribute. Make sure to set all three for
-	 * colors to work. 0 to 255.
-	 */
-	green: undefined,
-
-	/**
-	 * Blue value for fill attribute. Make sure to set all three for
-	 * colors to work. 0 to 255.
-	 */
-	blue: undefined,
-
-	/**
-	 * Property affected by the red,green and blue properties.
-	 */
-	color_property: 'fill',
-
-	/* Old values */
-	_red: undefined,
-	_green: undefined,
-	_blue: undefined,
-
-	init: function j5g3Shape(p)
-	{
-		j5g3.DisplayObject.apply(this, [p]);
-	},
-
-	_begin: j5g3.DisplayObject.prototype.begin,
-
-	begin: function(context)
-	{
-		var me = this;
-
-		if (me.red!==me._red || me.blue!==me._blue || me.green!==me._green)
-		{
-			// TODO this is ridiculous and slow.
-			me[me.color_property] = 'rgb(' + Math.floor(me.red) + ',' +
-				Math.floor(me.green) + ',' +
-				Math.floor(me.blue) + ')'
-			;
-			me._red = me._red;
-			me._green = me.green;
-			me._blue = me.blue;
-		}
-
-		this._begin(context);
-
-	},
-
-	paintPath: function()
-	{
-	},
-
-	paint: function(context)
-	{
-		context.beginPath();
-		this.paintPath(context);
-
-		context.closePath();
-		context.fill();
-		context.stroke();
-	}
-
-});
-
-/**
- * Draws a circle
- */
-j5g3.Circle = j5g3.Shape.extend(/**@scope j5g3.Circle.prototype */ {
-
-	shape: 'circle',
-	radius: 0,
-
-	get width() { return 2 * (this.M.x(this.radius, 0) - this.x); },
-	get height() { return 2 * (this.M.y(0, this.radius) - this.y); },
-
-	init: function j5g3Circle(p)
-	{
-		j5g3.Shape.apply(this, [ p ]);
-	},
-
-	paintPath: function(context)
-	{
-		// TODO Optimize
-		context.arc(this.cx, this.cy, this.radius, 0, 2*Math.PI, false);
-	},
-
-	at: j5g3.HitTest.Circle
-});
-
-/**
- * Draws a line
- */
-j5g3.Line = j5g3.Shape.extend(/**@scope j5g3.Line.prototype */{
-
-	x2: 0,
-	y2: 0,
-
-	paintPath: function(context)
-	{
-		context.moveTo(this.cx, this.cy);
-		context.lineTo(this.x2, this.y2);
-	}
-
-});
-
-/**
- * Polygon Class
- */
-j5g3.Polygon = j5g3.Shape.extend(/**@scope j5g3.Polygon.prototype */{
-
-	shape: 'polygon',
-	points: null,
-	normals: null,
-
-	init: function j5g3Polygon(p)
-	{
-		j5g3.Shape.apply(this, [p]);
-
-		if (this.points===null)
-			this.points = [];
-		if (this.normals===null)
-			this.calculate_normals();
-	},
-
-	normalize: function(point)
-	{
-	var
-		mag = Math.sqrt(point[0]*point[0] + point[1]*point[1])
-	;
-		point[0] = point[0]/mag;
-		point[1] = point[1]/mag;
-
-		return point;
-	},
-
-	calculate_normals: function()
-	{
-	var
-		i=0, a, points = this.points, l=points.length,
-		normals = [], point = [0.0,0.0]
-	;
-		for (; i<l; i+=2)
-		{
-			a = i+2 < l ? i+2 : 0;
-			point[0] = points[a] - points[i];
-			point[1] = points[a+1] - points[i+1];
-			this.normalize(point);
-
-			normals.push(point[1], -point[0]);
-		}
-
-		this.normals = normals;
-	},
-
-	paintPath: function(context)
-	{
-	var
-		i = 2,
-		P = this.points,
-		l = P.length
-	;
-		context.moveTo(P[0], P[1]);
-		for (; i<l; i+=2)
-			context.lineTo(P[i], P[i+1]);
-	},
-
-	at: j5g3.HitTest.Polygon
-
-}, {
-	/**
-	 * Creates a polygon based on number of sides.
-	 */
-	create: function(sides, p)
-	{
-	var
-		angle = Math.PI*2/sides,
-		a = angle
-	;
-		p.points = [];
-
-		while (sides--)
-		{
-			p.points.push(Math.cos(a)*p.radius, Math.sin(a)*p.radius);
-			a += angle;
-		}
-
-		return new j5g3.Polygon(p);
-	}
-
-});
-
-/**
- *
- * Displays a Rect
- *
- * @class
- * @extends j5g3.Shape
- *
- */
-j5g3.Rect = j5g3.Shape.extend(/**@scope j5g3.Rect.prototype */{
-
-	shape: 'polygon',
-
-	init: function j5g3Rect(p)
-	{
-		j5g3.Shape.apply(this, [p]);
-		if (this.width===null)
-		{
-			this.height = this.width = this.radius*2;
-		}
-	},
-
-	paint : function(context)
-	{
-		context.fillRect(this.cx, this.cy, this.width, this.height);
-		context.strokeRect(this.cx, this.cy, this.width, this.height);
-	}
-
-});
-
-/**
- * Displays a Dot
- *
- * @class
- * @extends j5g3.Shape
- */
-j5g3.Dot = j5g3.Shape.extend(/**@scope j5g3.Dot.prototype */{
-
-	shape: 'circle',
-	line_cap: 'round',
-	line_join: 'round',
-	color_property: 'stroke',
-
-	/**
-	 * p can be properties or line_width
-	 */
-	init: function j5g3Dot(p)
-	{
-		if (typeof(p) === 'number' )
-			p = { line_width: p };
-
-		j5g3.Shape.apply(this, [p]);
-	},
-
-	paint: function(context)
-	{
-		context.strokeRect(0, 0, 1, 1);
-	}
-
-});
-
-/**
  * @class Sprite
- *
  */
 j5g3.Sprite = j5g3.DisplayObject.extend({
 
@@ -2005,7 +1733,7 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 
 	init: function j5g3Spritesheet(properties)
 	{
-		switch (j5g3.getType(properties)) {
+		switch (j5g3.get_type(properties)) {
 		case 'string': case 'dom': case 'j5g3':
 			properties = { source: properties };
 			break;
@@ -2013,7 +1741,7 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 			properties = {};
 		}
 
-		switch (j5g3.getType(properties.source)) {
+		switch (j5g3.get_type(properties.source)) {
 		case 'string': case 'dom':
 			properties.source = new j5g3.Image(properties.source);
 			break;
@@ -2089,7 +1817,7 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	 */
 	cut: function(x, y, w, h)
 	{
-		var s = (j5g3.getType(x) === 'object' ?
+		var s = (j5g3.get_type(x) === 'object' ?
 			{ width: x.w, height: x.h, source: {
 				image: this.source.source, x: x.x, y: x.y, w: x.w, h: x.h
 			} }
@@ -2159,7 +1887,7 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	 */
 	map: function(tw, th)
 	{
-		return new Map({ sprites: this.sprites(), tw: tw, th: th });
+		return new j5g3.Map({ sprites: this.sprites(), tw: tw, th: th });
 	}
 
 });
@@ -2341,12 +2069,15 @@ j5g3.Action = j5g3.Class.extend(
 
 	init: function j5g3Action(p)
 	{
-		if (j5g3.getType(p)==='function')
+		if (j5g3.get_type(p)==='function')
 			p = { draw: p };
 
 		this._init(p);
 	},
 
+	/**
+	 * Remove action from parent clip.
+	 */
 	remove: j5g3.DisplayObject.prototype.remove
 
 }, /** @scope j5g3.Action */ {
@@ -2369,7 +2100,7 @@ j5g3.Action = j5g3.Class.extend(
  * @class
  * Engine class
  */
-j5g3.Engine = j5g3.Class.extend({
+j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 
 	version: '0.9.0',
 
@@ -2500,7 +2231,7 @@ j5g3.Engine = j5g3.Class.extend({
 	var
 		img, ctx
 	;
-		switch(j5g3.getType(w)) {
+		switch(j5g3.get_type(w)) {
 		case 'string':
 			img = j5g3.id(w); break;
 		case 'dom':
@@ -2527,45 +2258,49 @@ j5g3.Engine = j5g3.Class.extend({
 
 // Shortcuts
 
-/** @return j5g3.Action */
+/** 
+ * @function
+ * @return {j5g3.Action}
+ */
 j5g3.action = f(j5g3.Action);
-/** @return j5g3.Clip */
+/** @function 
+ * @return {j5g3.Clip} */
 j5g3.clip   = f(j5g3.Clip);
-/** @return j5g3.Dot */
-j5g3.dot    = f(j5g3.Dot);
-/** @return j5g3.Image */
+/** @function 
+ * @return {j5g3.Image} */
 j5g3.image  = f(j5g3.Image);
-/** @return j5g3.Rect */
-j5g3.rect   = f(j5g3.Rect);
-/** @return j5g3.Sprite */
+/** @function 
+ * @return {j5g3.Sprite} */
 j5g3.sprite = f(j5g3.Sprite);
-/** @return j5g3.Spritesheet */
+/** @function 
+ * @return {j5g3.Spritesheet} */
 j5g3.spritesheet = f(j5g3.Spritesheet);
-/** @return j5g3.Text */
+/** @function 
+ * @return {j5g3.Text} */
 j5g3.text   = f(j5g3.Text);
 
 /**
  * Returns a Multiline Text object
- * @return j5g3.Text 
+ * @return {j5g3.Text}
  */
 j5g3.mtext  = function(p) { var t = new j5g3.Text(p); t.paint = j5g3.Paint.MultilineText; return t; };
-/** @return j5g3.Matrix */
-j5g3.matrix = f(j5g3.Matrix);
-/** @return j5g3.Tween */
+/** @function 
+ * @return {j5g3.Matrix} */
+j5g3.matrix = function(a, b, c, d ,e ,f) { return new j5g3.Matrix(a, b, c, d, e, f); };
+/** @function 
+ * @return {j5g3.Tween} */
 j5g3.tween  = f(j5g3.Tween);
-/** @return j5g3.Emitter */
+/** @function 
+ * @return {j5g3.Emitter} */
 j5g3.emitter= f(j5g3.Emitter);
-/** @return j5g3.Map */
+/** @function 
+ * @return {j5g3.Map} */
 j5g3.map    = f(j5g3.Map);
-/** @return j5g3.Polygon */
-j5g3.polygon= f(j5g3.Polygon);
-/** @reutnr j5g3.Circle */
-j5g3.circle = f(j5g3.Circle);
-/** @return j5g3.Line */
-j5g3.line   = f(j5g3.Line);
-/** @return j5g3.Html */
+/** @function 
+ * @return {j5g3.Html} */
 j5g3.html   = f(j5g3.Html);
-/** @return j5g3.Engine */
+/** @function 
+ * @return {j5g3.Engine} */
 j5g3.engine = f(j5g3.Engine);
 
 
