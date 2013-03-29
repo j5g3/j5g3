@@ -96,13 +96,6 @@ j5g3.ready(function() {
 			strictEqual(ab.previous, aa);
 			strictEqual(ac.next, frame);
 			strictEqual(ac.previous, ab);
-
-			a.next_frame();
-			frame = a.frame;
-
-			strictEqual(frame.next, frame);
-			strictEqual(frame.previous, frame);
-
 		});
 
 		test('Clip - Removing Objects', function()
