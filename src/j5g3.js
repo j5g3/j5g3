@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-29 14:41:25 -0400
+ * Date: 2013-03-29 20:40:32 -0400
  *
  */
 
@@ -533,46 +533,6 @@ j5g3.Cache = {
 
 };
 
-/**
- * @namespace
- * Collision detection algorithms.
- */
-j5g3.Collision = {
-
-	/**
-	 * Circle Collision
-	 */
-	Circle: function(obj)
-	{
-	var
-		r = this.radius + obj.radius,
-		dx= this.x - obj.x,
-		dy= this.y - obj.y
-	;
-		return r*r > (dx*dx + dy*dy);
-	},
-
-	/**
-	 * AABB collision algorithm.
-	 * TODO apply transformations
-	 */
-	AABB: function(obj)
-	{
-	var
-		l1 = this.x,
-		t1 = this.y,
-		r1 = this.x + this.width,
-		b1 = this.y + this.height,
-		l2 = obj.x,
-		t2 = obj.y,
-		r2 = obj.x + obj.width,
-		b2 = obj.y + obj.height
-	;
-
-		return !(l2 > r1 || r2 < l1 || t2 > b1 || b2 < t1);
-	}
-
-};
 
 /**
  * @namespace
@@ -1118,15 +1078,6 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	 * Tests if point at x, y is inside the DisplayObject.
 	 */
 	at: j5g3.HitTest.Rect,
-
-	/**
-	 * Tests if object collides with another object obj. See j5g3.Collision for available
-	 * algorithms.
-	 *
-	 * @param {j5g3.DisplayObject} obj
-	 * @return {boolean}
-	 */
-	collides: j5g3.Collision.AABB,
 
 	/**
 	 * Sets scaleX and scaleY values.
