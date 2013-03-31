@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-29 20:40:32 -0400
+ * Date: 2013-03-31 01:43:49 -0400
  *
  */
 
@@ -638,22 +638,20 @@ j5g3.MatrixLite = j5g3.Class.extend(/** @scope j5g3.MatrixLite.prototype */{
 	setScaleX: function(sx)
 	{
 		this.scaleX = sx;
-		this.a = sx * this._cos;
-		this.b = sx * this._sin;
-		return this;
+		return this.calc4();
 	},
 
 	setScaleY: function(sy)
 	{
 		this.scaleY = sy;
-		this.c = -sy * this._sin;
-		this.d = sy * this._cos;
-		return this;
+		return this.calc4();
 	},
 
 	scale: function(sx, sy)
 	{
-		return this.setScaleX(sx).setScaleY(sy);
+		this.scaleX = sx;
+		this.scaleY = sy;
+		return this.calc4();
 	},
 
 	calc4: function()
@@ -2072,12 +2070,20 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 		me = this
 	;
 		if (me.process)
+		{
 			window.clearInterval(me.process);
+			window.clearAnimationFrame(me.process);
+		}
+
+		me._scopedLoop = me._gameLoop.bind(me);
+		me._rafScopedLoop= me._rafGameLoop.bind(me);
 
 		if (me.use_animation_frame)
 			me.process = window.requestAnimationFrame(me._rafScopedLoop);
 		else
 			me.process = window.setInterval(me._scopedLoop, me.__fps);
+
+		return this;
 	},
 
 	destroy: function()
@@ -2130,9 +2136,6 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 
 		j5g3.Class.apply(me, [ config ]);
 
-		me._scopedLoop = me._gameLoop.bind(me);
-		me._rafScopedLoop= me._rafGameLoop.bind(me);
-
 		if (!this.stage)
 			me.stage = new j5g3.Stage(this.stage_settings);
 
@@ -2144,8 +2147,12 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	 */
 	pause: function()
 	{
-		if (this.stage)
-			this.stage.stop();
+		if (this.process)
+		{
+			window.clearInterval(this.process);
+			window.cancelAnimationFrame(this.process);
+		}
+		this._rafScopedLoop = function() { };
 	},
 
 	/**

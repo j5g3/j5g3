@@ -17,17 +17,54 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-29 20:40:32 -0400
+ * Date: 2013-03-31 01:43:49 -0400
  *
  */
 (function(j5g3, undefined) {
 'use strict';
 
+j5g3.Collision = j5g3.Class.extend({
+
+	/** Object querying the collition */
+	A: null,
+	/** Object colliding with */
+	B: null,
+
+	/** Collision Normal X component */
+	nx: 0,
+	/** Collision Normal Y component */
+	ny: 0,
+	/** Penetration */
+	penetration: 0,
+	/** Number of contacts */
+	length: 0,
+
+	/** Distance of midpoints */
+	tx: 0,
+	/** Distance of midpoints */
+	ty: 0,
+
+	'0': null,
+	'1': null,
+	'2': null,
+	'3': null,
+	'4': null,
+	'5': null,
+	'6': null,
+
+	init: function j5g3Collision(p)
+	{
+		if (p)
+			this.extend(p);
+	}
+
+});
+
 /**
  * @namespace
- * Collision detection algorithms.
+ * Collision detection algorithms. These algorithms return a Collision object if successful.
  */
-j5g3.Collision = {
+j5g3.CollisionQuery = {
 
 	/**
 	 * Circle Collision
@@ -39,7 +76,47 @@ j5g3.Collision = {
 		dx= this.x - obj.x,
 		dy= this.y - obj.y
 	;
-		return r*r > (dx*dx + dy*dy);
+		if (r*r > (dx*dx + dy*dy))
+			return { nx: dx, ny: dy };
+	},
+
+	_AABB: function(obj)
+	{
+	var
+		r1 = this.x + this.width,
+		r2 = obj.x + obj.width,
+		b1 = this.y + this.height,
+		b2 = obj.y + obj.height,
+		tx, ty,
+		coll = this.collision
+	;
+		coll.collides = !(obj.x >= r1 || r2 <= this.x || obj.y >= b1 || b2 <= this.y);
+
+		if (coll.collides)
+		{
+			coll.B = obj;
+			tx = coll.tx = (obj.x+obj.width/2) - (this.x+this.width/2);
+			ty = coll.ty = (obj.y+obj.height/2) - (this.y+this.height/2);
+
+			coll[0] = Math.max(this.x, obj.x);
+			coll[1] = Math.max(this.y, obj.y);
+			coll[2] = Math.min(r1, r2);
+			coll[3] = Math.min(b1, b2);
+
+			if (coll[2]-coll[0] < coll[3]-coll[1])
+			{
+				coll.nx = tx < 0 ? -1 : 1;
+				coll.ny = 0;
+				coll.penetration = tx<0 ? coll[2]-this.x: r1-coll[0];
+			} else
+			{
+				coll.ny = ty < 0 ? -1 : 1;
+				coll.nx = 0;
+				coll.penetration = ty<0 ? coll[3]-this.y : b1-coll[1];
+			}
+
+			return this.collision;
+		}
 	},
 
 	/**
@@ -48,20 +125,31 @@ j5g3.Collision = {
 	 */
 	AABB: function(obj)
 	{
+		this.collision = new j5g3.Collision({ length: 2, A: this });
+		this.collides = j5g3.CollisionQuery._AABB;
+
+		return this.collides(obj);
+	}
+
+};
+
+/**
+ * @namespace
+ * Collision Tests return true or false
+ */
+j5g3.CollisionTest = {
+
+	AABB: function(obj)
+	{
 	var
-		l1 = this.x,
-		t1 = this.y,
 		r1 = this.x + this.width,
 		b1 = this.y + this.height,
-		l2 = obj.x,
-		t2 = obj.y,
 		r2 = obj.x + obj.width,
 		b2 = obj.y + obj.height
 	;
 
-		return !(l2 > r1 || r2 < l1 || t2 > b1 || b2 < t1);
+		return !(obj.x > r1 || r2 < this.x || obj.y > b1 || b2 < this.y);
 	}
-
 };
 
 /**
@@ -71,6 +159,6 @@ j5g3.Collision = {
  * @param {j5g3.DisplayObject} obj
  * @return {boolean}
  */
-j5g3.DisplayObject.prototype.collides = j5g3.Collision.AABB;
+j5g3.DisplayObject.prototype.collides = j5g3.CollisionTest.AABB;
 
 })(this.j5g3);
