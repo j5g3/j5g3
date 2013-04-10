@@ -5,6 +5,7 @@ var
 	list = j5g3.id('demos'),
 	raf  = j5g3.id('raf'),
 	url, g3, demoObj,
+	xhr = new window.XMLHttpRequest(),
 	demo = location.hash.substr(1),
 	onAjax = function(code)
 	{
@@ -27,7 +28,12 @@ var
 		url = (this.value.toLowerCase() + '.js?rnd=' + (new Date()).getTime());
 		location.hash = '#' + this.value;
 
-		j5g3.io.get(url, onAjax);
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState===4)
+				onAjax(xhr.responseText);
+		};
+		xhr.open('GET', url);
+		xhr.send();
 	},
 
 	onRafChange = function()
