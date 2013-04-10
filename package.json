@@ -1,0 +1,9 @@
+{
+	"name": "j5g3",
+	"author": "Giancarlo Bellido",
+
+	"devDependencies": {
+		"grunt": "git://github.com/gruntjs/grunt.git",
+		"grunt-contrib-jshint": "git://github.com/gruntjs/grunt-contrib-jshint"
+	}
+}
