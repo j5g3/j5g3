@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-31 01:53:59 -0400
+ * Date: 2013-04-05 12:06:30 -0400
  *
  */
 
@@ -2056,7 +2056,7 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	/**
 	 * Whether or not to use animation frame. FPS is always 60.
 	 */
-	use_animation_frame: false,
+	use_animation_frame: true,
 
 	/* Frames per Second */
 	__fps: 31,

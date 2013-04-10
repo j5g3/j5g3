@@ -1,0 +1,10 @@
+{
+	"unused":true, 
+	"eqeqeq":true, 
+	"newcap":true, 
+	"undef":true, 
+	"smarttabs":true, 
+	"es5":true,
+	"trailing":true,
+	"maxdepth":3
+}

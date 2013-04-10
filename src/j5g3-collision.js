@@ -17,12 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-03-31 01:53:59 -0400
+ * Date: 2013-04-05 12:06:30 -0400
  *
  */
 (function(j5g3, undefined) {
 'use strict';
 
+/**
+ * Collision Object.
+ */
 j5g3.Collision = j5g3.Class.extend({
 
 	/** Object querying the collition */
