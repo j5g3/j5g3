@@ -12,13 +12,27 @@ module.exports = function(grunt) {
 		},
 		
 		jshint: {
-			j5g3: { options: { jshintrc: '.jshintrc' }, src: 'src/j5g3.js' }
+			j5g3: { 
+				options: { jshintrc: '.jshintrc' }, 
+				src: [ 
+					'src/j5g3.js', 'src/j5g3-loader.js',
+					'src/j5g3-collision.js', 'src/j5g3-shapes.js',
+					'src/j5g3-support.js'
+				]
+			}
+		},
+		
+		concat: {
+			"j5g3-all": {
+				src: '<%= jshint.j5g3.src %>',
+				dest: 'build/j5g3-all.js'
+			}
 		},
 		
 		watch: {
 			j5g3: { 
 				files: '<%= jshint.j5g3.src %>',
-				tasks: [ 'jshint:j5g3', 'qunit', 'concat' ]
+				tasks: [ 'jshint:j5g3', 'clean:j5g3', 'concat', 'qunit' ]
 			}
 		}
 
