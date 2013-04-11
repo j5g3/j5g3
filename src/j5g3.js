@@ -355,12 +355,11 @@ j5g3.Paint = {
 	 */
 	Sprite: function (context)
 	{
-		var src = this.source,
-		    w = this.width,
-		    h = this.height
-		;
-		// TODO remove conditions
-
+	var
+		src = this.source,
+		w = this.width,
+		h = this.height
+	;
 		context.drawImage(
 			src.image, src.x, src.y, src.w, src.h,
 			this.cx, this.cy, w ? w : src.w, h ? h : src.h
@@ -447,12 +446,13 @@ j5g3.Paint = {
 	 */
 	Isometric: function(context)
 	{
-		var map = this.map, y = 0, x, l=map.length,
-		    sprites = this.sprites, cm,
-		    dx = Math.round(this.tw/2) + this.offsetX,
-		    dy = Math.round(this.th/2) + this.offsetY,
-		    offset
-		;
+	var
+		map = this.map, y = 0, x, l=map.length,
+		sprites = this.sprites, cm,
+		dx = Math.round(this.tw/2) + this.offsetX,
+		dy = Math.round(this.th/2) + this.offsetY,
+		offset
+	;
 
 		context.translate(-dx, -dy);
 
@@ -1408,12 +1408,25 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 	 */
 	smoothing: false,
 
+	_init_canvas: function()
+	{
+		if (!this.canvas)
+			this.canvas = j5g3.id('screen');
+
+		if (!this.canvas)
+		{
+			this.canvas = j5g3.dom('CANVAS');
+			this.canvas.width = this.width;
+			this.canvas.height= this.height;
+			window.document.body.appendChild(this.canvas);
+		}
+	},
+
 	init: function j5g3Stage(p)
 	{
 		j5g3.Clip.apply(this, [p]);
 
-		if (!this.canvas)
-			this.canvas = j5g3.id('screen') || j5g3.dom('CANVAS');
+		this._init_canvas();
 
 		this.renderCanvas = j5g3.dom('CANVAS');
 		this.context = this.renderCanvas.getContext('2d');
@@ -1756,8 +1769,20 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	 */
 	push: function(x, y, w, h)
 	{
-		this.cut(x, y, w, h);
+		this.slice(x, y, w, h);
 		return this;
+	},
+
+	/**
+	 * Creates a new slice, inserts it into the sprite list and returns
+	 * its ID. The ID can be used by the sprite function.
+	 */
+	slice: function(x, y, w, h)
+	{
+			return this._sprites.push({
+				width: w, height: h,
+				source: { image: this.source.source, x: x, y: y, w: w, h: h }
+			})-1;
 	},
 
 	/**
@@ -1766,19 +1791,8 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	 */
 	cut: function(x, y, w, h)
 	{
-		var s = (j5g3.get_type(x) === 'object' ?
-			{ width: x.w, height: x.h, source: {
-				image: this.source.source, x: x.x, y: x.y, w: x.w, h: x.h
-			} }
-		:
-			{ width: w, height: h, source: {
-				image: this.source.source, x: x, y: y, w: w, h: h
-			} }
-		);
-
-		this._sprites.push(s);
-
-		return new j5g3.Sprite(s);
+		var s = this.slice(x, y, w, h);
+		return this.sprite(s);
 	},
 
 	/**
@@ -1787,14 +1801,14 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	 */
 	grid: function(x, y, b)
 	{
+	var
+		b2,
+		w = this.width / x - b2,
+		h = this.height / y - b2,
+		r,c
+	;
 		b = b || 0;
-
-		var
-		    b2= 2*b,
-		    w = this.width / x - b2,
-		    h = this.height / y - b2,
-		    r,c
-		;
+		b2 = 2*b;
 
 		for (r=0; r < y; r++)
 			for (c=0; c < x; c++)
@@ -1957,12 +1971,11 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 
 	getTileAt: function(x, y)
 	{
-		var
-	            me = this,
-
-		    nx = Math.round(x / me.tw),
-		    ny = Math.round(y / (me.th/2 + me.offsetY))
-		;
+	var
+        me = this,
+		nx = Math.round(x / me.tw),
+		ny = Math.round(y / (me.th/2 + me.offsetY))
+	;
 
 		return this.map[ny][nx];
 	},
@@ -2139,7 +2152,7 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 		if (!this.stage)
 			me.stage = new j5g3.Stage(this.stage_settings);
 
-		me.startFn(j5g3);
+		me.startFn(j5g3, this);
 	},
 
 	/**
@@ -2213,6 +2226,57 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	}
 
 });
+
+/** @namespace j5g3 Easing algorithms */
+j5g3.Easing= (function()
+{
+var
+	E = {}, i, result = {},
+
+	fnFactory = function(i, fn)
+	{
+		result['EaseIn' + i] = fn;
+		result['EaseOut' + i] = function(p) { return 1 - fn(1-p); };
+		result['EaseInOut' + i] = function(p) {
+			return p < 0.5 ?
+				fn( p * 2 ) / 2 :
+				fn( p * -2 + 2 ) / -2 + 1;
+		};
+	}
+;
+	(['Quad', 'Cubic', 'Quart', 'Quint', 'Expo']).forEach(function(name, i) {
+		E[name] = function(p) {
+			return Math.pow(p, i+2);
+		};
+	});
+
+	E.Sine = function (p) { return 1 - Math.cos( p * Math.PI / 2 ); };
+	E.Circ = function (p) { return 1 - Math.sqrt( 1 - p * p ); };
+	E.Elastic =  function(p) { return p === 0 || p === 1 ? p :
+		-Math.pow(2, 8 * (p - 1)) * Math.sin(( (p - 1) * 80 - 7.5) * Math.PI / 15);
+	};
+	E.Back = function(p) { return p * p * ( 3 * p - 2 ); };
+	E.Bounce = function (p) {
+		var pow2, result,
+		bounce = 4;
+
+		while ( p < ( ( pow2 = Math.pow( 2, --bounce ) ) - 1 ) / 11 ) {}
+
+		result = 1 / Math.pow( 4, 3 - bounce ) - 7.5625 *
+			Math.pow( ( pow2 * 3 - 2 ) / 22 - p, 2 );
+
+		return result;
+	};
+
+	for (i in E)
+		fnFactory(i, E[i]);
+
+	result.Linear = function(p) { return p; };
+	result.Swing = function(p) { return ( -Math.cos(p*Math.PI) / 2 ) + 0.5; };
+
+	return result;
+})();
+
 
 // Shortcuts
 

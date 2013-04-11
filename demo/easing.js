@@ -8,7 +8,7 @@ var
 	x = 0,
 	a, easing
 ;
-	for (easing in j5g3.fx.Easing)
+	for (easing in j5g3.Easing)
 	{
 		a = ss.clip([ 16,17,18,19,20,21,22,23,24,25 ]).pos(x, y+=20).scale(0.2, 0.2);
 

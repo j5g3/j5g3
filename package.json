@@ -3,7 +3,12 @@
 	"author": "Giancarlo Bellido",
 
 	"devDependencies": {
-		"grunt": "git://github.com/gruntjs/grunt.git",
-		"grunt-contrib-jshint": "git://github.com/gruntjs/grunt-contrib-jshint"
+		"grunt": "*",
+		"grunt-contrib-jshint": "*",
+		"grunt-contrib-clean": "*",
+		"grunt-contrib-concat": "*",
+		"grunt-contrib-watch": "*",
+		"grunt-contrib-uglify": "*",
+		"grunt-contrib-qunit": "*"
 	}
 }
