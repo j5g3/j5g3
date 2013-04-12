@@ -14,7 +14,7 @@ var
 
 		this.stage.add([ 
 			a, 
-			j5g3.tween({ target: a, to: to, easing: j5g3.fx.Easing[easing] }),
+			j5g3.tween({ target: a, to: to, easing: j5g3.Easing[easing] }),
 			j5g3.text({ text: easing, y: y+20, x: x+100, font: '20px Serif' })
 		]);
 

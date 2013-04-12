@@ -1,6 +1,12 @@
 {
 	"name": "j5g3",
 	"author": "Giancarlo Bellido",
+	"version": "0.9.0",
+	
+	"licenses": [{
+		"type": "GPLv3",
+		"url": "https://raw.github.com/giancarlo/j5g3/master/LICENSE.txt"
+	}],
 
 	"devDependencies": {
 		"grunt": "*",

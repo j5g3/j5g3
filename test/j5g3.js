@@ -215,17 +215,17 @@ j5g3.ready(function() {
 			c.add_frame();
 			frame = c.frame;
 
-			equal(frame.next, frame);
-			equal(frame.previous, frame);
+			strictEqual(frame.next, frame);
+			strictEqual(frame.previous, frame);
 
 			c.next_frame();
-			equal(c.frame, frame2);
+			strictEqual(c.frame, frame2);
 			ok(frame !== frame2);
 
 			c.add_frame(img);
 			frame = c.frame;
-			equal(frame.next, img);
-			equal(img.next, frame);
+			strictEqual(frame.next, img);
+			strictEqual(img.next, frame);
 		});
 
 		test('Text Construction', function()
@@ -251,8 +251,8 @@ j5g3.ready(function() {
 			t = j5g3.tween(),
 			t2= j5g3.tween(img)
 		;
-			equal(t2.target, img);
-			equal(t.t, 0);
+			strictEqual(t2.target, img);
+			strictEqual(t.t, 0);
 			t.pause();
 			t.resume();
 			t.rewind();
@@ -270,9 +270,8 @@ j5g3.ready(function() {
 		;
 
 			equal(s.sprites.length, 0);
-			equal(s2.source, img);
-			equal(s.source.source, img.source);
-			
+			strictEqual(s2.source, img);
+			strictEqual(s.source.source, img.source);
 		});
 
 		test('Spritesheet - Adding Sprites', function()

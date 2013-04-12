@@ -150,9 +150,10 @@ extend(j5g3, {/** @scope j5g3 */
 		{
 			if (obj === null) return 'null';
 			if (obj instanceof Array) return 'array';
-			if (obj instanceof window.HTMLAudioElement) return 'audio';
-			if (obj instanceof window.HTMLElement) return 'dom';
 			if (obj instanceof j5g3.Class) return 'j5g3';
+
+			if (obj instanceof window.HTMLElement) return 'dom';
+			if (obj instanceof window.HTMLAudioElement) return 'audio';
 		}
 
 		return result;
@@ -1791,8 +1792,7 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	 */
 	cut: function(x, y, w, h)
 	{
-		var s = this.slice(x, y, w, h);
-		return this.sprite(s);
+		return this.sprite(this.slice(x,y,w,h));
 	},
 
 	/**
@@ -1801,18 +1801,18 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	 */
 	grid: function(x, y, b)
 	{
+		b = b || 0;
+
 	var
-		b2,
+		b2 = 2*b,
 		w = this.width / x - b2,
 		h = this.height / y - b2,
 		r,c
 	;
-		b = b || 0;
-		b2 = 2*b;
 
 		for (r=0; r < y; r++)
 			for (c=0; c < x; c++)
-				this.cut(c*(w+b2)+b, r*(h+b2)+b, w, h);
+				this.slice(c*(w+b2)+b, r*(h+b2)+b, w, h);
 
 		return this;
 	},
