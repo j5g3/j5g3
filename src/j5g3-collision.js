@@ -60,7 +60,7 @@ j5g3.Collision = j5g3.Class.extend({
 		if (p)
 			this.extend(p);
 	}
-
+	
 });
 
 /**
@@ -152,6 +152,25 @@ j5g3.CollisionTest = {
 	;
 
 		return !(obj.x > r1 || r2 < this.x || obj.y > b1 || b2 < this.y);
+	},
+
+	Container: function(obj)
+	{
+	var
+		frame = this.frame,
+		prev = frame,
+		result = false,
+		// TODO Translate obj coordinates to local
+		tobj = {
+			x: obj.x - this.x, y: obj.y - this.y,
+			width: obj.width, height: obj.height
+		}
+	;
+		while ((prev = prev.previous)!==frame)
+			if ((result = prev.collides && prev.collides(tobj)))
+				break;
+
+		return result;
 	}
 };
 
@@ -163,5 +182,7 @@ j5g3.CollisionTest = {
  * @return {boolean}
  */
 j5g3.DisplayObject.prototype.collides = j5g3.CollisionTest.AABB;
+
+j5g3.Clip.prototype.collides = j5g3.CollisionTest.Container;
 
 })(this.j5g3);
