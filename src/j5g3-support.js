@@ -20,12 +20,28 @@
  * Date: 2013-04-05 12:06:30 -0400
  *
  */
-(function(j5g3) {
+(function(window, j5g3) {
 'use strict';
 
 var
 	audioEl = j5g3.dom('audio')
 ;
+
+	if (!window.requestAnimationFrame)
+		window.requestAnimationFrame = window.mozRequestAnimationFrame ||
+			window.msRequestAnimationFrame ||
+			function(callback)
+			{
+				return window.setTimeout(callback, 1000/60);
+			};
+
+	if (!window.cancelAnimationFrame)
+		window.cancelAnimationFrame = window.mozCancelAnimationFrame ||
+			window.msCancelAnimationFrame ||
+			function(id)
+			{
+				window.clearTimeout(id);
+			};
 
 	/**
 	 * J5G3 Browser Capabilities module.
@@ -47,4 +63,4 @@ var
 		};
 	}
 
-})(this.j5g3);
+})(this, this.j5g3);
