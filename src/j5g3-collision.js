@@ -60,7 +60,7 @@ j5g3.Collision = j5g3.Class.extend({
 		if (p)
 			this.extend(p);
 	}
-	
+
 });
 
 /**
