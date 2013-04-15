@@ -11,7 +11,7 @@ end
 
 desc "Build Uncompressed Files"
 task :default do
-	`cat src/j5g3.js src/j5g3-loader.js src/j5g3-collision.js src/j5g3-shapes.js src/j5fx.js src/j5g3-support.js > build/j5g3-all.js`
+	`cat src/j5g3.js src/j5g3-loader.js src/j5g3-collision.js src/j5g3-shapes.js src/j5g3-support.js > build/j5g3-all.js`
 	`cat build/j5g3-all.js src/j5g3-debug.js > build/j5g3-all.dbg.js`
 end
 
