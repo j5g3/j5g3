@@ -25,6 +25,7 @@
 /**
  * @class
  * @extend j5g3.Class
+ * @requires j5g3-support.js
  */
 j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 
@@ -108,6 +109,14 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 
 	audio: function(src)
 	{
+	var
+		ext = src.split('.').pop()
+	;
+		if (!j5g3.support.audio[ext])
+			src = src.replace(
+				new RegExp("\\."+ext+'$'),
+				'.' + j5g3.support.audio.default
+			);
 		return this.el('AUDIO', src);
 	},
 

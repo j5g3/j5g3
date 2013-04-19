@@ -38,6 +38,15 @@ module.exports = function(grunt) {
 				dest: 'build/j5g3-all.dbg.js'
 			}
 		},
+
+		uglify: {
+
+			j5g3: {
+				files: {
+					'build/j5g3-all.min.js': 'build/j5g3-all.js'
+				}
+			}
+		},
 		
 		watch: {
 			j5g3: { 
@@ -61,4 +70,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 
 	grunt.registerTask('default', [ 'jshint', 'clean', 'concat' ]);
+	grunt.registerTask('minify', [ 'default', 'uglify' ]);
+
+
 };

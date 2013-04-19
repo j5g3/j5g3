@@ -44,7 +44,8 @@ var
 			};
 
 	/**
-	 * J5G3 Browser Capabilities module.
+	 * J5G3 Browser Capabilities module. Includes polyfills for features
+	 * used by the engine.
 	 * @namespace
 	 */
 	j5g3.support = {
@@ -53,14 +54,25 @@ var
 
 	if (audioEl && audioEl.canPlayType)
 	{
+		/** Lists supported audio types */
 		j5g3.support.audio = {
 			/** Audio tag supports mp3 */
 			mp3: audioEl.canPlayType('audio/mpeg'),
 			/** Audio tag supports ogg */
 			ogg: audioEl.canPlayType('audio/ogg'),
 			/** Audio tag supports mp4 */
-			mp4: audioEl.canPlayType('audio/mp4')
+			mp4: audioEl.canPlayType('audio/mp4'),
+			/** Audio tag supports wav files */
+			wav: audioEl.canPlayType('audio/wav')
 		};
+
+		// TODO There is probably a better way to do this
+		for (var i in j5g3.support.audio)
+			if (j5g3.support.audio[i])
+			{
+				j5g3.support.audio.default = i;
+				break;
+			}
 	}
 
 })(this, this.j5g3);

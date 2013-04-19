@@ -1322,6 +1322,14 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	},
 
 	/**
+	 * Returns true if current frame is empty
+	 */
+	is_frame_empty: function()
+	{
+		return this.frame.next === this.frame;
+	},
+
+	/**
 	 * Removes frame
 	 */
 	remove_frame: function(frame)
