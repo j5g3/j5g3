@@ -8,20 +8,21 @@ J5G3 is an easy to use, extendable and fast canvas-based Javascript game engine.
 Building j5g3
 -------------
 
-### Rakefile Tasks ###
+1. Install dependencies
 
-rake
-	Build j5g3 files.
-rake minify
-	Minifies the code.
-rake lint
-	Runs jshint on all files.
+	npm install
+
+2. Install Grunt command line tool
+
+	sudo npm -g install grunt-cli 
+
+3. Run default grunt task
+
+	grunt
 
 ### Dependencies ###
 
-- jshint
-- Ruby/Rake - To build the library.
-- UglifyJS (Optional) To minify the code.
+- nodejs and grunt - To Build the library
 
 
 Documentation

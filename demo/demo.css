@@ -1,0 +1,43 @@
+
+#screen { 
+	width: 640px; height: 480px; margin: 0 auto;
+	display: block; background: #000; position: relative; 
+}
+
+#loading { font-size: 30px; line-height: 480px; }
+#pause { font-size: 30px; line-height: 480px; }
+#game-over { font-size: 30px; line-height: 480px; }
+#start { font-size: 30px; text-align: center; line-height: 480px; }
+
+#games div { display: inline-block; width: 242px; margin: 0 8px 8px 0; }
+#games p { margin: 0; }
+#games img { width: 240px; height: 200px; margin-top: 10px; }
+#games a { font-size: 20px; display: block; }
+
+.r720p { width: 1028px !important; height: 720px !important; }
+.r800x450 { width: 800px !important; height: 450px !important; }
+
+
+#keyboard { width: 600px; margin: 20px auto; }
+
+#keyboard > b { 
+	font-size: 10px; display: inline-block; width: 30px; height: 30px; border: 1px solid #ccc; 
+	line-height: 15px; text-align: center; float: left; font-weight: normal;
+	background-color: #fff;
+}
+
+#keyboard > b:hover { background-color: #9ff; }
+
+#keyboard > b.two { width: 45px; line-height: 30px; }
+#keyboard > b.three { width: 53px; line-height: 30px; }
+#keyboard > b.four { width: 70px; line-height: 30px; }
+#keyboard > b.spacebar { width: 135px; line-height: 30px; }
+#keyboard > b.pressed { background-color: #ccc; }
+#keyboard > b.half { width: 15px; border: 0; background: none; }
+
+#keyboard > hr { height: 10px; clear: both; border: 0; margin: 0; }
+#keyboard > br { clear: both; }
+
+#keyboard-code { text-align: center; font-size: 14px; }
+
+#assets { display: none; }
