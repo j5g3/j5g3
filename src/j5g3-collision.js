@@ -1,6 +1,5 @@
-/**
- * j5g3 v0.9.0 - Javascript Physics Engine
- * http://
+/*
+ * j5g3 v0.9.0 - Javascript Collision Module
  *
  * Copyright 2010-2012, Giancarlo F Bellido
  *
