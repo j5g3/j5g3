@@ -418,13 +418,22 @@ j5g3.Paint = {
 	},
 
 	/**
+	 * Draws text using fill and stroke
+	 */
+	TextStrokeFill: function(context)
+	{
+		context.fillText(this.text, this.cx, this.cy);
+		context.strokeText(this.text, this.cx, this.cy);
+	},
+
+	/**
 	 * Paints a 2D map.
 	 */
 	Map: function(context)
 	{
 		var map = this.map, y = map.length, x, sprites = this.sprites, s, cm;
 
-		context.translate(0, y*this.th);
+		context.translate(this.cx, this.cy+y*this.th);
 
 		while (y--)
 		{
