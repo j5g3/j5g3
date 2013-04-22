@@ -42,6 +42,7 @@ module.exports = function(grunt) {
 		uglify: {
 
 			j5g3: {
+				compress: true,
 				files: {
 					'build/j5g3-all.min.js': 'build/j5g3-all.js'
 				}

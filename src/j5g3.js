@@ -41,7 +41,7 @@ var
 	 * @namespace 
 	 * Creates a new Engine instance on window.load event.
 	 */
-	j5g3 = window.j5g3 = function(engine)
+	j5g3 = function(engine)
 	{
 		window.addEventListener('load', function()
 		{
@@ -2342,6 +2342,7 @@ j5g3.html   = f(j5g3.Html);
  * @return {j5g3.Engine} */
 j5g3.engine = f(j5g3.Engine);
 
+window.j5g3 = j5g3;
 
 // TODO This might not be a good idea.
 window.CanvasGradient.prototype.at = function(offset, color)
