@@ -2,8 +2,6 @@
 (function (j5g3)
 {
 var 
-	x=0, y=0,
-
 	LIFE = 20,
 	RADIUSMIN = 4,
 	RADIUS = 50,
@@ -13,7 +11,7 @@ var
 
 	on_emit = function(clip)
 	{
-		clip.pos(x-RADIUSMIN+j5g3.rand(RADIUSMIN*2), y-RADIUSMIN+j5g3.rand(RADIUSMIN*2));
+		clip.pos(mouse.x-RADIUSMIN+j5g3.rand(RADIUSMIN*2), mouse.y-RADIUSMIN+j5g3.rand(RADIUSMIN*2));
 		clip.line_cap = null;
 		clip.line_join = null;
 		clip.line_width = SIZE;
@@ -26,8 +24,8 @@ var
 			auto_remove: true, duration: LIFE,
 			target: clip, to: { 
 				alpha: 0.1, 
-				y: y-RADIUS+j5g3.rand(RADIUS*2), 
-				x: x-RADIUS+j5g3.rand(RADIUS*2),
+				y: mouse.y-RADIUS+j5g3.rand(RADIUS*2), 
+				x: mouse.x-RADIUS+j5g3.rand(RADIUS*2),
 				red: 255, green: 0, blue: 0
 			} 
 		}));
@@ -40,20 +38,10 @@ var
 		on_emit: on_emit
 	}),
 
-	mouse = function(evt)
-	{
-		x = evt.layerX; y = evt.layerY;
-	},
-
 	canvas = this.stage.canvas
 ;
-
-	canvas.addEventListener('mousemove', mouse);
+	
 	e1.blending = 'lighter';
-
-	this.on_destroy = function() {
-		canvas.removeEventListener('mousemove', mouse);
-	}
 
 	this.stage.add([ e1 ]);
 	this.run();

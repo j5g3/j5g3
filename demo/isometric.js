@@ -69,19 +69,19 @@ var
 
 	rateX=0, rateY=0,
 
-	mouse = function(ev)
+	onmouse = function()
 	{
-		if (ev.layerX > stage.width-MOUSE_MOVE)
-			rateX = -ev.layerX + stage.width-MOUSE_MOVE;
-		else if (ev.layerX < MOUSE_MOVE)
-			rateX = MOUSE_MOVE - ev.layerX;
+		if (this.x > stage.width-MOUSE_MOVE)
+			rateX = -this.x + stage.width-MOUSE_MOVE;
+		else if (this.x < MOUSE_MOVE)
+			rateX = MOUSE_MOVE - this.x;
 		else
 			rateX = 0;
 
-		if (ev.layerY > stage.height-MOUSE_MOVE) 
-			rateY = -ev.layerY + stage.height-MOUSE_MOVE;
-		else if (ev.layerY < MOUSE_MOVE)
-			rateY = MOUSE_MOVE - ev.layerY;
+		if (this.y > stage.height-MOUSE_MOVE) 
+			rateY = -this.y + stage.height-MOUSE_MOVE;
+		else if (this.y < MOUSE_MOVE)
+			rateY = MOUSE_MOVE - this.y;
 		else
 			rateY = 0;
 	},
@@ -108,11 +108,7 @@ var
 		height: stage.height
 	})
 ;
-	stage.canvas.addEventListener('mousemove', mouse);
-
-	this.on_destroy = function() {
-		stage.canvas.removeEventListener('mousemove', mouse);
-	}
+	mouse.mousemove = onmouse;
 
 	map.paint = j5g3.Paint.Isometric;
 	stage.add([map, update]);

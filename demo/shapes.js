@@ -37,10 +37,10 @@ var
 	
 	old,
 
-	on_mouse = function(ev)
+	on_mouse = function()
 	{
 		if (old) old.line_width = 1; 
-		if (old = stage.at(ev.layerX, ev.layerY))
+		if ((old = stage.at(this.x, this.y)))
 			old.line_width = 5;
 	}
 
@@ -48,14 +48,9 @@ var
 	for (i=0; i<MAX; i++)
 		this.stage.add(create());
 
-	stage.canvas.addEventListener('mousemove', on_mouse);
+	mouse.mousemove = on_mouse;
 	stage.scale(0.7, 0.7);
 	stage.pos(100,50);
-
-	this.on_destroy = function()
-	{
-		stage.canvas.removeEventListener('mousemove', on_mouse);
-	}
 
 	this.fps(32).run();
 })

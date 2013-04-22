@@ -137,7 +137,7 @@ var
 			if (this.selected.length > 1)
 			{
 				this.selected.forEach(this.popBubble.bind(this));
-				this.score.text = parseInt(this.score.text) + this.getPoints(this.selected.length);
+				this.score.text = parseInt(this.score.text, 10) + this.getPoints(this.selected.length);
 				this.checkColumns();
 				this.select(this.selected[0].boardX, this.selected[0].boardY);
 			}
@@ -185,33 +185,22 @@ var
 
 		canvas: null,
 
-		onMouseMove: function(ev)
+		onMouseMove: function()
 		{
 			this.board.reset();
-			this.board.select(Math.floor(ev.layerX/TW), Math.floor(ev.layerY/TH));
+			this.board.select(Math.floor(mouse.x/TW), Math.floor(mouse.y/TH));
 		},
 
-		onClick: function(ev)
+		onClick: function()
 		{
 			this.board.pop();
 		},
 
-		onDestroy: function()
-		{
-			this.canvas.removeEventListener('mousemove', this._onMouseMove);
-			this.canvas.removeEventListener('click', this._onClick);
-		},
-
 		init: function(engine)
 		{
-			this._onMouseMove = this.onMouseMove.bind(this);
-			this._onClick = this.onClick.bind(this);
-
 			this.canvas = engine.stage.canvas;
-			this.canvas.addEventListener('mousemove', this._onMouseMove);
-			this.canvas.addEventListener('click', this._onClick);
-
-			engine.on_destroy = this.onDestroy.bind(this);
+			mouse.mousemove = this.onMouseMove.bind(this);
+			mouse.click = this.onClick.bind(this);
 
 			this.engine = engine;
 			this.board = new Board();

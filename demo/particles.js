@@ -2,7 +2,6 @@
 (function (j5g3)
 {
 var
-	x=0, y=0,
 	duration = 22,
 
 	diamond = j5g3.dom.image("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAPxJREFUeNqckzEKwjAUhlPB6hm8QUd1EbpVRHAS0eO0N3DuIVx0EaSoHbtoR2/gFVorGv/oSwnRIfHBlwba/Pnf63sO53zDGLuCNdgxs/DAAvQZBCL+iQfIwRL4gGl4IAQpKOlM7IgXUMpBS7nhDs4gARUIwAC0lW+eYCLVU24fwi1rkNqe2cfhvSr5FRa3V7JOapGOFgKZPNf4smQWidyoAq6FQPVLYGQhENQ7ysWnwphGQYWvHcxA08KBaKi5mkLwRx8MxSJaeYznVqtHCTL6My7Vp6e5vIGuyD+mvEpq6VDmp+HToOU0eCIih8b5BFbgYmhfuJ6CzkuAAQBw8IUZ2uqgnAAAAABJRU5ErkJggg=="),
@@ -11,7 +10,7 @@ var
 
 	on_emit= function(clip)
 	{
-		clip.pos(x+j5g3.rand(60)-30, y+j5g3.rand(60)-30)
+		clip.pos(mouse.x+j5g3.rand(60)-30, mouse.y+j5g3.rand(60)-30)
 		    .scale(0.5, 0.5)
 		;
 		clip.source = ([diamond, star])[j5g3.irand(2)];
@@ -25,11 +24,6 @@ var
 	e1 = j5g3.emitter({ source: j5g3.Dot, life: duration, on_emit: on_emit }),
 	e2 = j5g3.emitter({ source: j5g3.Image, life: duration, on_emit: on_emit }),
 
-	mouse = function(evt)
-	{
-		x = evt.layerX; y = evt.layerY;
-	},
-
 	canvas = this.stage.canvas
 ;
 	canvas.style.backgroundColor = 'black';
@@ -38,7 +32,7 @@ var
 	{
 		canvas.removeEventListener('mousemove', mouse);
 		canvas.style.backgroundColor = '';
-	}
+	};
 
 	canvas.addEventListener('mousemove', mouse);
 	this.stage.add([ e1, e2 ]);
