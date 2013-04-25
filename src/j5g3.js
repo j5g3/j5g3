@@ -1305,6 +1305,9 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	var
 		frame = this.frame
 	;
+		if (display_object.parent)
+			display_object.remove();
+
 		frame.previous.next = display_object;
 		display_object.previous = frame.previous;
 		display_object.next = frame;
