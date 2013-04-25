@@ -115,8 +115,7 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		if (!j5g3.support.audio[ext])
 			src = src.replace(
 				new RegExp("\\."+ext+'$'),
-				'.' + j5g3.support.audio.default
-			);
+				'.' + j5g3.support.audio.preferred);
 		return this.el('AUDIO', src);
 	},
 

@@ -2347,13 +2347,5 @@ j5g3.engine = f(j5g3.Engine);
 
 window.j5g3 = j5g3;
 
-// TODO This might not be a good idea.
-window.CanvasGradient.prototype.at = function(offset, color)
-{
-	color = color || 'transparent';
-	this.addColorStop(offset, color);
-	return this;
-};
-
 })(this);
 

@@ -70,7 +70,7 @@ var
 		for (var i in j5g3.support.audio)
 			if (j5g3.support.audio[i])
 			{
-				j5g3.support.audio.default = i;
+				j5g3.support.audio.preferred = i;
 				break;
 			}
 	}
