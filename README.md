@@ -10,15 +10,15 @@ Building j5g3
 
 1. Install dependencies
 
-	npm install
+    npm install
 
 2. Install Grunt command line tool
 
-	sudo npm -g install grunt-cli 
+    sudo npm -g install grunt-cli 
 
 3. Run default grunt task
 
-	grunt
+    grunt
 
 ### Dependencies ###
 
