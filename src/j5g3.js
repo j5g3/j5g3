@@ -314,6 +314,18 @@ j5g3.Draw =
 		this.screen.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.screen.drawImage(this.renderCanvas, 0, 0);
 	},
+	
+	/**
+	 * Renders directly to canvas.
+	 */
+	RootDirect: function()
+	{
+		var context = this.context;
+		this.clearRect(0,0,this.canvas.width, this.canvas.height);
+		this.begin(context);
+		this.paint(context);
+		this.end(context);
+	},
 
 	/**
 	 * Draws Image with no transformations only translation
@@ -358,13 +370,11 @@ j5g3.Paint = {
 	Sprite: function (context)
 	{
 	var
-		src = this.source,
-		w = this.width,
-		h = this.height
+		src = this.source
 	;
 		context.drawImage(
 			src.image, src.x, src.y, src.w, src.h,
-			this.cx, this.cy, w ? w : src.w, h ? h : src.h
+			this.cx, this.cy, this.width, this.height
 		);
 	},
 
@@ -1124,10 +1134,11 @@ j5g3.Image = j5g3.DisplayObject.extend(
 
 	init: function j5g3Image(properties)
 	{
-		if (typeof(properties)==='string')
-			properties = { source: j5g3.id(properties) };
-		else if (properties instanceof window.HTMLElement)
-			properties = { source: properties };
+		switch(j5g3.get_type(properties))
+		{
+		case 'string': properties = { source: j5g3.id(properties) }; break;
+		case 'dom': properties = { source: properties }; break;
+		}
 
 		j5g3.DisplayObject.apply(this, [ properties ]);
 
@@ -1672,6 +1683,13 @@ j5g3.Sprite = j5g3.DisplayObject.extend({
 	init: function j5g3Sprite(p)
 	{
 		j5g3.DisplayObject.apply(this, [ p ]);
+
+		if (!this.source)
+			throw new Error("Invalid source property for Sprite");
+		if (this.width===null)
+			this.width = this.source.w;
+		if (this.height===null)
+			this.height = this.source.h;
 	},
 
 	paint: j5g3.Paint.Sprite
@@ -1711,14 +1729,14 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 			properties = {};
 		}
 
-		if (!properties.source)
-			throw new Error("Invalid source for Spritesheet.");
-
 		switch (j5g3.get_type(properties.source)) {
 		case 'string': case 'dom':
 			properties.source = new j5g3.Image(properties.source);
 			break;
 		}
+
+		if (!properties.source)
+			throw new Error("Invalid source for Spritesheet.");
 
 		if (properties.width === undefined && properties.source)
 			properties.width = properties.source.width;
