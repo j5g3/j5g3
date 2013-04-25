@@ -27,6 +27,18 @@ var
 	audioEl = j5g3.dom('audio')
 ;
 
+	/// bind() polyfill
+	if (!Function.prototype.bind)
+		Function.prototype.bind = function(scope)
+		{
+			var me = this;
+			return function() { me.apply(scope, arguments); };
+		};
+
+	/// HTMLAudioElement polyfill
+	if (!window.HTMLAudioElement)
+		window.HTMLAudioElement = window.Audio;
+
 	if (!window.requestAnimationFrame)
 		window.requestAnimationFrame = window.mozRequestAnimationFrame ||
 			window.msRequestAnimationFrame ||

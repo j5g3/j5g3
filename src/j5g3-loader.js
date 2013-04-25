@@ -94,10 +94,16 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 					me.on_source(source);
 			}, false);
 
+			result.addEventListener('error', function() {
+				source.ready = true;
+				window.console.warn('Could not load asset: ' + src);
+			}, false);
+
 			result.setAttribute('src', src);
 
 			this.length++;
-		}
+		} else
+			result = result.el;
 
 		return result;
 	},

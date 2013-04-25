@@ -113,5 +113,9 @@ var
 		return source;
 	};
 
+	if (j5g3.Loader)
+	{
+	}
+
 })(this, this.j5g3);
 

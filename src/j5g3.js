@@ -153,6 +153,7 @@ extend(j5g3, {/** @scope j5g3 */
 			if (obj instanceof j5g3.Class) return 'j5g3';
 
 			if (obj instanceof window.HTMLElement) return 'dom';
+			if (obj instanceof window.Image) return 'dom';
 			if (obj instanceof window.HTMLAudioElement) return 'audio';
 		}
 
@@ -1478,20 +1479,6 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 		return this.size(w, h);
 	},
 
-	/**
-	 * Basic event handling. Attaches handler to canvas event.
-	 */
-	on: function(event, handler, scope)
-	{
-		handler.scoped = handler.bind(scope || this);
-		this.canvas.addEventListener(event, handler.scoped);
-	},
-
-	un: function(event, handler)
-	{
-		this.canvas.removeEventListener(event, handler.scoped);
-	},
-
 	draw: j5g3.Draw.Root
 
 });
@@ -1723,6 +1710,9 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 		case 'undefined':
 			properties = {};
 		}
+
+		if (!properties.source)
+			throw new Error("Invalid source for Spritesheet.");
 
 		switch (j5g3.get_type(properties.source)) {
 		case 'string': case 'dom':
