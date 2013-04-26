@@ -97,7 +97,7 @@ var
 	player.F = 0;
 	computer.v = 0;
 
-	this.stage.canvas.onmousemove = mouse;
+	mouse.move = mouse;
 	this.fps(32);
 
 	this.stage.add([ player, computer, ball, score1, score2, update, ai]);

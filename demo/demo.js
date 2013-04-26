@@ -13,7 +13,7 @@ var
 		if (g3)
 			g3.destroy();
 			
-		mice.mousemove = mice.click = null;
+		mouse.move = mouse.click = null;
 
 		demoObj = eval(code); 
 

@@ -153,6 +153,7 @@ extend(j5g3, {/** @scope j5g3 */
 			if (obj instanceof j5g3.Class) return 'j5g3';
 
 			if (obj instanceof window.HTMLElement) return 'dom';
+			if (obj instanceof window.Image) return 'dom';
 			if (obj instanceof window.HTMLAudioElement) return 'audio';
 		}
 
@@ -315,6 +316,27 @@ j5g3.Draw =
 	},
 
 	/**
+	 * Renders directly to canvas.
+	 */
+	RootDirect: function()
+	{
+		var context = this.context;
+		this.clearRect(0,0,this.canvas.width, this.canvas.height);
+		this.begin(context);
+		this.paint(context);
+		this.end(context);
+	},
+
+	/**
+	 * Draws only if DisplayObject is dirty.
+	 */
+	/*
+	Dirty: function(context)
+	{
+	},
+	*/
+
+	/**
 	 * Draws Image with no transformations only translation
 	 */
 	FastImage: function(context)
@@ -328,8 +350,8 @@ j5g3.Draw =
 	Cache: function(context)
 	{
 		context.drawImage(
-			this.source, this.x, this.y, this.width, this.height,
-			this.x, this.y, this.width, this.height
+			this._cache_source, 0, 0, this.width, this.height,
+			this.x + this.cx, this.y + this.cy, this.width, this.height
 		);
 	}
 };
@@ -357,13 +379,11 @@ j5g3.Paint = {
 	Sprite: function (context)
 	{
 	var
-		src = this.source,
-		w = this.width,
-		h = this.height
+		src = this.source
 	;
 		context.drawImage(
 			src.image, src.x, src.y, src.w, src.h,
-			this.cx, this.cy, w ? w : src.w, h ? h : src.h
+			this.cx, this.cy, this.width, this.height
 		);
 	},
 
@@ -498,31 +518,36 @@ j5g3.Cache = {
 	/**
 	 * Caches content into a separate canvas. TODO Optimize
 	 */
-	Canvas: function(context, w, h)
+	Canvas: function(w, h)
 	{
 	var
 		me = this,
-		pc = context,
-		cache_canvas = j5g3.dom('CANVAS')
+		cache_canvas = j5g3.dom('CANVAS'),
+		cache_context
 	;
 		w = w || me.width;
 		h = h || me.height;
 
 		// This will also clear the canvas.
-		cache_canvas.width = me.x + w;
-		cache_canvas.height= me.y + h;
+		cache_canvas.width = w;
+		cache_canvas.height= h;
 
-		context = cache_canvas.getContext('2d');
+		cache_context = cache_canvas.getContext('2d', false);
+		cache_context.translate(-me.x-me.cx, -me.y-me.cy);
+		/*
+		cache_context.webkitImageSmoothingEnabled =
+		cache_context.imageSmoothingEnabled =
+			context.imageSmoothingEnabled;
+		*/
+
 		me.clear_cache();
+		me.draw(cache_context);
 
-		me.draw(context);
-
-		me.source = cache_canvas;
+		//image.src = cache_canvas.toDataURL();
+		me._cache_source = cache_canvas;
 
 		me._oldPaint= me.draw;
 		me.draw = j5g3.Draw.Cache;
-
-		context = pc;
 
 		return this;
 	},
@@ -1123,10 +1148,11 @@ j5g3.Image = j5g3.DisplayObject.extend(
 
 	init: function j5g3Image(properties)
 	{
-		if (typeof(properties)==='string')
-			properties = { source: j5g3.id(properties) };
-		else if (properties instanceof window.HTMLElement)
-			properties = { source: properties };
+		switch(j5g3.get_type(properties))
+		{
+		case 'string': properties = { source: j5g3.id(properties) }; break;
+		case 'dom': properties = { source: properties }; break;
+		}
 
 		j5g3.DisplayObject.apply(this, [ properties ]);
 
@@ -1305,6 +1331,9 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	var
 		frame = this.frame
 	;
+		if (display_object.parent)
+			display_object.remove();
+
 		frame.previous.next = display_object;
 		display_object.previous = frame.previous;
 		display_object.next = frame;
@@ -1450,7 +1479,11 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 		this.context = this.renderCanvas.getContext('2d');
 		this.screen  = this.canvas.getContext('2d');
 
-		this.screen.imageSmoothingEnabled = this.context.imageSmoothingEnabled = this.smoothing;
+		this.screen.imageSmoothingEnabled =
+		this.context.imageSmoothingEnabled =
+		this.screen.webkitImageSmoothingEnabled =
+		this.context.webkitImageSmoothingEnabled =
+			this.smoothing;
 
 		this.resolution(
 			this.width || this.canvas.clientWidth,
@@ -1473,20 +1506,6 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 		this.canvas.height= this.renderCanvas.height= h;
 
 		return this.size(w, h);
-	},
-
-	/**
-	 * Basic event handling. Attaches handler to canvas event.
-	 */
-	on: function(event, handler, scope)
-	{
-		handler.scoped = handler.bind(scope || this);
-		this.canvas.addEventListener(event, handler.scoped);
-	},
-
-	un: function(event, handler)
-	{
-		this.canvas.removeEventListener(event, handler.scoped);
 	},
 
 	draw: j5g3.Draw.Root
@@ -1682,6 +1701,13 @@ j5g3.Sprite = j5g3.DisplayObject.extend({
 	init: function j5g3Sprite(p)
 	{
 		j5g3.DisplayObject.apply(this, [ p ]);
+
+		if (!this.source)
+			throw new Error("Invalid source property for Sprite");
+		if (this.width===null)
+			this.width = this.source.w;
+		if (this.height===null)
+			this.height = this.source.h;
 	},
 
 	paint: j5g3.Paint.Sprite
@@ -1726,6 +1752,9 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 			properties.source = new j5g3.Image(properties.source);
 			break;
 		}
+
+		if (!properties.source)
+			throw new Error("Invalid source for Spritesheet.");
 
 		if (properties.width === undefined && properties.source)
 			properties.width = properties.source.width;
@@ -2100,26 +2129,32 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 		me = this
 	;
 		if (me.process)
-		{
-			window.clearInterval(me.process);
-			window.clearAnimationFrame(me.process);
-		}
-
-		me._scopedLoop = me._gameLoop.bind(me);
-		me._rafScopedLoop= me._rafGameLoop.bind(me);
+			me.clear_process();
 
 		if (me.use_animation_frame)
-			me.process = window.requestAnimationFrame(me._rafScopedLoop);
+		{
+			me._rafScopedLoop= me._rafGameLoop.bind(me);
+			me._rafGameLoop();
+		}
 		else
+		{
+			me._scopedLoop = me._gameLoop.bind(me);
 			me.process = window.setInterval(me._scopedLoop, me.__fps);
+		}
 
-		return this;
+		return me;
+	},
+
+	clear_process: function()
+	{
+		window.clearInterval(this.process);
+		window.cancelAnimationFrame(this.process);
 	},
 
 	destroy: function()
 	{
 		if (this.process)
-			window.clearInterval(this.process);
+			this.clear_process();
 
 		this._rafScopedLoop = function() { };
 
@@ -2133,7 +2168,7 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	_rafGameLoop: function()
 	{
 		this.stage.draw();
-		window.requestAnimationFrame(this._rafScopedLoop);
+		this.process = window.requestAnimationFrame(this._rafScopedLoop);
 	},
 
 	/**
@@ -2343,14 +2378,6 @@ j5g3.html   = f(j5g3.Html);
 j5g3.engine = f(j5g3.Engine);
 
 window.j5g3 = j5g3;
-
-// TODO This might not be a good idea.
-window.CanvasGradient.prototype.at = function(offset, color)
-{
-	color = color || 'transparent';
-	this.addColorStop(offset, color);
-	return this;
-};
 
 })(this);
 

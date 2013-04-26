@@ -108,7 +108,7 @@ var
 		height: stage.height
 	})
 ;
-	mouse.mousemove = onmouse;
+	mouse.move = onmouse;
 
 	map.paint = j5g3.Paint.Isometric;
 	stage.add([map, update]);

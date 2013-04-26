@@ -18,30 +18,6 @@ var
 			throw new Error(msg);
 		},
 
-		/**
-		 * Wrapper for window.console.log().
-		 */
-		log: function()
-		{
-			window.console.log.apply(window.console, arguments); return this;
-		},
-
-		/**
-		 * Wrapper for window.console.info().
-		 */
-		info: function()
-		{
-			window.console.info.apply(window.console, arguments); return this;
-		},
-
-		/**
-		 * Wrapper for window.console.warn().
-		 */
-		warn: function()
-		{
-			window.console.warn.apply(window.console, arguments); return this;
-		},
-
 		fn: function(Klass, fn_name, pre, post)
 		{
 		var
@@ -61,6 +37,8 @@ var
 			};
 		}
 	},
+
+	console = window.console,
 
 	loop = function()
 	{
@@ -101,16 +79,13 @@ var
 	dbg.fn(j5g3.Clip, 'add_object', function(display_object)
 	{
 		if (display_object.parent)
-		{
-			dbg.warn('Trying to add DisplayObject without removing first.', display_object);
-			display_object.remove();
-		}
+			console.warn('Trying to add DisplayObject without removing first.', display_object);
 	});
 
 	j5g3.id = function(id) {
 		var result = window.document.getElementById(id);
 		if (!result)
-			dbg.warn('Could not find element with ID: ' + id);
+			console.warn('Could not find element with ID: ' + id);
 
 		return result;
 	};
@@ -120,10 +95,10 @@ var
 		for (var i in props)
 		{
 			if ((typeof this[i] === 'function') && i.indexOf('on_')!==0)
-				dbg.warn('Overriding function ' + i, this);
+				console.warn('Overriding function ' + i, this);
 
 			if (i[0]==='_')
-				dbg.warn('Overriding private member ' + i, this);
+				console.warn('Overriding private member ' + i, this);
 
 			this[i] = props[i];
 		}
@@ -138,6 +113,10 @@ var
 
 		return source;
 	};
+
+	if (j5g3.Loader)
+	{
+	}
 
 })(this, this.j5g3);
 

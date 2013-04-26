@@ -94,10 +94,16 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 					me.on_source(source);
 			}, false);
 
+			result.addEventListener('error', function() {
+				source.ready = true;
+				window.console.warn('Could not load asset: ' + src);
+			}, false);
+
 			result.setAttribute('src', src);
 
 			this.length++;
-		}
+		} else
+			result = result.el;
 
 		return result;
 	},
@@ -115,8 +121,7 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		if (!j5g3.support.audio[ext])
 			src = src.replace(
 				new RegExp("\\."+ext+'$'),
-				'.' + j5g3.support.audio.default
-			);
+				'.' + j5g3.support.audio.preferred);
 		return this.el('AUDIO', src);
 	},
 

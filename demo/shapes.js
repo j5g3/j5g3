@@ -48,7 +48,7 @@ var
 	for (i=0; i<MAX; i++)
 		this.stage.add(create());
 
-	mouse.mousemove = on_mouse;
+	mouse.move = on_mouse;
 	stage.scale(0.7, 0.7);
 	stage.pos(100,50);
 
