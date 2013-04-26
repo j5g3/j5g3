@@ -199,7 +199,7 @@ var
 		init: function(engine)
 		{
 			this.canvas = engine.stage.canvas;
-			mouse.mousemove = this.onMouseMove.bind(this);
+			mouse.move = this.onMouseMove.bind(this);
 			mouse.click = this.onClick.bind(this);
 
 			this.engine = engine;

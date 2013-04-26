@@ -314,7 +314,7 @@ j5g3.Draw =
 		this.screen.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.screen.drawImage(this.renderCanvas, 0, 0);
 	},
-	
+
 	/**
 	 * Renders directly to canvas.
 	 */
@@ -326,6 +326,15 @@ j5g3.Draw =
 		this.paint(context);
 		this.end(context);
 	},
+
+	/**
+	 * Draws only if DisplayObject is dirty.
+	 */
+	/*
+	Dirty: function(context)
+	{
+	},
+	*/
 
 	/**
 	 * Draws Image with no transformations only translation
@@ -341,8 +350,8 @@ j5g3.Draw =
 	Cache: function(context)
 	{
 		context.drawImage(
-			this.source, this.x, this.y, this.width, this.height,
-			this.x, this.y, this.width, this.height
+			this._cache_source, 0, 0, this.width, this.height,
+			this.x + this.cx, this.y + this.cy, this.width, this.height
 		);
 	}
 };
@@ -509,31 +518,36 @@ j5g3.Cache = {
 	/**
 	 * Caches content into a separate canvas. TODO Optimize
 	 */
-	Canvas: function(context, w, h)
+	Canvas: function(w, h)
 	{
 	var
 		me = this,
-		pc = context,
-		cache_canvas = j5g3.dom('CANVAS')
+		cache_canvas = j5g3.dom('CANVAS'),
+		cache_context
 	;
 		w = w || me.width;
 		h = h || me.height;
 
 		// This will also clear the canvas.
-		cache_canvas.width = me.x + w;
-		cache_canvas.height= me.y + h;
+		cache_canvas.width = w;
+		cache_canvas.height= h;
 
-		context = cache_canvas.getContext('2d');
+		cache_context = cache_canvas.getContext('2d', false);
+		cache_context.translate(-me.x-me.cx, -me.y-me.cy);
+		/*
+		cache_context.webkitImageSmoothingEnabled =
+		cache_context.imageSmoothingEnabled =
+			context.imageSmoothingEnabled;
+		*/
+
 		me.clear_cache();
+		me.draw(cache_context);
 
-		me.draw(context);
-
-		me.source = cache_canvas;
+		//image.src = cache_canvas.toDataURL();
+		me._cache_source = cache_canvas;
 
 		me._oldPaint= me.draw;
 		me.draw = j5g3.Draw.Cache;
-
-		context = pc;
 
 		return this;
 	},
@@ -1465,7 +1479,11 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 		this.context = this.renderCanvas.getContext('2d');
 		this.screen  = this.canvas.getContext('2d');
 
-		this.screen.imageSmoothingEnabled = this.context.imageSmoothingEnabled = this.smoothing;
+		this.screen.imageSmoothingEnabled =
+		this.context.imageSmoothingEnabled =
+		this.screen.webkitImageSmoothingEnabled =
+		this.context.webkitImageSmoothingEnabled =
+			this.smoothing;
 
 		this.resolution(
 			this.width || this.canvas.clientWidth,
@@ -2111,26 +2129,32 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 		me = this
 	;
 		if (me.process)
-		{
-			window.clearInterval(me.process);
-			window.clearAnimationFrame(me.process);
-		}
-
-		me._scopedLoop = me._gameLoop.bind(me);
-		me._rafScopedLoop= me._rafGameLoop.bind(me);
+			me.clear_process();
 
 		if (me.use_animation_frame)
-			me.process = window.requestAnimationFrame(me._rafScopedLoop);
+		{
+			me._rafScopedLoop= me._rafGameLoop.bind(me);
+			me._rafGameLoop();
+		}
 		else
+		{
+			me._scopedLoop = me._gameLoop.bind(me);
 			me.process = window.setInterval(me._scopedLoop, me.__fps);
+		}
 
-		return this;
+		return me;
+	},
+
+	clear_process: function()
+	{
+		window.clearInterval(this.process);
+		window.cancelAnimationFrame(this.process);
 	},
 
 	destroy: function()
 	{
 		if (this.process)
-			window.clearInterval(this.process);
+			this.clear_process();
 
 		this._rafScopedLoop = function() { };
 
@@ -2144,7 +2168,7 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	_rafGameLoop: function()
 	{
 		this.stage.draw();
-		window.requestAnimationFrame(this._rafScopedLoop);
+		this.process = window.requestAnimationFrame(this._rafScopedLoop);
 	},
 
 	/**

@@ -28,13 +28,6 @@ var
 ;
 	canvas.style.backgroundColor = 'black';
 
-	this.on_destroy = function()
-	{
-		canvas.removeEventListener('mousemove', mouse);
-		canvas.style.backgroundColor = '';
-	};
-
-	canvas.addEventListener('mousemove', mouse);
 	this.stage.add([ e1, e2 ]);
 
 	this.fps(60).run();						
