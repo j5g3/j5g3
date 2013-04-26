@@ -1278,27 +1278,24 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		frame = this.frame,
 		next = frame
 	;
+		if (this.update_frame)
+			this.update_frame();
+
 		while ((next=next._next) !== frame)
 			if (next.update)
 				next.update();
 
 		if (this._playing)
-			this.next_frame();
+		{
+			this._frame = (this._frame===this._frames.length-1) ? 0 : (this._frame + 1);
+			this.frame = this._frames[this._frame];
+		}
 	},
 
 	/**
 	 * Current frame objects.
 	 */
 	frame: null,
-
-	/**
-	 * Sets next frame index.
-	 */
-	next_frame: function()
-	{
-		this._frame = (this._frame===this._frames.length-1) ? 0 : (this._frame + 1);
-		this.frame = this._frames[this._frame];
-	},
 
 	paint: j5g3.Paint.Container,
 
