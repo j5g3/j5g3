@@ -398,9 +398,6 @@ j5g3.Paint = {
 	;
 		while ((next=next._next) !== frame)
 			next.draw(context);
-
-		if (this._playing)
-			this.next_frame();
 	},
 
 	/**
@@ -980,6 +977,12 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	},
 
 	/**
+	 * Runs logic
+	 * @type {Function}
+	 */
+	update: null,
+
+	/**
 	 * Removes DisplayObject from container
 	 */
 	remove: function()
@@ -1267,6 +1270,21 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 
 	/** Function to call after construction */
 	setup: undefined,
+
+	/** Run Stage Logic */
+	update: function()
+	{
+	var
+		frame = this.frame,
+		next = frame
+	;
+		while ((next=next._next) !== frame)
+			if (next.update)
+				next.update();
+
+		if (this._playing)
+			this.next_frame();
+	},
 
 	/**
 	 * Current frame objects.
@@ -1930,7 +1948,7 @@ j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 	/**
 	 * Callback to execute every time a particle is spawn.
 	 */
-	on_emit: function() { },
+	on_emit: null,
 
 	/**
 	 * Number of particles to emit by frame.
@@ -1957,20 +1975,19 @@ j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 	var
 		clip = this.spawn()
 	;
-		this.add(clip).on_emit(clip);
+		this.add(clip);
+
+		if (this.on_emit)
+			this.on_emit(clip);
 	},
 
-	_paint: j5g3.Paint.Container,
-
-	paint: function(context)
+	update: function()
 	{
 	var
 		i = this.count
 	;
 		while (i--)
 			this._emit();
-
-		this._paint(context);
 	}
 
 });
@@ -2064,12 +2081,14 @@ j5g3.Action = j5g3.Class.extend(
 	/**
 	 * Code to execute
 	 */
-	draw: j5g3.Void,
+	update: null,
+
+	draw: j5g3.Draw.Void,
 
 	init: function j5g3Action(p)
 	{
 		if (j5g3.get_type(p)==='function')
-			p = { draw: p };
+			p = { update: p };
 
 		this._init(p);
 	},
@@ -2103,13 +2122,17 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 
 	version: '0.9.0',
 
-	/**
-	 * Whether or not to use animation frame. FPS is always 60.
-	 */
-	use_animation_frame: true,
-
 	/* Frames per Second */
 	__fps: 31,
+
+	/** Scoped render loop */
+	_renderLoopFn: null,
+	/** Scoped game loop */
+	_gameLoopFn: null,
+	/** Render Loop id */
+	_renderLoopId: 0,
+	/** GameLoopId */
+	_gameLoopId: 0,
 
 	/**
 	 * Starts the engine.
@@ -2119,35 +2142,28 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	var
 		me = this
 	;
-		if (me.process)
-			me.clear_process();
+		me.clear_process();
 
-		if (me.use_animation_frame)
-		{
-			me._rafScopedLoop= me._rafGameLoop.bind(me);
-			me._rafGameLoop();
-		}
-		else
-		{
-			me._scopedLoop = me._gameLoop.bind(me);
-			me.process = window.setInterval(me._scopedLoop, me.__fps);
-		}
+		me._renderLoopFn = me._renderLoop.bind(me);
+		me._renderLoop();
+
+		me._gameLoopFn = me._gameLoop.bind(me);
+		me._gameLoopId = window.setInterval(me._gameLoopFn, me.__fps);
 
 		return me;
 	},
 
 	clear_process: function()
 	{
-		window.clearInterval(this.process);
-		window.cancelAnimationFrame(this.process);
+		window.clearInterval(this._gameLoopId);
+		window.cancelAnimationFrame(this._renderLoopId);
 	},
 
 	destroy: function()
 	{
-		if (this.process)
-			this.clear_process();
+		this.clear_process();
 
-		this._rafScopedLoop = function() { };
+		this._renderLoopFn = function() { };
 
 		if (this.on_destroy)
 			this.on_destroy();
@@ -2156,10 +2172,10 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	/**
 	 * Game Loop for requestAnimationFrame
 	 */
-	_rafGameLoop: function()
+	_renderLoop: function()
 	{
 		this.stage.draw();
-		this.process = window.requestAnimationFrame(this._rafScopedLoop);
+		this._renderLoopId = window.requestAnimationFrame(this._renderLoopFn);
 	},
 
 	/**
@@ -2167,7 +2183,7 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	 */
 	_gameLoop: function()
 	{
-		this.stage.draw();
+		this.stage.update();
 	},
 
 	startFn: function() { },

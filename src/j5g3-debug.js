@@ -39,13 +39,13 @@ var
 
 	console = window.console,
 
-	loop = function()
+	loop = function(time)
 	{
 	var
 		screen = this.stage.screen
 	;
 		this._oldTime = this._time;
-		this._time = (new Date()).getTime();
+		this._time = time; //(new Date()).getTime();
 
 		screen.save();
 		screen.fillStyle = '#009900';
@@ -55,8 +55,7 @@ var
 		screen.restore();
 	}
 ;
-	dbg.fn(j5g3.Engine, '_gameLoop', null, loop);
-	dbg.fn(j5g3.Engine, '_rafGameLoop', null, loop);
+	dbg.fn(j5g3.Engine, '_renderLoop', null, loop);
 
 	j5g3.Class.prototype.toString = function()
 	{

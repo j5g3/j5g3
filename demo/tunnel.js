@@ -14,39 +14,47 @@ var
 	x, y, cursor,
 
 	texture = this.imagedata(txtimg),
-	display = this.imagedata(),
-	distances = new Array(display.data.length),
-	angles = new Array(distances.length),
-
-	shiftX = TEXTUREWIDTH, shiftY = TEXTUREHEIGHT,
 
 	TW4 = TEXTUREWIDTH * 4,
-	context = this.stage.context,
 
-	draw = function()
-	{
-	var
-		c, data=display.data, tdata=texture.data, cursor=data.length
-	;
-		shiftX ++; //= 3;
-		shiftY ++; 
-
-		while (cursor-=4)
+	draw = j5g3.image({
+		
+		display: this.imagedata(),
+		
+		shiftX: TEXTUREWIDTH, 
+		shiftY: TEXTUREHEIGHT,
+		
+		update: function()
 		{
-			c =	(distances[cursor] + shiftX) % TEXTUREWIDTH * 4 + 
-				(((angles[cursor] + shiftY) % TEXTUREHEIGHT) * TW4)
-			;
-
-			data[cursor] = tdata[c];
-			data[cursor+1] = tdata[c+1];
-			data[cursor+2] = tdata[c+2];
+		var
+			c, 
+			data=this.display.data, 
+			tdata=texture.data, 
+			cursor=data.length,
+			sx = this.shiftX++,
+			sy = this.shiftY++
+		;
+			while ((cursor-=4))
+			{
+				c =	(distances[cursor] + sx) % TEXTUREWIDTH * 4 + 
+					(((angles[cursor] + sy) % TEXTUREHEIGHT) * TW4)
+				;
+	
+				data[cursor] = tdata[c];
+				data[cursor+1] = tdata[c+1];
+				data[cursor+2] = tdata[c+2];
+			}
+		},
+		
+		draw: function(context)
+		{
+			context.putImageData(this.display, 0, 0);
 		}
-
-		context.putImageData(display, 0, 0);
-	}
-
+	}),
+	
+	distances = new Array(draw.display.data.length),
+	angles = new Array(distances.length)
 ;
-
 	for (y=0, cursor=0; y<HEIGHT; y++)
 		for (x=0; x<WIDTH; x++, cursor+=4)
 		{
@@ -57,7 +65,7 @@ var
 			angles[cursor] = Math.round(TEXTUREWIDTH / 2 * Math.atan2(y - HEIGHT / 2, x - WIDTH / 2) / Math.PI);
 
 			// Initialize alpha to 255!
-			display.data[x * 4 + y * WIDTH * 4 + 3] = 255;
+			draw.display.data[x * 4 + y * WIDTH * 4 + 3] = 255;
 		}
 
 	this.stage.add(draw);
