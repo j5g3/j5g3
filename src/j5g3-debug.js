@@ -9,6 +9,7 @@ var
 
 	/**
 	 * Debug Module for j5g3
+	 * @namespace
 	 */
 	j5g3.dbg = {
 
