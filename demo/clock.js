@@ -14,7 +14,7 @@ var
 	update = function() 
 	{
 	var 
-		t = new Date,
+		t = new Date(),
 		pi = Math.PI,
 		_secs = t.getSeconds() + t.getMilliseconds() / 1000,
 		_mins = t.getMinutes() + _secs / 60,
@@ -32,7 +32,7 @@ var
 ;
 	
 	this.stage.add([ hour, mins, secs, update ])
-		 .align_children('center middle')
+		.align_children('center middle')
 	;
 
 	this.stage.canvas.style.backgroundColor = 'white';

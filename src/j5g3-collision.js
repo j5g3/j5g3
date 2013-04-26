@@ -167,7 +167,7 @@ j5g3.CollisionTest = {
 			width: obj.width, height: obj.height
 		}
 	;
-		while ((prev = prev.previous)!==frame)
+		while ((prev = prev._previous)!==frame)
 			if ((result = prev.collides && prev.collides(tobj)))
 				break;
 

@@ -396,11 +396,8 @@ j5g3.Paint = {
 		frame = this.frame,
 		next = frame
 	;
-		while ((next=next.next) !== frame)
+		while ((next=next._next) !== frame)
 			next.draw(context);
-
-		if (this._playing)
-			this.next_frame();
 	},
 
 	/**
@@ -592,7 +589,7 @@ j5g3.HitTest = {
 	;
 		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
 
-		while ((previous = previous.previous) !== frame)
+		while ((previous = previous._previous) !== frame)
 			if ((result = previous.at(x, y, M)))
 				break;
 
@@ -835,13 +832,13 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	 * Next display object to render
 	 * @type {j5g3.DisplayObject}
 	 */
-	next: null,
+	_next: null,
 
 	/**
 	 * Previous display object
 	 * @type {j5g3.DisplayObject}
 	 */
-	previous: null,
+	_previous: null,
 
 	/**
 	 * Parent clip
@@ -915,9 +912,6 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 
 	dirty: true,
 
-	/** True if display object is being currently drawn */
-	is_drawing: false,
-
 	init: function j5g3DisplayObject(properties)
 	{
 		this.M = new j5g3.MatrixLite();
@@ -934,7 +928,6 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 		me = this,
 		m = this.M
 	;
-		me.is_drawing = true;
 		context.save();
 
 		if (me.alpha!==1) context.globalAlpha *= me.alpha;
@@ -957,7 +950,6 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	end: function(context)
 	{
 		context.restore();
-		this.drawing = false;
 	},
 
 	/**
@@ -985,16 +977,22 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	},
 
 	/**
+	 * Runs logic
+	 * @type {Function}
+	 */
+	update: null,
+
+	/**
 	 * Removes DisplayObject from container
 	 */
 	remove: function()
 	{
 		if (this.parent)
 		{
-			this.previous.next = this.next;
-			this.next.previous = this.previous;
+			this._previous._next = this._next;
+			this._next._previous = this._previous;
 
-			this.parent = this.previous = null;
+			this.parent = this._previous = null;
 		}
 		return this;
 	},
@@ -1099,12 +1097,12 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	},
 
 	/**
-	 * Sets properties and invalidates object.
+	 * Sets properties. 
 	 */
 	set: function(properties)
 	{
 		this.extend(properties);
-		return this.invalidate();
+		return this;
 	},
 
 	/**
@@ -1179,8 +1177,6 @@ j5g3.Image = j5g3.DisplayObject.extend(
 
 		if (this.width === null)  this.width = this.source.width;
 		if (this.height === null) this.height = this.source.height;
-
-		return this.invalidate();
 	}
 
 });
@@ -1275,19 +1271,31 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** Function to call after construction */
 	setup: undefined,
 
+	/** Run Stage Logic */
+	update: function()
+	{
+	var
+		frame = this.frame,
+		next = frame
+	;
+		if (this.update_frame)
+			this.update_frame();
+
+		while ((next=next._next) !== frame)
+			if (next.update)
+				next.update();
+
+		if (this._playing)
+		{
+			this._frame = (this._frame===this._frames.length-1) ? 0 : (this._frame + 1);
+			this.frame = this._frames[this._frame];
+		}
+	},
+
 	/**
 	 * Current frame objects.
 	 */
 	frame: null,
-
-	/**
-	 * Sets next frame index.
-	 */
-	next_frame: function()
-	{
-		this._frame = (this._frame===this._frames.length-1) ? 0 : (this._frame + 1);
-		this.frame = this._frames[this._frame];
-	},
 
 	paint: j5g3.Paint.Container,
 
@@ -1334,11 +1342,11 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		if (display_object.parent)
 			display_object.remove();
 
-		frame.previous.next = display_object;
-		display_object.previous = frame.previous;
-		display_object.next = frame;
+		frame._previous._next = display_object;
+		display_object._previous = frame._previous;
+		display_object._next = frame;
 		display_object.parent = this;
-		frame.previous = display_object;
+		frame._previous = display_object;
 
 		return this;
 	},
@@ -1351,7 +1359,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	var
 		frame = { }
 	;
-		frame.previous = frame.next = frame;
+		frame._previous = frame._next = frame;
 
 		this._frames.push(frame);
 		this.go(this._frames.length-1);
@@ -1364,7 +1372,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	 */
 	is_frame_empty: function()
 	{
-		return this.frame.next === this.frame;
+		return this.frame._next === this.frame;
 	},
 
 	/**
@@ -1400,7 +1408,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		while (l--)
 		{
 			next = frame = this._frames[l];
-			while ((next=next.next) !== frame)
+			while ((next=next._next) !== frame)
 				fn(next);
 		}
 
@@ -1673,9 +1681,7 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 		return this;
 	},
 
-	draw: null,
-
-	invalidate: function() { return this; }
+	draw: null
 
 }, {
 	Shake: function(target, radius, duration)
@@ -1939,7 +1945,7 @@ j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 	/**
 	 * Callback to execute every time a particle is spawn.
 	 */
-	on_emit: function() { },
+	on_emit: null,
 
 	/**
 	 * Number of particles to emit by frame.
@@ -1966,20 +1972,19 @@ j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 	var
 		clip = this.spawn()
 	;
-		this.add(clip).on_emit(clip);
+		this.add(clip);
+
+		if (this.on_emit)
+			this.on_emit(clip);
 	},
 
-	_paint: j5g3.Paint.Container,
-
-	paint: function(context)
+	update: function()
 	{
 	var
 		i = this.count
 	;
 		while (i--)
 			this._emit();
-
-		this._paint(context);
 	}
 
 });
@@ -2073,12 +2078,14 @@ j5g3.Action = j5g3.Class.extend(
 	/**
 	 * Code to execute
 	 */
-	draw: j5g3.Void,
+	update: null,
+
+	draw: j5g3.Draw.Void,
 
 	init: function j5g3Action(p)
 	{
 		if (j5g3.get_type(p)==='function')
-			p = { draw: p };
+			p = { update: p };
 
 		this._init(p);
 	},
@@ -2112,13 +2119,17 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 
 	version: '0.9.0',
 
-	/**
-	 * Whether or not to use animation frame. FPS is always 60.
-	 */
-	use_animation_frame: true,
-
 	/* Frames per Second */
 	__fps: 31,
+
+	/** Scoped render loop */
+	_renderLoopFn: null,
+	/** Scoped game loop */
+	_gameLoopFn: null,
+	/** Render Loop id */
+	_renderLoopId: 0,
+	/** GameLoopId */
+	_gameLoopId: 0,
 
 	/**
 	 * Starts the engine.
@@ -2128,35 +2139,28 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	var
 		me = this
 	;
-		if (me.process)
-			me.clear_process();
+		me.clear_process();
 
-		if (me.use_animation_frame)
-		{
-			me._rafScopedLoop= me._rafGameLoop.bind(me);
-			me._rafGameLoop();
-		}
-		else
-		{
-			me._scopedLoop = me._gameLoop.bind(me);
-			me.process = window.setInterval(me._scopedLoop, me.__fps);
-		}
+		me._renderLoopFn = me._renderLoop.bind(me);
+		me._renderLoop();
+
+		me._gameLoopFn = me._gameLoop.bind(me);
+		me._gameLoopId = window.setInterval(me._gameLoopFn, me.__fps);
 
 		return me;
 	},
 
 	clear_process: function()
 	{
-		window.clearInterval(this.process);
-		window.cancelAnimationFrame(this.process);
+		window.clearInterval(this._gameLoopId);
+		window.cancelAnimationFrame(this._renderLoopId);
 	},
 
 	destroy: function()
 	{
-		if (this.process)
-			this.clear_process();
+		this.clear_process();
 
-		this._rafScopedLoop = function() { };
+		this._renderLoopFn = function() { };
 
 		if (this.on_destroy)
 			this.on_destroy();
@@ -2165,10 +2169,10 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	/**
 	 * Game Loop for requestAnimationFrame
 	 */
-	_rafGameLoop: function()
+	_renderLoop: function()
 	{
 		this.stage.draw();
-		this.process = window.requestAnimationFrame(this._rafScopedLoop);
+		this._renderLoopId = window.requestAnimationFrame(this._renderLoopFn);
 	},
 
 	/**
@@ -2176,7 +2180,7 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	 */
 	_gameLoop: function()
 	{
-		this.stage.draw();
+		this.stage.update();
 	},
 
 	startFn: function() { },
@@ -2201,10 +2205,10 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 
 		j5g3.Class.apply(me, [ config ]);
 
-		if (!this.stage)
-			me.stage = new j5g3.Stage(this.stage_settings);
+		if (!me.stage)
+			me.stage = new j5g3.Stage(me.stage_settings);
 
-		me.startFn(j5g3, this);
+		me.startFn(j5g3, me);
 	},
 
 	/**

@@ -5,9 +5,10 @@
  * 
  * Events: 
  * 
- * - click
- * - dbclick
- * - move
+ * - click (ENTER)
+ * - fire (SPACEBAR or Right Click)
+ * - move (Mouse move or Touch Move)
+ * - left, right, down, up (Keys, touch or mouse)
  * 
  */
 (function(window) {
@@ -99,13 +100,15 @@ var
 		_click: function(ev)
 		{
 			this._calculate_pos(ev);
-			if (this.click) this.click(ev);
+			if (this.click) 
+				return this.click(ev);
 		},
 		
 		_mousemove: function(ev)
 		{
 			this._calculate_pos(ev);
-			if (this.move) this.move(ev);
+			if (this.move) 
+				return this.move(ev);
 		},
 		
 		_keydown: function(ev)
@@ -117,7 +120,7 @@ var
 			ev.mice = this;
 				
 			if (fn && this[fn])
-				this[fn](ev);
+				return this[fn](ev);
 		},
 		
 		_keyup: function(ev)
@@ -128,6 +131,8 @@ var
 		_touchstart: function(ev)
 		{
 			this._calculate_pos(ev);
+			this._tx = this.x;
+			this._ty = this.y;
 			if (this.click) this.click(ev);
 		},
 		
