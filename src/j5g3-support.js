@@ -32,7 +32,7 @@ var
 		Function.prototype.bind = function(scope)
 		{
 			var me = this;
-			return function() { me.apply(scope, arguments); };
+			return function() { return me.apply(scope, arguments); };
 		};
 
 	/// HTMLAudioElement polyfill

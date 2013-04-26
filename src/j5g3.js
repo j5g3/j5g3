@@ -1683,7 +1683,11 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 
 	draw: null
 
-}, {
+}, {/** @scope j5g3.Tween */
+
+	/**
+	 * Shakes screen.
+	 */
 	Shake: function(target, radius, duration)
 	{
 		radius = radius || 3;
