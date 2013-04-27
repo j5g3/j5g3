@@ -85,7 +85,7 @@ extend(j5g3, {/** @scope j5g3 */
 	/**
 	 * @return {number} A random integer number from 0 to max.
 	 */
-	irand: function(max) { return Math.floor(Math.random() * max); },
+	irand: function(max) { return Math.random() * max | 0; },
 
 	/**
 	 * Creates an array of w*h dimensions initialized with value v
@@ -476,8 +476,8 @@ j5g3.Paint = {
 	var
 		map = this.map, y = 0, x, l=map.length,
 		sprites = this.sprites, cm,
-		dx = Math.round(this.tw/2) + this.offsetX,
-		dy = Math.round(this.th/2) + this.offsetY,
+		dx = (this.tw/2|0) + this.offsetX,
+		dy = (this.th/2|0) + this.offsetY,
 		offset
 	;
 
@@ -2028,8 +2028,8 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 	{
 	var
         me = this,
-		nx = Math.round(x / me.tw),
-		ny = Math.round(y / (me.th/2 + me.offsetY))
+		nx = x / me.tw | 0,
+		ny = y / (me.th/2 + me.offsetY) | 0
 	;
 
 		return this.map[ny][nx];
@@ -2043,12 +2043,12 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 	{
 	var
 		me = this,
-		tw2=Math.floor(this.tw/2) + this.offsetX,
-		th2=Math.floor(this.th/2)+this.offsetY,
+		tw2=(this.tw/2 | 0) + this.offsetX,
+		th2=(this.th/2 | 0) + this.offsetY,
 		offset = (y%2)*tw2,
 
-		nx = Math.round(x * me.tw - offset),
-		ny = Math.round(y * th2)
+		nx = x * me.tw - offset | 0,
+		ny = y * th2 | 0
 		;
 
 		return { x: nx, y: ny };
