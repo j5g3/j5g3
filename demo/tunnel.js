@@ -52,17 +52,19 @@ var
 		}
 	}),
 	
-	distances = new Array(draw.display.data.length),
-	angles = new Array(distances.length)
+	ArrayType = window.Int8Array || Array,
+	
+	distances = new ArrayType(draw.display.data.length),
+	angles = new ArrayType(distances.length)
 ;
 	for (y=0, cursor=0; y<HEIGHT; y++)
 		for (x=0; x<WIDTH; x++, cursor+=4)
 		{
-			distances[cursor] = (Math.round(30 * TEXTUREHEIGHT / Math.sqrt(
+			distances[cursor] = (30 * TEXTUREHEIGHT / Math.sqrt(
 				(x - WIDTH/2) * (x - WIDTH / 2) + (y - HEIGHT / 2) * (y - HEIGHT / 2)
-			)) % TEXTUREHEIGHT) || 0;
+			) | 0) % TEXTUREHEIGHT;
 			
-			angles[cursor] = Math.round(TEXTUREWIDTH / 2 * Math.atan2(y - HEIGHT / 2, x - WIDTH / 2) / Math.PI);
+			angles[cursor] = (TEXTUREWIDTH / 2 * Math.atan2(y - HEIGHT / 2, x - WIDTH / 2) / Math.PI) | 0;
 
 			// Initialize alpha to 255!
 			draw.display.data[x * 4 + y * WIDTH * 4 + 3] = 255;

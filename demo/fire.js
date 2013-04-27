@@ -20,7 +20,7 @@ var
 		clip.blue= 30;
 		clip.color_property = 'stroke';
 
-		this.add(j5g3.tween({ 
+		this.parent.add(j5g3.tween({ 
 			auto_remove: true, duration: LIFE,
 			target: clip, to: { 
 				alpha: 0.1, 
@@ -36,9 +36,7 @@ var
 		count: COUNT,
 		life: LIFE,
 		on_emit: on_emit
-	}),
-
-	canvas = this.stage.canvas
+	})
 ;
 	
 	e1.blending = 'lighter';

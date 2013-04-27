@@ -236,15 +236,11 @@ var
 	Subclass.prototype = _super.prototype;
 
 	init.prototype = new Subclass();
-	init.prototype.constructor = init;
-	init.prototype.base = _super.prototype;
-
 	init.extend = j5g3.Class.extend;
 
 	for(i in methods)
 		if (methods.hasOwnProperty(i))
 		{
-			// TODO Maybe not use ECMA5 properties
 			method = Object.getOwnPropertyDescriptor(methods, i);
 			Object.defineProperty(init.prototype, i, method);
 		}
@@ -931,10 +927,10 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 		context.save();
 
 		if (me.alpha!==1) context.globalAlpha *= me.alpha;
-		if (me.fill!==null) context.fillStyle= me.fill;
-		if (me.stroke!==null) context.strokeStyle= me.stroke;
-		if (me.font) context.font = me.font;
-		if (me.blending) context.globalCompositeOperation=me.blending;
+		if (me.fill!==null) context.fillStyle = me.fill;
+		if (me.stroke!==null) context.strokeStyle = me.stroke;
+		if (me.font!==null) context.font = me.font;
+		if (me.blending!==null) context.globalCompositeOperation = me.blending;
 
 		if (me.line_width!==null) context.lineWidth = me.line_width;
 		if (me.line_cap!==null) context.lineCap = me.line_cap;
@@ -1029,28 +1025,13 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 		return this;
 	},
 
+	/**
+	 * Sets width and height.
+	 */
 	size: function(w, h)
 	{
 		this.width = w;
 		this.height = h;
-		return this;
-	},
-
-	/**
-	 * Gets the current transformation matrix, including all the parent's transformations.
-	 * Since the transform object is not available until rendering we need to return this using
-	 * a callback. Use local_transform() function to get the calculated objects transformation matrix.
-	 */
-	get_transform: function(callback)
-	{
-	var
-		oldtransform = this.begin
-	;
-		this.begin = function(context) {
-			oldtransform();
-			callback(context.currentTransform);
-			this.begin = oldtransform;
-		};
 		return this;
 	},
 
@@ -1064,6 +1045,9 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 		return this;
 	},
 
+	/**
+	 * Returns true if object is visible
+	 */
 	visible: function()
 	{
 		return this.alpha > 0;
@@ -1085,6 +1069,9 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 		return j5g3.clip({width: this.width, height: this.height }).add(this);
 	},
 
+	/**
+	 * Cache DisplayObject for faster drawing.
+	 */
 	cache: j5g3.Cache.Canvas,
 
 	/**
@@ -1264,14 +1251,16 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		this._frames = [];
 		this.add_frame();
 
-		if (this.setup!==undefined)
+		if (this.setup!==null)
 			this.setup();
 	},
 
 	/** Function to call after construction */
-	setup: undefined,
+	setup: null,
 
-	/** Run Stage Logic */
+	/** 
+	 * Runs clip logic and advances frame. 
+	*/
 	update: function()
 	{
 	var
@@ -1282,7 +1271,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 			this.update_frame();
 
 		while ((next=next._next) !== frame)
-			if (next.update)
+			if (next.update !== null)
 				next.update();
 
 		if (this._playing)
@@ -1299,9 +1288,19 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 
 	paint: j5g3.Paint.Container,
 
+	/**
+	 * Stops clip.
+	 */
 	stop: function() { this._playing = false; return this;},
+
+	/**
+	 * Plays clip.
+	 */
 	play: function() { this._playing = true; return this; },
 
+	/**
+	 * Returns true if clip is playing
+	 */
 	is_playing: function() { return this._playing; },
 
 	/**
@@ -1334,6 +1333,9 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		return this.add_object(display_object);
 	},
 
+	/**
+	 * Adds a DisplayObject to the clip. Faster than add().
+	 */
 	add_object: function(display_object)
 	{
 	var
@@ -1487,16 +1489,16 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 		this.context = this.renderCanvas.getContext('2d');
 		this.screen  = this.canvas.getContext('2d');
 
+		this.resolution(
+			this.width || this.canvas.clientWidth,
+			this.height || this.canvas.clientHeight
+		);
+
 		this.screen.imageSmoothingEnabled =
 		this.context.imageSmoothingEnabled =
 		this.screen.webkitImageSmoothingEnabled =
 		this.context.webkitImageSmoothingEnabled =
 			this.smoothing;
-
-		this.resolution(
-			this.width || this.canvas.clientWidth,
-			this.height || this.canvas.clientHeight
-		);
 	},
 
 	/**
@@ -1563,25 +1565,27 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 		if (properties instanceof j5g3.Class)
 			properties = { target: properties };
 
-		this.draw = this.start;
+		this.update = this.start;
 
 		this.extend(properties);
 	},
+
+	draw: j5g3.Draw.Void,
 
 	/**
 	 * Pause Tween
 	 */
 	pause: function()
 	{
-		this._olddraw = this.draw;
-		this.draw = function() { };
+		this._olddraw = this.update;
+		this.update = null;
 
 		return this;
 	},
 
 	resume: function()
 	{
-		this.draw = this._olddraw ? this._olddraw : this.start;
+		this.update = this._olddraw ? this._olddraw : this.start;
 
 		return this;
 	},
@@ -1624,6 +1628,7 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 	{
 		if (this.on_remove)
 			this.on_remove();
+
 		this._remove();
 	},
 
@@ -1677,11 +1682,9 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 		me.v = 1 / me.duration;
 		me.vf= 0;
 
-		me.draw = me._calculate;
+		me.update = me._calculate;
 		return this;
-	},
-
-	draw: null
+	}
 
 }, {/** @scope j5g3.Tween */
 
@@ -1976,7 +1979,7 @@ j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 	var
 		clip = this.spawn()
 	;
-		this.add(clip);
+		this.add_object(clip);
 
 		if (this.on_emit)
 			this.on_emit(clip);
@@ -1997,7 +2000,6 @@ j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
  * @class Maps an array to a spritesheet.
  *
  * Properties:
- *
  *
  * @extends j5g3.DisplayObject
  *
