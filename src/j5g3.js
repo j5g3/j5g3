@@ -312,6 +312,35 @@ j5g3.Draw =
 	},
 
 	/**
+	 * Renders screen to buffer then only updates region under
+	 * _dx, _dy, _dw, _dh
+	 */
+	RootDirty: function()
+	{
+	var
+		me = this,
+		context = this.context,
+		dx = me._dx, dw = me._dw,
+		dy = me._dy, dh = me._dh
+	;
+		if (dw === 0 || dh === 0)
+			return;
+
+		context.clearRect(dx, dy, dw, dh);
+
+		me.begin(context);
+		me.paint(context);
+		me.end(context);
+
+		me.screen.clearRect(dx, dy, dw, dh);
+		me.screen.drawImage(me.renderCanvas, dx, dy, dw, dh, dx, dy, dw, dh);
+
+		me._dx = me.width;
+		me._dy = me.height;
+		me._dh = me._dw = 0;
+	},
+
+	/**
 	 * Renders directly to canvas.
 	 */
 	RootDirect: function()
@@ -324,20 +353,11 @@ j5g3.Draw =
 	},
 
 	/**
-	 * Draws only if DisplayObject is dirty.
-	 */
-	/*
-	Dirty: function(context)
-	{
-	},
-	*/
-
-	/**
 	 * Draws Image with no transformations only translation
 	 */
 	FastImage: function(context)
 	{
-		context.drawImage(this.source, this.x, this.y);
+		context.drawImage(this.source, this.x+this.cx, this.y+this.cy);
 	},
 
 	/**
@@ -394,6 +414,23 @@ j5g3.Paint = {
 	;
 		while ((next=next._next) !== frame)
 			next.draw(context);
+	},
+
+	/**
+	 * Paints only dirty objects.
+	 */
+	Dirty: function(context)
+	{
+	var
+		frame = this.frame,
+		next = frame
+	;
+		while ((next=next._next) !== frame)
+			if (next.dirty)
+			{
+				next.draw(context);
+				next.dirty = false;
+			}
 	},
 
 	/**
@@ -962,14 +999,15 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	_paint: null,
 
 	/**
-	 * Sets object to dirty and forces paint
-	 *
-	 * @return {j5g3.DisplayObject} this.
+	 * Sets object to dirty and forces paint. Invalidates runs only once.
 	 */
 	invalidate: function()
 	{
-		this.dirty = true;
-		return this;
+		if (this.dirty===false)
+		{
+			this.dirty = true;
+			this.parent.invalidate(this);
+		}
 	},
 
 	/**
@@ -1465,10 +1503,16 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 	 */
 	smoothing: false,
 
+	/**
+	 * Dirty Area
+	 */
+	_dx: 0,
+	_dy: 0,
+	_dw: 0,
+	_dh: 0,
+
 	_init_canvas: function()
 	{
-		if (!this.canvas)
-			this.canvas = j5g3.id('screen');
 
 		if (!this.canvas)
 		{
@@ -1494,11 +1538,38 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 			this.height || this.canvas.clientHeight
 		);
 
+		this._dw = this.width;
+		this._dh = this.height;
+
 		this.screen.imageSmoothingEnabled =
 		this.context.imageSmoothingEnabled =
 		this.screen.webkitImageSmoothingEnabled =
 		this.context.webkitImageSmoothingEnabled =
 			this.smoothing;
+	},
+
+	/**
+	 * We override this function because stages cannot be invalidated.
+	 */
+	invalidate: function(child)
+	{
+	var
+		x = child.x + child.cx,
+		y = child.y + child.cy
+	;
+		if (x < this._dx)
+			this._dx = x;
+		if (y < this._dy)
+			this._dy = y;
+		if (child.width > this._dw)
+			this._dw = child.width;
+		if (child.height > this._dh)
+			this._dh = child.height;
+
+		if (this._dx + this._dw > this.width)
+			this._dw = this.width - this._dx;
+		if (this._dy + this._dh > this.height)
+			this._dh = this.height - this._dy;
 	},
 
 	/**
@@ -2192,7 +2263,8 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	startFn: function() { },
 
 	/**
-	 * Starts Engine
+	 * Starts Engine. Creates Main stage. By default uses the canvas
+	 * with id 'screen'.
 	 */
 	init: function j5g3Engine(config)
 	{
@@ -2210,6 +2282,12 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 			delete config.fps;
 
 		j5g3.Class.apply(me, [ config ]);
+
+		if (!me.stage_settings)
+			me.stage_settings = {};
+
+		if (!me.stage_settings.canvas)
+			me.stage_settings.canvas = j5g3.id('screen');
 
 		if (!me.stage)
 			me.stage = new j5g3.Stage(me.stage_settings);
@@ -2362,6 +2440,11 @@ j5g3.spritesheet = f(j5g3.Spritesheet);
 /** @function 
  * @return {j5g3.Text} */
 j5g3.text   = f(j5g3.Text);
+
+/** @function
+ * @return {j5g3.Stage}
+ */
+j5g3.stage = f(j5g3.Stage);
 
 /**
  * Returns a Multiline Text object
