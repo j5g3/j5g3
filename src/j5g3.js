@@ -417,23 +417,6 @@ j5g3.Paint = {
 	},
 
 	/**
-	 * Paints only dirty objects.
-	 */
-	Dirty: function(context)
-	{
-	var
-		frame = this.frame,
-		next = frame
-	;
-		if (this.dirty)
-		{
-			while ((next=next._next) !== frame)
-					next.draw(context);
-			this.dirty = false;
-		}
-	},
-
-	/**
 	 * Draws text using fillText
 	 */
 	Text: function(context)
@@ -1001,13 +984,9 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	/**
 	 * Sets object to dirty and forces paint. Invalidates runs only once.
 	 */
-	invalidate: function(clip)
+	invalidate: function()
 	{
-		if (this.dirty===false)
-		{
-			this.dirty = true;
-			this.parent.invalidate(clip || this);
-		}
+		this.parent.invalidate(this);
 	},
 
 	/**
@@ -1293,6 +1272,11 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 			this.setup();
 	},
 
+	invalidate: function(obj)
+	{
+		this.parent.invalidate(obj);
+	},
+
 	/** Function to call after construction */
 	setup: null,
 
@@ -1553,8 +1537,6 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 	 */
 	invalidate: function(child)
 	{
-		this.dirty = true;
-
 		if (child===undefined)
 		{
 			this._dx = this._dy = 0;
