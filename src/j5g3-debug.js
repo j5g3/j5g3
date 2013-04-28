@@ -65,7 +65,7 @@ var
 	dbg.fn(j5g3.DisplayObject, 'remove', function()
 	{
 		if (this.parent === null)
-			dbg.error("Trying to remove object without parent.");
+			console.warn("Trying to remove object without parent.", this);
 	});
 
 	dbg.fn(j5g3.DisplayObject, 'stretch', function()

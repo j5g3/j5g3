@@ -425,12 +425,12 @@ j5g3.Paint = {
 		frame = this.frame,
 		next = frame
 	;
-		while ((next=next._next) !== frame)
-			if (next.dirty)
-			{
-				next.draw(context);
-				next.dirty = false;
-			}
+		if (this.dirty)
+		{
+			while ((next=next._next) !== frame)
+					next.draw(context);
+			this.dirty = false;
+		}
 	},
 
 	/**
@@ -1001,12 +1001,12 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	/**
 	 * Sets object to dirty and forces paint. Invalidates runs only once.
 	 */
-	invalidate: function()
+	invalidate: function(clip)
 	{
 		if (this.dirty===false)
 		{
 			this.dirty = true;
-			this.parent.invalidate(this);
+			this.parent.invalidate(clip || this);
 		}
 	},
 
@@ -1553,6 +1553,16 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 	 */
 	invalidate: function(child)
 	{
+		this.dirty = true;
+
+		if (child===undefined)
+		{
+			this._dx = this._dy = 0;
+			this._dh = this.height;
+			this._dw = this.width;
+			return;
+		}
+
 	var
 		x = child.x + child.cx,
 		y = child.y + child.cy
@@ -1562,14 +1572,19 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 		if (y < this._dy)
 			this._dy = y;
 		if (child.width > this._dw)
+		{
 			this._dw = child.width;
-		if (child.height > this._dh)
-			this._dh = child.height;
 
-		if (this._dx + this._dw > this.width)
-			this._dw = this.width - this._dx;
-		if (this._dy + this._dh > this.height)
-			this._dh = this.height - this._dy;
+			if (this._dx + this._dw > this.width)
+				this._dw = this.width - this._dx;
+		}
+
+		if (child.height > this._dh)
+		{
+			this._dh = child.height;
+			if (this._dy + this._dh > this.height)
+				this._dh = this.height - this._dy;
+		}
 	},
 
 	/**
