@@ -41,8 +41,12 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 	start: null,
 	length: 0,
 
+	/** Called everytime progress changes */
 	on_progress: null,
+	/** Fires when one asset is loaded. */
 	on_source: null,
+	/**Fires when all assets are loaded. */
+	on_ready: null,
 
 	init: function j5g3Loader(p)
 	{
@@ -52,7 +56,7 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		this.start = new Date();
 	},
 
-	_check_ready: function(callback)
+	_check_ready: function()
 	{
 	var
 		i, ready=0, length=0, me=this
@@ -71,10 +75,10 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 
 		if (length===ready)
 		{
-			if (callback) callback();
+			if (this.on_ready) this.on_ready();
 		}
 		else
-			this._timeout = window.setTimeout(function() { me._check_ready(callback); }, this.delay);
+			this._timeout = window.setTimeout(function() { me._check_ready(); }, this.delay);
 	},
 
 	el: function(tag, src)
@@ -136,7 +140,10 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 
 	ready: function(callback)
 	{
-		this._check_ready(callback);
+		if (callback)
+			this.on_ready = callback;
+
+		this._check_ready();
 	},
 
 	destroy: function()

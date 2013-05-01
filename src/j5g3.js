@@ -31,11 +31,6 @@ var
 	/* This is used by the cache mechanism. It is a canvas element. */
 	cache,
 
-	extend= function(a, b)
-	{
-		for (var i in b)
-			a[i] = b[i];
-	},
 
 	/** 
 	 * @namespace 
@@ -52,6 +47,12 @@ var
 	f= j5g3.factory = function(Klass)
 	{
 		return function(properties) { return new Klass(properties); };
+	},
+
+	extend = j5g3.extend = function(a, b)
+	{
+		for (var i in b)
+			a[i] = b[i];
 	}
 ;
 	/**
@@ -412,6 +413,7 @@ j5g3.Paint = {
 		frame = this.frame,
 		next = frame
 	;
+		context.translate(this.cx, this.cy);
 		while ((next=next._next) !== frame)
 			next.draw(context);
 	},
@@ -494,9 +496,8 @@ j5g3.Paint = {
 		sprites = this.sprites, cm,
 		dx = (this.tw/2|0) + this.offsetX,
 		dy = (this.th/2|0) + this.offsetY,
-		offset
+		offset, s
 	;
-
 		context.translate(-dx, -dy);
 
 		for (; y<l; y++)
@@ -510,7 +511,8 @@ j5g3.Paint = {
 			while (x--)
 			{
 				context.translate(-this.tw, 0);
-				sprites[cm[x]].draw(context);
+				if ((s = sprites[cm[x]]))
+					s.draw(context);
 			}
 
 		}
@@ -889,11 +891,17 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	get rotation() { return this._rotation; },
 
 	/** @type {number} X Scale */
-	set sx(val) { this.M.setScaleX(val); },
+	set sx(val) {
+		this.width *= val;
+		this.M.setScaleX(val);
+	},
 	get sx() { return this.M.scaleX; },
 
 	/** @type {number} Y Scale */
-	set sy(val) { this.M.setScaleY(val); },
+	set sy(val) {
+		this.height *= val;
+		this.M.setScaleY(val);
+	},
 	get sy() { return this.M.scaleY; },
 
 	/** @type {number} Alpha transparency value */
@@ -1509,27 +1517,30 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 
 	init: function j5g3Stage(p)
 	{
-		j5g3.Clip.apply(this, [p]);
+	var
+		me = this
+	;
+		j5g3.Clip.apply(me, [p]);
 
-		this._init_canvas();
+		me._init_canvas();
 
-		this.renderCanvas = j5g3.dom('CANVAS');
-		this.context = this.renderCanvas.getContext('2d');
-		this.screen  = this.canvas.getContext('2d');
+		me.renderCanvas = j5g3.dom('CANVAS');
+		me.context = me.renderCanvas.getContext('2d');
+		me.screen  = me.canvas.getContext('2d');
 
-		this.resolution(
-			this.width || this.canvas.clientWidth,
-			this.height || this.canvas.clientHeight
+		me.resolution(
+			me.width || me.canvas.clientWidth || 640,
+			me.height || me.canvas.clientHeight || 480
 		);
 
-		this._dw = this.width;
-		this._dh = this.height;
+		me._dw = me.width;
+		me._dh = me.height;
 
-		this.screen.imageSmoothingEnabled =
-		this.context.imageSmoothingEnabled =
-		this.screen.webkitImageSmoothingEnabled =
-		this.context.webkitImageSmoothingEnabled =
-			this.smoothing;
+		me.screen.imageSmoothingEnabled =
+		me.context.imageSmoothingEnabled =
+		me.screen.webkitImageSmoothingEnabled =
+		me.context.webkitImageSmoothingEnabled =
+			me.smoothing;
 	},
 
 	/**
@@ -2094,7 +2105,10 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 			this.map = [];
 	},
 
-	getTileAt: function(x, y)
+	/**
+	 * Get tile at position x, y.
+	 */
+	tile_at: function(x, y)
 	{
 	var
         me = this,
@@ -2107,9 +2121,8 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 
 	/**
 	 * Gets the top left coordinate of the tile at x,y for isometric maps.
-	 * TODO
 	 */
-	getIsometricCoords: function(x, y)
+	to_iso: function(x, y)
 	{
 	var
 		me = this,
@@ -2122,15 +2135,6 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 		;
 
 		return { x: nx, y: ny };
-	},
-
-	/**
-	 * Sets the map to Isometric
-	 */
-	set_iso: function()
-	{
-		this.paint = j5g3.Paint.Isometric;
-		return this;
 	},
 
 	paint: j5g3.Paint.Map
@@ -2271,12 +2275,14 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 		if (typeof(config)==='function')
 			config = { startFn: config };
 
+		if (config===undefined)
+			config = {};
+
 		cache = j5g3.dom('CANVAS');
 
 		me.fps(config.fps || me.__fps);
 
-		if (config.fps)
-			delete config.fps;
+		delete config.fps;
 
 		j5g3.Class.apply(me, [ config ]);
 
