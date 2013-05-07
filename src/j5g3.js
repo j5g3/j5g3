@@ -1943,8 +1943,8 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 
 	var
 		b2 = 2*b,
-		w = this.width / x - b2,
-		h = this.height / y - b2,
+		w = this.width / x - b2 | 0,
+		h = this.height / y - b2 | 0,
 		r,c
 	;
 
@@ -2103,20 +2103,6 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 
 		if (this.map===null)
 			this.map = [];
-	},
-
-	/**
-	 * Get tile at position x, y.
-	 */
-	tile_at: function(x, y)
-	{
-	var
-        me = this,
-		nx = x / me.tw | 0,
-		ny = y / (me.th/2 + me.offsetY) | 0
-	;
-
-		return this.map[ny][nx];
 	},
 
 	/**
