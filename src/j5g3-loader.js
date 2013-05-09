@@ -129,6 +129,38 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		return this.el('AUDIO', src);
 	},
 
+	json: function(src)
+	{
+	var
+		me = this,
+		xhr = new window.XMLHttpRequest(),
+		result = this.sources[src]
+	;
+		if (!result)
+		{
+			result = this.sources[src] = {
+				source: src
+			};
+
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState===4)
+				{
+					result.ready = true;
+					result.raw = xhr.responseText;
+					result.json = JSON.parse(result.raw);
+
+					if (me.on_source)
+						me.on_source(xhr);
+				}
+			};
+
+			xhr.open('GET', src);
+			xhr.send();
+		}
+
+		return result;
+	},
+
 	script: function(src)
 	{
 	var
