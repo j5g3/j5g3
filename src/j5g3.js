@@ -498,13 +498,14 @@ j5g3.Paint = {
 		dy = (this.th/2|0) + this.offsetY,
 		offset, s
 	;
-		context.translate(-dx, -dy);
+		context.translate(this.cx, this.cy-dy);
+		offset = dx;
 
 		for (; y<l; y++)
 		{
 			x = map[y].length;
 			cm= map[y];
-			offset = (y%2) ? dx : -dx;
+			offset = -offset;
 
 			context.translate(x*this.tw-offset, dy);
 
@@ -589,6 +590,11 @@ j5g3.Cache = {
  * Hit test algorithms. Assign to 'at' function.
  */
 j5g3.HitTest = {
+
+	Void: function()
+	{
+		return false;
+	},
 
 	Circle: function(x, y, M)
 	{
@@ -1763,7 +1769,9 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 
 		me.update = me._calculate;
 		return this;
-	}
+	},
+
+	at: j5g3.HitTest.Void
 
 }, {/** @scope j5g3.Tween */
 
@@ -2114,10 +2122,10 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 		me = this,
 		tw2=(this.tw/2 | 0) + this.offsetX,
 		th2=(this.th/2 | 0) + this.offsetY,
-		offset = (y%2)*tw2,
+		offset = (y%2) ? 0 : -tw2,
 
-		nx = x * me.tw - offset | 0,
-		ny = y * th2 | 0
+		nx = (x * me.tw - offset | 0) - this.cx,
+		ny = (y * th2 | 0) - this.cy
 		;
 
 		return { x: nx, y: ny };

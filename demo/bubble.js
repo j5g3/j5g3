@@ -200,7 +200,7 @@ var
 		{
 			this.canvas = engine.stage.canvas;
 			mouse.move = this.onMouseMove.bind(this);
-			mouse.click = this.onClick.bind(this);
+			mouse.buttonY = this.onClick.bind(this);
 
 			this.engine = engine;
 			this.board = new Board();

@@ -123,9 +123,6 @@ j5g3.Circle = j5g3.Shape.extend(/**@scope j5g3.Circle.prototype */ {
 	shape: 'circle',
 	radius: 0,
 
-	get width() { return 2 * (this.M.x(this.radius, 0) - this.x); },
-	get height() { return 2 * (this.M.y(0, this.radius) - this.y); },
-
 	init: function j5g3Circle(p)
 	{
 		j5g3.Shape.apply(this, [ p ]);
