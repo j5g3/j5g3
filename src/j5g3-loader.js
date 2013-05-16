@@ -129,7 +129,7 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		return this.el('AUDIO', src);
 	},
 
-	json: function(src)
+	data: function(src, parser)
 	{
 	var
 		me = this,
@@ -147,7 +147,9 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 				{
 					result.ready = true;
 					result.raw = xhr.responseText;
-					result.json = JSON.parse(result.raw);
+
+					if (parser)
+						parser(result);
 
 					if (me.on_source)
 						me.on_source(xhr);
@@ -159,6 +161,13 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		}
 
 		return result;
+	},
+
+	json: function(src)
+	{
+		return this.data(src, function(result) {
+			result.json = JSON.parse(result.raw);
+		});
 	},
 
 	script: function(src)
