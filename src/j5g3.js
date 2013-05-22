@@ -32,8 +32,8 @@ var
 	cache,
 
 
-	/** 
-	 * @namespace 
+	/**
+	 * @namespace
 	 * Creates a new Engine instance on window.load event.
 	 */
 	j5g3 = function(engine)
@@ -652,7 +652,7 @@ j5g3.HitTest = {
 };
 
 /**
- * Light 2D Transformation Matrix for DisplayObjects. Use j5g3.Matrix to 
+ * Light 2D Transformation Matrix for DisplayObjects. Use j5g3.Matrix to
  * perform operations. e and f are always 0.
  *
  * [ a c ]
@@ -1115,7 +1115,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	},
 
 	/**
-	 * Sets properties. 
+	 * Sets properties.
 	 */
 	set: function(properties)
 	{
@@ -1294,8 +1294,8 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** Function to call after construction */
 	setup: null,
 
-	/** 
-	 * Runs clip logic and advances frame. 
+	/**
+	 * Runs clip logic and advances frame.
 	*/
 	update: function()
 	{
@@ -1847,22 +1847,23 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 			properties = {};
 		}
 
-		switch (j5g3.get_type(properties.source)) {
+		j5g3.Class.apply(this, [ properties ]);
+
+		switch (j5g3.get_type(this.source)) {
 		case 'string': case 'dom':
-			properties.source = new j5g3.Image(properties.source);
+			this.source = new j5g3.Image(this.source);
 			break;
 		}
 
-		if (!properties.source)
+		if (!this.source)
 			throw new Error("Invalid source for Spritesheet.");
 
-		if (properties.width === undefined && properties.source)
-			properties.width = properties.source.width;
+		if (this.width === undefined && this.source)
+			this.width = this.source.width;
 
-		if (properties.height === undefined && properties.source)
-			properties.height = properties.source.height;
+		if (this.height === undefined && this.source)
+			this.height = this.source.height;
 
-		this.extend(properties);
 		this._sprites = [];
 	},
 
@@ -2417,24 +2418,24 @@ var
 
 // Shortcuts
 
-/** 
+/**
  * @function
  * @return {j5g3.Action}
  */
 j5g3.action = f(j5g3.Action);
-/** @function 
+/** @function
  * @return {j5g3.Clip} */
 j5g3.clip   = f(j5g3.Clip);
-/** @function 
+/** @function
  * @return {j5g3.Image} */
 j5g3.image  = f(j5g3.Image);
-/** @function 
+/** @function
  * @return {j5g3.Sprite} */
 j5g3.sprite = f(j5g3.Sprite);
-/** @function 
+/** @function
  * @return {j5g3.Spritesheet} */
 j5g3.spritesheet = f(j5g3.Spritesheet);
-/** @function 
+/** @function
  * @return {j5g3.Text} */
 j5g3.text   = f(j5g3.Text);
 
@@ -2448,22 +2449,22 @@ j5g3.stage = f(j5g3.Stage);
  * @return {j5g3.Text}
  */
 j5g3.mtext  = function(p) { var t = new j5g3.Text(p); t.paint = j5g3.Paint.MultilineText; return t; };
-/** @function 
+/** @function
  * @return {j5g3.Matrix} */
 j5g3.matrix = function(a, b, c, d ,e ,f) { return new j5g3.Matrix(a, b, c, d, e, f); };
-/** @function 
+/** @function
  * @return {j5g3.Tween} */
 j5g3.tween  = f(j5g3.Tween);
-/** @function 
+/** @function
  * @return {j5g3.Emitter} */
 j5g3.emitter= f(j5g3.Emitter);
-/** @function 
+/** @function
  * @return {j5g3.Map} */
 j5g3.map    = f(j5g3.Map);
-/** @function 
+/** @function
  * @return {j5g3.Html} */
 j5g3.html   = f(j5g3.Html);
-/** @function 
+/** @function
  * @return {j5g3.Engine} */
 j5g3.engine = f(j5g3.Engine);
 
