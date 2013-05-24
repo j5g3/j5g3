@@ -33,6 +33,7 @@ var
 			if (xhr.readyState===4)
 				onAjax(xhr.responseText);
 		};
+
 		xhr.open('GET', url);
 		xhr.send();
 	};

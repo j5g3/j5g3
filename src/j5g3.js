@@ -1827,12 +1827,6 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	height: 0,
 
 	/**
-	 * Image of the spritesheet. If a string passed it will be converted
-	 * to a j5g3.Image
-	 */
-	source: null,
-
-	/**
 	 * @private
 	 */
 	_sprites: null,
@@ -1843,28 +1837,44 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 		case 'string': case 'dom': case 'j5g3':
 			properties = { source: properties };
 			break;
-		case 'undefined':
-			properties = {};
 		}
 
 		j5g3.Class.apply(this, [ properties ]);
+	},
 
-		switch (j5g3.get_type(this.source)) {
+	/**
+	 * Image of the spritesheet. If a string passed it will be converted
+	 * to a j5g3.Image
+	 */
+	set source(val)
+	{
+	var
+		src
+	;
+		switch (j5g3.get_type(val)) {
 		case 'string': case 'dom':
-			this.source = new j5g3.Image(this.source);
+			src = new j5g3.Image(val);
 			break;
+		default:
+			src = val;
 		}
 
-		if (!this.source)
+		if (!src)
 			throw new Error("Invalid source for Spritesheet.");
 
-		if (this.width === undefined && this.source)
-			this.width = this.source.width;
+		if (this.width === 0 && src)
+			this.width = src.width;
 
-		if (this.height === undefined && this.source)
-			this.height = this.source.height;
+		if (this.height === 0 && src)
+			this.height = src.height;
 
+		this._source = src;
 		this._sprites = [];
+	},
+
+	get source()
+	{
+		return this._source;
 	},
 
 	/**

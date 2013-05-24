@@ -13,7 +13,6 @@ var
 		width: this.stage.width,
 		height: this.stage.height,
 		canvas: j5g3.id('background'),
-		paint: j5g3.Paint.Dirty,
 		draw: j5g3.Draw.RootDirty
 	}),
 	
