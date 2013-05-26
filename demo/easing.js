@@ -1,28 +1,37 @@
 
 (function (j5g3)
 {
-var 
+var
+	// Create our spritesheet and cut it
 	ss = j5g3.spritesheet('batman').grid(6, 7),
 	to = { x: 280 },
 	y = -10,
 	x = 0,
-	a, easing
+	a, easing,
+	// Create a container for text
+	text = j5g3.clip({ width: 640, height: 480 })
 ;
+	this.stage.add(text);
+
+	// Create clip, tween and text for each Easing function
 	for (easing in j5g3.Easing)
 	{
 		a = ss.clip([ 16,17,18,19,20,21,22,23,24,25 ]).pos(x, y+=20).scale(0.2, 0.2);
-		this.stage.add([ 
-			a, 
+		this.stage.add([
+			a,
 			j5g3.tween({ target: a, to: to, easing: j5g3.Easing[easing] }),
+		]);
+
+		text.add([
 			j5g3.text({ text: easing, y: y+20, x: x+100, font: '20px Serif' })
 		]);
 
-		if (y > 440) { 
-			y = -10; x += 330; to = { x: 600 }
+		if (y > 440) {
+			y = -10; x += 330; to = { x: 600 };
 		}
-	};
+	}
 
-	this.stage.canvas.style.backgroundColor = '#eee';
+	text.cache();
 
 	this.fps(32).run();
 })
