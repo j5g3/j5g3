@@ -1,7 +1,7 @@
 
 (function (j5g3)
 {
-var 
+var
 	MAXW = 640,
 	MAXH = 480,
 	MAXVX = 12,
@@ -17,7 +17,7 @@ var
 
 	restart = function(winner)
 	{
-		winner.text = (parseInt(winner.text) + 1);
+		winner.text = (parseInt(winner.text, 10) + 1);
 		ball.pos(MAXW/2, MAXH/2);
 		ball.vx = -MAXVX;
 		ball.vy = 0;
@@ -39,7 +39,7 @@ var
 		{
 			ball.x = (player.x+8);
 			ball.vx = MAXVX;
-			ball.vy += player.F; 
+			ball.vy += player.F;
 		} else if (computer.collides(ball))
 		{
 			ball.x = (computer.x-8);
@@ -78,7 +78,7 @@ var
 			computer.a = a;
 			return;
 		}
-	} 
+	}
 
 	computer.v = computer.a = 0;
 	},
@@ -88,7 +88,7 @@ var
 		var yi = player.y, yf;
 		player.y = (yf = evt.offsetY-20);
 		// Calculate force, t = 1 frame, m = 1
-		player.F = (yf-yi)/3; 
+		player.F = (yf-yi)/3;
 	}
 	;
 

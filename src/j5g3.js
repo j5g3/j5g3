@@ -591,11 +591,17 @@ j5g3.Cache = {
  */
 j5g3.HitTest = {
 
+	/**
+	 * Always returns false
+	 */
 	Void: function()
 	{
 		return false;
 	},
 
+	/**
+	 * Circle HitTest
+	 */
 	Circle: function(x, y, M)
 	{
 		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
@@ -604,6 +610,9 @@ j5g3.HitTest = {
 		return (M.x*M.x+M.y*M.y <= this.radius*this.radius) ? this : false;
 	},
 
+	/**
+	 * Test hit in all children.
+	 */
 	Container: function(x, y, M)
 	{
 	var
@@ -620,6 +629,9 @@ j5g3.HitTest = {
 		return result;
 	},
 
+	/**
+	 * Rectangle HitTest
+	 */
 	Rect: function(x, y, M)
 	{
 		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
@@ -628,6 +640,9 @@ j5g3.HitTest = {
 		return ((M.x>0 && M.x<this.width)&&(M.y>0 && M.y<this.height)) ? this : false;
 	},
 
+	/**
+	 * Polygon HitTest
+	 */
 	Polygon: function(x, y, M)
 	{
 	var
