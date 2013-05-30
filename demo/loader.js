@@ -14,7 +14,8 @@ var
 	loader_clip = j5g3.clip({ line_width: 25, line_join: 'round' }).align('center middle', this.stage),
 	text = j5g3.text({ x: -50, y: 10, font: '30px Arial', fill: 'white' }),
 	loader = j5g3.loader(),
-
+	
+	tween,
 	line
 ;
 
@@ -47,7 +48,8 @@ var
 	this.on_destroy = function()
 	{
 		loader.destroy();
-	}
+	};
+	
 	this.stage.add(loader_clip);
 	this.fps(32).run();
 })

@@ -46,7 +46,7 @@ var
 		screen = this.stage.screen
 	;
 		this._oldTime = this._time;
-		this._time = time; //(new Date()).getTime();
+		this._time = time || Date.now(); //(new Date()).getTime();
 
 		screen.save();
 		screen.fillStyle = '#009900';
@@ -66,7 +66,7 @@ var
 	dbg.fn(j5g3.DisplayObject, 'remove', function()
 	{
 		if (this.parent === null)
-			dbg.error("Trying to remove object without parent.");
+			console.warn("Trying to remove object without parent.", this);
 	});
 
 	dbg.fn(j5g3.DisplayObject, 'stretch', function()
@@ -112,10 +112,6 @@ var
 
 		return source;
 	};
-
-	if (j5g3.Loader)
-	{
-	}
 
 })(this, this.j5g3);
 

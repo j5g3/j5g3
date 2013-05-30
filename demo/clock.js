@@ -37,5 +37,5 @@ var
 
 	this.stage.canvas.style.backgroundColor = 'white';
 
-	this.fps(60).run();
+	this.fps(30).run();
 })

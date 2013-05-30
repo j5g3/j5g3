@@ -2,7 +2,22 @@
 <html>
 <head>
 	<title>j5g3 Javascript Graphics Library - Demos</title>
-	<link rel="stylesheet" href="demo.css" />
+	<style>
+		body {
+			width: 640px; margin: 20px auto;			
+		}
+		
+		#stage {
+			position: relative;
+		}
+		
+		canvas {
+			width: 640px; height: 480px; position: absolute;
+			top: 0;
+		}
+		
+	</style>
+
 </head>
 <body>
 
@@ -16,6 +31,7 @@
 			<option>Fire</option>
 			<option>Image</option>
 			<option>Life</option>
+			<option>Lightning</option>
 			<option>Particles</option>
 			<option>Isometric</option>
 			<option>Collides</option>
@@ -23,6 +39,7 @@
 			<option>Touch</option>
 		<!-- 	<option>Clipping</option>-->
 			<option>Tunnel</option>
+			<option>Layers</option>
 			<option>Balls</option>
 			<option>Shapes</option>
 			<option>Transformation</option>
@@ -39,8 +56,11 @@
 	<a href="javascript: view_source();">View Source</a>
 	</p>
 </div>
-	<canvas id="screen"></canvas>
-
+	<div id="stage">
+		<canvas id="background"></canvas>
+		<canvas id="screen"></canvas>
+	</div>
+	
 	<div class="j5g3-assets" style="display: none">
 		<img id="ball" src="img/soccer-ball.gif" />
 		<img id="earth" src="img/earth.gif" />

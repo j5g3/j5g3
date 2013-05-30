@@ -13,7 +13,8 @@ var
 		if (g3)
 			g3.destroy();
 			
-		mouse.move = mouse.click = null;
+		mouse.move = mouse.buttonY = null;
+		mouse.module.mouse.x_threshold = mouse.module.mouse.y_threshold = 1;
 
 		demoObj = eval(code); 
 
@@ -32,6 +33,7 @@ var
 			if (xhr.readyState===4)
 				onAjax(xhr.responseText);
 		};
+
 		xhr.open('GET', url);
 		xhr.send();
 	};

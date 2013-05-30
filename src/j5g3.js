@@ -31,14 +31,9 @@ var
 	/* This is used by the cache mechanism. It is a canvas element. */
 	cache,
 
-	extend= function(a, b)
-	{
-		for (var i in b)
-			a[i] = b[i];
-	},
 
-	/** 
-	 * @namespace 
+	/**
+	 * @namespace
 	 * Creates a new Engine instance on window.load event.
 	 */
 	j5g3 = function(engine)
@@ -52,6 +47,12 @@ var
 	f= j5g3.factory = function(Klass)
 	{
 		return function(properties) { return new Klass(properties); };
+	},
+
+	extend = j5g3.extend = function(a, b)
+	{
+		for (var i in b)
+			a[i] = b[i];
 	}
 ;
 	/**
@@ -85,7 +86,7 @@ extend(j5g3, {/** @scope j5g3 */
 	/**
 	 * @return {number} A random integer number from 0 to max.
 	 */
-	irand: function(max) { return Math.floor(Math.random() * max); },
+	irand: function(max) { return Math.random() * max | 0; },
 
 	/**
 	 * Creates an array of w*h dimensions initialized with value v
@@ -236,15 +237,11 @@ var
 	Subclass.prototype = _super.prototype;
 
 	init.prototype = new Subclass();
-	init.prototype.constructor = init;
-	init.prototype.base = _super.prototype;
-
 	init.extend = j5g3.Class.extend;
 
 	for(i in methods)
 		if (methods.hasOwnProperty(i))
 		{
-			// TODO Maybe not use ECMA5 properties
 			method = Object.getOwnPropertyDescriptor(methods, i);
 			Object.defineProperty(init.prototype, i, method);
 		}
@@ -316,6 +313,35 @@ j5g3.Draw =
 	},
 
 	/**
+	 * Renders screen to buffer then only updates region under
+	 * _dx, _dy, _dw, _dh
+	 */
+	RootDirty: function()
+	{
+	var
+		me = this,
+		context = this.context,
+		dx = me._dx, dw = me._dw,
+		dy = me._dy, dh = me._dh
+	;
+		if (dw === 0 || dh === 0)
+			return;
+
+		context.clearRect(dx, dy, dw, dh);
+
+		me.begin(context);
+		me.paint(context);
+		me.end(context);
+
+		me.screen.clearRect(dx, dy, dw, dh);
+		me.screen.drawImage(me.renderCanvas, dx, dy, dw, dh, dx, dy, dw, dh);
+
+		me._dx = me.width;
+		me._dy = me.height;
+		me._dh = me._dw = 0;
+	},
+
+	/**
 	 * Renders directly to canvas.
 	 */
 	RootDirect: function()
@@ -328,20 +354,11 @@ j5g3.Draw =
 	},
 
 	/**
-	 * Draws only if DisplayObject is dirty.
-	 */
-	/*
-	Dirty: function(context)
-	{
-	},
-	*/
-
-	/**
 	 * Draws Image with no transformations only translation
 	 */
 	FastImage: function(context)
 	{
-		context.drawImage(this.source, this.x, this.y);
+		context.drawImage(this.source, this.x+this.cx, this.y+this.cy);
 	},
 
 	/**
@@ -396,6 +413,7 @@ j5g3.Paint = {
 		frame = this.frame,
 		next = frame
 	;
+		context.translate(this.cx, this.cy);
 		while ((next=next._next) !== frame)
 			next.draw(context);
 	},
@@ -476,25 +494,26 @@ j5g3.Paint = {
 	var
 		map = this.map, y = 0, x, l=map.length,
 		sprites = this.sprites, cm,
-		dx = Math.round(this.tw/2) + this.offsetX,
-		dy = Math.round(this.th/2) + this.offsetY,
-		offset
+		dx = (this.tw/2|0) + this.offsetX,
+		dy = (this.th/2|0) + this.offsetY,
+		offset, s
 	;
-
-		context.translate(-dx, -dy);
+		context.translate(this.cx, this.cy-dy);
+		offset = dx;
 
 		for (; y<l; y++)
 		{
 			x = map[y].length;
 			cm= map[y];
-			offset = (y%2) ? dx : -dx;
+			offset = -offset;
 
 			context.translate(x*this.tw-offset, dy);
 
 			while (x--)
 			{
 				context.translate(-this.tw, 0);
-				sprites[cm[x]].draw(context);
+				if ((s = sprites[cm[x]]))
+					s.draw(context);
 			}
 
 		}
@@ -572,6 +591,17 @@ j5g3.Cache = {
  */
 j5g3.HitTest = {
 
+	/**
+	 * Always returns false
+	 */
+	Void: function()
+	{
+		return false;
+	},
+
+	/**
+	 * Circle HitTest
+	 */
 	Circle: function(x, y, M)
 	{
 		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
@@ -580,6 +610,9 @@ j5g3.HitTest = {
 		return (M.x*M.x+M.y*M.y <= this.radius*this.radius) ? this : false;
 	},
 
+	/**
+	 * Test hit in all children.
+	 */
 	Container: function(x, y, M)
 	{
 	var
@@ -596,6 +629,9 @@ j5g3.HitTest = {
 		return result;
 	},
 
+	/**
+	 * Rectangle HitTest
+	 */
 	Rect: function(x, y, M)
 	{
 		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
@@ -604,6 +640,9 @@ j5g3.HitTest = {
 		return ((M.x>0 && M.x<this.width)&&(M.y>0 && M.y<this.height)) ? this : false;
 	},
 
+	/**
+	 * Polygon HitTest
+	 */
 	Polygon: function(x, y, M)
 	{
 	var
@@ -628,7 +667,7 @@ j5g3.HitTest = {
 };
 
 /**
- * Light 2D Transformation Matrix for DisplayObjects. Use j5g3.Matrix to 
+ * Light 2D Transformation Matrix for DisplayObjects. Use j5g3.Matrix to
  * perform operations. e and f are always 0.
  *
  * [ a c ]
@@ -873,11 +912,17 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	get rotation() { return this._rotation; },
 
 	/** @type {number} X Scale */
-	set sx(val) { this.M.setScaleX(val); },
+	set sx(val) {
+		this.width *= val;
+		this.M.setScaleX(val);
+	},
 	get sx() { return this.M.scaleX; },
 
 	/** @type {number} Y Scale */
-	set sy(val) { this.M.setScaleY(val); },
+	set sy(val) {
+		this.height *= val;
+		this.M.setScaleY(val);
+	},
 	get sy() { return this.M.scaleY; },
 
 	/** @type {number} Alpha transparency value */
@@ -931,10 +976,10 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 		context.save();
 
 		if (me.alpha!==1) context.globalAlpha *= me.alpha;
-		if (me.fill!==null) context.fillStyle= me.fill;
-		if (me.stroke!==null) context.strokeStyle= me.stroke;
-		if (me.font) context.font = me.font;
-		if (me.blending) context.globalCompositeOperation=me.blending;
+		if (me.fill!==null) context.fillStyle = me.fill;
+		if (me.stroke!==null) context.strokeStyle = me.stroke;
+		if (me.font!==null) context.font = me.font;
+		if (me.blending!==null) context.globalCompositeOperation = me.blending;
 
 		if (me.line_width!==null) context.lineWidth = me.line_width;
 		if (me.line_cap!==null) context.lineCap = me.line_cap;
@@ -966,14 +1011,11 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	_paint: null,
 
 	/**
-	 * Sets object to dirty and forces paint
-	 *
-	 * @return {j5g3.DisplayObject} this.
+	 * Sets object to dirty and forces paint. Invalidates runs only once.
 	 */
 	invalidate: function()
 	{
-		this.dirty = true;
-		return this;
+		this.parent.invalidate(this);
 	},
 
 	/**
@@ -1029,28 +1071,13 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 		return this;
 	},
 
+	/**
+	 * Sets width and height.
+	 */
 	size: function(w, h)
 	{
 		this.width = w;
 		this.height = h;
-		return this;
-	},
-
-	/**
-	 * Gets the current transformation matrix, including all the parent's transformations.
-	 * Since the transform object is not available until rendering we need to return this using
-	 * a callback. Use local_transform() function to get the calculated objects transformation matrix.
-	 */
-	get_transform: function(callback)
-	{
-	var
-		oldtransform = this.begin
-	;
-		this.begin = function(context) {
-			oldtransform();
-			callback(context.currentTransform);
-			this.begin = oldtransform;
-		};
 		return this;
 	},
 
@@ -1064,6 +1091,9 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 		return this;
 	},
 
+	/**
+	 * Returns true if object is visible
+	 */
 	visible: function()
 	{
 		return this.alpha > 0;
@@ -1085,6 +1115,9 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 		return j5g3.clip({width: this.width, height: this.height }).add(this);
 	},
 
+	/**
+	 * Cache DisplayObject for faster drawing.
+	 */
 	cache: j5g3.Cache.Canvas,
 
 	/**
@@ -1097,7 +1130,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	},
 
 	/**
-	 * Sets properties. 
+	 * Sets properties.
 	 */
 	set: function(properties)
 	{
@@ -1193,6 +1226,8 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 	 */
 	line_height: 12,
 
+	_align: null,
+
 	init: function j5g3Text(properties)
 	{
 		if (typeof properties === 'string')
@@ -1207,9 +1242,38 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 	{
 		obj.begin(context);
 		var metrics = context.measureText(obj.text);
-		obj.end();
+		obj.end(context);
 
 		return metrics.width;
+	},
+
+	center: function()
+	{
+		this._align = this._center;
+	},
+
+	_center: function(context)
+	{
+	var
+		m = context.measureText(this.text)
+	;
+		this.cx = m.width/-2|0;
+		window.console.log(m.width);
+	},
+
+	_begin: j5g3.DisplayObject.prototype.begin,
+
+	begin: function(context)
+	{
+		context.textBaseline = 'top';
+
+		this._begin(context);
+
+		if (this._align)
+		{
+			this._align(context);
+			this._align = null;
+		}
 	},
 
 	get_width : function()
@@ -1254,8 +1318,17 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	 */
 	_frame: 0,
 
+	/**
+	 * @private
+	 * Last frame in the clip.
+	 */
+	_lastFrame: null,
+
 	/** @private */
 	_playing: true,
+
+	// Time scale
+	st: 1,
 
 	init: function j5g3Clip(properties)
 	{
@@ -1264,14 +1337,21 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		this._frames = [];
 		this.add_frame();
 
-		if (this.setup!==undefined)
+		if (this.setup!==null)
 			this.setup();
 	},
 
-	/** Function to call after construction */
-	setup: undefined,
+	invalidate: function(obj)
+	{
+		this.parent.invalidate(obj);
+	},
 
-	/** Run Stage Logic */
+	/** Function to call after construction */
+	setup: null,
+
+	/**
+	 * Runs clip logic and advances frame.
+	*/
 	update: function()
 	{
 	var
@@ -1282,13 +1362,13 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 			this.update_frame();
 
 		while ((next=next._next) !== frame)
-			if (next.update)
+			if (next.update !== null)
 				next.update();
 
 		if (this._playing)
 		{
-			this._frame = (this._frame===this._frames.length-1) ? 0 : (this._frame + 1);
-			this.frame = this._frames[this._frame];
+			this._frame = (this.frame===this._lastFrame) ? 0 : (this._frame + this.st);
+			this.frame = this._frames[this._frame|0];
 		}
 	},
 
@@ -1299,9 +1379,19 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 
 	paint: j5g3.Paint.Container,
 
+	/**
+	 * Stops clip.
+	 */
 	stop: function() { this._playing = false; return this;},
+
+	/**
+	 * Plays clip.
+	 */
 	play: function() { this._playing = true; return this; },
 
+	/**
+	 * Returns true if clip is playing
+	 */
 	is_playing: function() { return this._playing; },
 
 	/**
@@ -1334,6 +1424,9 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		return this.add_object(display_object);
 	},
 
+	/**
+	 * Adds a DisplayObject to the clip. Faster than add().
+	 */
 	add_object: function(display_object)
 	{
 	var
@@ -1359,7 +1452,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	var
 		frame = { }
 	;
-		frame._previous = frame._next = frame;
+		this._lastFrame = frame._previous = frame._next = frame;
 
 		this._frames.push(frame);
 		this.go(this._frames.length-1);
@@ -1463,10 +1556,16 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 	 */
 	smoothing: false,
 
+	/**
+	 * Dirty Area
+	 */
+	_dx: 0,
+	_dy: 0,
+	_dw: 0,
+	_dh: 0,
+
 	_init_canvas: function()
 	{
-		if (!this.canvas)
-			this.canvas = j5g3.id('screen');
 
 		if (!this.canvas)
 		{
@@ -1479,24 +1578,67 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 
 	init: function j5g3Stage(p)
 	{
-		j5g3.Clip.apply(this, [p]);
+	var
+		me = this
+	;
+		j5g3.Clip.apply(me, [p]);
 
-		this._init_canvas();
+		me._init_canvas();
 
-		this.renderCanvas = j5g3.dom('CANVAS');
-		this.context = this.renderCanvas.getContext('2d');
-		this.screen  = this.canvas.getContext('2d');
+		me.renderCanvas = j5g3.dom('CANVAS');
+		me.context = me.renderCanvas.getContext('2d');
+		me.screen  = me.canvas.getContext('2d');
 
-		this.screen.imageSmoothingEnabled =
-		this.context.imageSmoothingEnabled =
-		this.screen.webkitImageSmoothingEnabled =
-		this.context.webkitImageSmoothingEnabled =
-			this.smoothing;
-
-		this.resolution(
-			this.width || this.canvas.clientWidth,
-			this.height || this.canvas.clientHeight
+		me.resolution(
+			me.width || me.canvas.clientWidth || 640,
+			me.height || me.canvas.clientHeight || 480
 		);
+
+		me._dw = me.width;
+		me._dh = me.height;
+
+		me.screen.imageSmoothingEnabled =
+		me.context.imageSmoothingEnabled =
+		me.screen.webkitImageSmoothingEnabled =
+		me.context.webkitImageSmoothingEnabled =
+			me.smoothing;
+	},
+
+	/**
+	 * We override this function because stages cannot be invalidated.
+	 */
+	invalidate: function(child)
+	{
+		if (child===undefined)
+		{
+			this._dx = this._dy = 0;
+			this._dh = this.height;
+			this._dw = this.width;
+			return;
+		}
+
+	var
+		x = child.x + child.cx,
+		y = child.y + child.cy
+	;
+		if (x < this._dx)
+			this._dx = x;
+		if (y < this._dy)
+			this._dy = y;
+		if (child.width > this._dw)
+		{
+			this._dw = child.width;
+
+			if (this._dx + this._dw > this.width)
+				this._dw = this.width - this._dx;
+		}
+
+		if (child.height > this._dh)
+		{
+			this._dh = child.height;
+			if (this._dy + this._dh > this.height)
+				this._dh = this.height - this._dy;
+		}
 	},
 
 	/**
@@ -1563,25 +1705,27 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 		if (properties instanceof j5g3.Class)
 			properties = { target: properties };
 
-		this.draw = this.start;
+		this.update = this.start;
 
 		this.extend(properties);
 	},
+
+	draw: j5g3.Draw.Void,
 
 	/**
 	 * Pause Tween
 	 */
 	pause: function()
 	{
-		this._olddraw = this.draw;
-		this.draw = function() { };
+		this._olddraw = this.update;
+		this.update = null;
 
 		return this;
 	},
 
 	resume: function()
 	{
-		this.draw = this._olddraw ? this._olddraw : this.start;
+		this.update = this._olddraw ? this._olddraw : this.start;
 
 		return this;
 	},
@@ -1624,6 +1768,7 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 	{
 		if (this.on_remove)
 			this.on_remove();
+
 		this._remove();
 	},
 
@@ -1677,11 +1822,11 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 		me.v = 1 / me.duration;
 		me.vf= 0;
 
-		me.draw = me._calculate;
+		me.update = me._calculate;
 		return this;
 	},
 
-	draw: null
+	at: j5g3.HitTest.Void
 
 }, {/** @scope j5g3.Tween */
 
@@ -1737,12 +1882,6 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	height: 0,
 
 	/**
-	 * Image of the spritesheet. If a string passed it will be converted
-	 * to a j5g3.Image
-	 */
-	source: null,
-
-	/**
 	 * @private
 	 */
 	_sprites: null,
@@ -1753,27 +1892,44 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 		case 'string': case 'dom': case 'j5g3':
 			properties = { source: properties };
 			break;
-		case 'undefined':
-			properties = {};
 		}
 
-		switch (j5g3.get_type(properties.source)) {
+		j5g3.Class.apply(this, [ properties ]);
+	},
+
+	/**
+	 * Image of the spritesheet. If a string passed it will be converted
+	 * to a j5g3.Image
+	 */
+	set source(val)
+	{
+	var
+		src
+	;
+		switch (j5g3.get_type(val)) {
 		case 'string': case 'dom':
-			properties.source = new j5g3.Image(properties.source);
+			src = new j5g3.Image(val);
 			break;
+		default:
+			src = val;
 		}
 
-		if (!properties.source)
+		if (!src)
 			throw new Error("Invalid source for Spritesheet.");
 
-		if (properties.width === undefined && properties.source)
-			properties.width = properties.source.width;
+		if (this.width === 0 && src)
+			this.width = src.width;
 
-		if (properties.height === undefined && properties.source)
-			properties.height = properties.source.height;
+		if (this.height === 0 && src)
+			this.height = src.height;
 
-		this.extend(properties);
+		this._source = src;
 		this._sprites = [];
+	},
+
+	get source()
+	{
+		return this._source;
 	},
 
 	/**
@@ -1861,8 +2017,8 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 
 	var
 		b2 = 2*b,
-		w = this.width / x - b2,
-		h = this.height / y - b2,
+		w = this.width / x - b2 | 0,
+		h = this.height / y - b2 | 0,
 		r,c
 	;
 
@@ -1976,7 +2132,7 @@ j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 	var
 		clip = this.spawn()
 	;
-		this.add(clip);
+		this.add_object(clip);
 
 		if (this.on_emit)
 			this.on_emit(clip);
@@ -1997,7 +2153,6 @@ j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
  * @class Maps an array to a spritesheet.
  *
  * Properties:
- *
  *
  * @extends j5g3.DisplayObject
  *
@@ -2024,43 +2179,22 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 			this.map = [];
 	},
 
-	getTileAt: function(x, y)
-	{
-	var
-        me = this,
-		nx = Math.round(x / me.tw),
-		ny = Math.round(y / (me.th/2 + me.offsetY))
-	;
-
-		return this.map[ny][nx];
-	},
-
 	/**
 	 * Gets the top left coordinate of the tile at x,y for isometric maps.
-	 * TODO
 	 */
-	getIsometricCoords: function(x, y)
+	to_iso: function(x, y)
 	{
 	var
 		me = this,
-		tw2=Math.floor(this.tw/2) + this.offsetX,
-		th2=Math.floor(this.th/2)+this.offsetY,
-		offset = (y%2)*tw2,
+		tw2=(this.tw/2 | 0) + this.offsetX,
+		th2=(this.th/2 | 0) + this.offsetY,
+		offset = (y%2) ? 0 : -tw2,
 
-		nx = Math.round(x * me.tw - offset),
-		ny = Math.round(y * th2)
+		nx = (x * me.tw - offset | 0) - this.cx,
+		ny = (y * th2 | 0) - this.cy
 		;
 
 		return { x: nx, y: ny };
-	},
-
-	/**
-	 * Sets the map to Isometric
-	 */
-	set_iso: function()
-	{
-		this.paint = j5g3.Paint.Isometric;
-		return this;
 	},
 
 	paint: j5g3.Paint.Map
@@ -2190,7 +2324,8 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	startFn: function() { },
 
 	/**
-	 * Starts Engine
+	 * Starts Engine. Creates Main stage. By default uses the canvas
+	 * with id 'screen'.
 	 */
 	init: function j5g3Engine(config)
 	{
@@ -2200,14 +2335,22 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 		if (typeof(config)==='function')
 			config = { startFn: config };
 
+		if (config===undefined)
+			config = {};
+
 		cache = j5g3.dom('CANVAS');
 
 		me.fps(config.fps || me.__fps);
 
-		if (config.fps)
-			delete config.fps;
+		delete config.fps;
 
 		j5g3.Class.apply(me, [ config ]);
+
+		if (!me.stage_settings)
+			me.stage_settings = {};
+
+		if (!me.stage_settings.canvas)
+			me.stage_settings.canvas = j5g3.id('screen');
 
 		if (!me.stage)
 			me.stage = new j5g3.Stage(me.stage_settings);
@@ -2340,48 +2483,53 @@ var
 
 // Shortcuts
 
-/** 
+/**
  * @function
  * @return {j5g3.Action}
  */
 j5g3.action = f(j5g3.Action);
-/** @function 
+/** @function
  * @return {j5g3.Clip} */
 j5g3.clip   = f(j5g3.Clip);
-/** @function 
+/** @function
  * @return {j5g3.Image} */
 j5g3.image  = f(j5g3.Image);
-/** @function 
+/** @function
  * @return {j5g3.Sprite} */
 j5g3.sprite = f(j5g3.Sprite);
-/** @function 
+/** @function
  * @return {j5g3.Spritesheet} */
 j5g3.spritesheet = f(j5g3.Spritesheet);
-/** @function 
+/** @function
  * @return {j5g3.Text} */
 j5g3.text   = f(j5g3.Text);
+
+/** @function
+ * @return {j5g3.Stage}
+ */
+j5g3.stage = f(j5g3.Stage);
 
 /**
  * Returns a Multiline Text object
  * @return {j5g3.Text}
  */
 j5g3.mtext  = function(p) { var t = new j5g3.Text(p); t.paint = j5g3.Paint.MultilineText; return t; };
-/** @function 
+/** @function
  * @return {j5g3.Matrix} */
 j5g3.matrix = function(a, b, c, d ,e ,f) { return new j5g3.Matrix(a, b, c, d, e, f); };
-/** @function 
+/** @function
  * @return {j5g3.Tween} */
 j5g3.tween  = f(j5g3.Tween);
-/** @function 
+/** @function
  * @return {j5g3.Emitter} */
 j5g3.emitter= f(j5g3.Emitter);
-/** @function 
+/** @function
  * @return {j5g3.Map} */
 j5g3.map    = f(j5g3.Map);
-/** @function 
+/** @function
  * @return {j5g3.Html} */
 j5g3.html   = f(j5g3.Html);
-/** @function 
+/** @function
  * @return {j5g3.Engine} */
 j5g3.engine = f(j5g3.Engine);
 

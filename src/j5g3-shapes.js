@@ -70,6 +70,8 @@ j5g3.Shape = j5g3.DisplayObject.extend(
 	_green: undefined,
 	_blue: undefined,
 
+	line_width: null,
+
 	init: function j5g3Shape(p)
 	{
 		j5g3.DisplayObject.apply(this, [p]);
@@ -122,9 +124,6 @@ j5g3.Circle = j5g3.Shape.extend(/**@scope j5g3.Circle.prototype */ {
 
 	shape: 'circle',
 	radius: 0,
-
-	get width() { return 2 * (this.M.x(this.radius, 0) - this.x); },
-	get height() { return 2 * (this.M.y(0, this.radius) - this.y); },
 
 	init: function j5g3Circle(p)
 	{
@@ -306,19 +305,19 @@ j5g3.Dot = j5g3.Shape.extend(/**@scope j5g3.Dot.prototype */{
 
 });
 
-/** @function 
+/** @function
  * @return {j5g3.Polygon} */
 j5g3.polygon= j5g3.factory(j5g3.Polygon);
-/** @function 
+/** @function
  * @return {j5g3.Circle} */
 j5g3.circle = j5g3.factory(j5g3.Circle);
-/** @function 
+/** @function
  * @return {j5g3.Line} */
 j5g3.line   = j5g3.factory(j5g3.Line);
-/** @function 
+/** @function
  * @return {j5g3.Dot} */
 j5g3.dot    = j5g3.factory(j5g3.Dot);
-/** @function 
+/** @function
  * @return {j5g3.Rect} */
 j5g3.rect   = j5g3.factory(j5g3.Rect);
 
