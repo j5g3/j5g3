@@ -1287,8 +1287,17 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	 */
 	_frame: 0,
 
+	/**
+	 * @private
+	 * Last frame in the clip.
+	 */
+	_lastFrame: null,
+
 	/** @private */
 	_playing: true,
+
+	// Time scale
+	st: 1,
 
 	init: function j5g3Clip(properties)
 	{
@@ -1327,8 +1336,8 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 
 		if (this._playing)
 		{
-			this._frame = (this._frame===this._frames.length-1) ? 0 : (this._frame + 1);
-			this.frame = this._frames[this._frame];
+			this._frame = (this.frame===this._lastFrame) ? 0 : (this._frame + this.st);
+			this.frame = this._frames[this._frame|0];
 		}
 	},
 
@@ -1412,7 +1421,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	var
 		frame = { }
 	;
-		frame._previous = frame._next = frame;
+		this._lastFrame = frame._previous = frame._next = frame;
 
 		this._frames.push(frame);
 		this.go(this._frames.length-1);
