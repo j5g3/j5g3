@@ -1226,6 +1226,8 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 	 */
 	line_height: 12,
 
+	_align: null,
+
 	init: function j5g3Text(properties)
 	{
 		if (typeof properties === 'string')
@@ -1240,9 +1242,38 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 	{
 		obj.begin(context);
 		var metrics = context.measureText(obj.text);
-		obj.end();
+		obj.end(context);
 
 		return metrics.width;
+	},
+
+	center: function()
+	{
+		this._align = this._center;
+	},
+
+	_center: function(context)
+	{
+	var
+		m = context.measureText(this.text)
+	;
+		this.cx = m.width/-2|0;
+		window.console.log(m.width);
+	},
+
+	_begin: j5g3.DisplayObject.prototype.begin,
+
+	begin: function(context)
+	{
+		context.textBaseline = 'top';
+
+		this._begin(context);
+
+		if (this._align)
+		{
+			this._align(context);
+			this._align = null;
+		}
 	},
 
 	get_width : function()
