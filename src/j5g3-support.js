@@ -24,7 +24,9 @@
 'use strict';
 
 var
-	audioEl = j5g3.dom('audio')
+	audioEl = j5g3.dom('audio'),
+	audioFormats = [ "mp3", "ogg", "mp4", "wav"],
+	audioMime = [ "audio/mpeg", "audio/ogg", "audio/mp4", "audio/wav" ]
 ;
 
 	/// bind() polyfill
@@ -66,25 +68,13 @@ var
 
 	if (audioEl && audioEl.canPlayType)
 	{
-		/** Lists supported audio types */
-		j5g3.support.audio = {
-			/** Audio tag supports mp3 */
-			mp3: audioEl.canPlayType('audio/mpeg'),
-			/** Audio tag supports ogg */
-			ogg: audioEl.canPlayType('audio/ogg'),
-			/** Audio tag supports mp4 */
-			mp4: audioEl.canPlayType('audio/mp4'),
-			/** Audio tag supports wav files */
-			wav: audioEl.canPlayType('audio/wav')
-		};
-
 		// TODO There is probably a better way to do this
-		for (var i in j5g3.support.audio)
-			if (j5g3.support.audio[i])
-			{
-				j5g3.support.audio.preferred = i;
-				break;
-			}
+		audioFormats.each(function (f, i) {
+			j5g3.support.audio[f] = audioEl.canPlayType(audioMime[i]);
+
+			if (j5g3.support.audio[f])
+				j5g3.support.audio.preferred = f;
+		});
 	}
 
 })(this, this.j5g3);
