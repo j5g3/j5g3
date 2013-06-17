@@ -69,7 +69,7 @@ var
 	if (audioEl && audioEl.canPlayType)
 	{
 		// TODO There is probably a better way to do this
-		audioFormats.each(function (f, i) {
+		audioFormats.forEach(function (f, i) {
 			j5g3.support.audio[f] = audioEl.canPlayType(audioMime[i]);
 
 			if (j5g3.support.audio[f])
