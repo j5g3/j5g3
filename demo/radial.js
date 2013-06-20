@@ -6,7 +6,7 @@ var
 	STEP = 10,
 
 	i=0,
-	
+
 	on_emit = function(clip)
 	{
 		clip.radius = 1;
@@ -21,7 +21,7 @@ var
 			}
 		}));
 	},
-	
+
 	emitter = j5g3.emitter({
 		source: j5g3.Circle,
 		count: 1,
@@ -33,5 +33,5 @@ var
 ;
 
 	this.stage.add(emitter);
-	this.fps(60).run();
+	this.run();
 })

@@ -13,7 +13,7 @@ var
 		clip.pos(mouse.x+j5g3.rand(60)-30, mouse.y+j5g3.rand(60)-30)
 			.scale(0.5, 0.5)
 		;
-		
+
 		clip.source = ([diamond, star])[j5g3.irand(2)];
 		clip.line_width = 6;
 		clip.stroke= ([ 'white', 'red', 'yellow', 'cyan' ])[Math.floor(j5g3.rand(4))];
@@ -31,6 +31,6 @@ var
 
 	this.stage.add([ e1, e2 ]);
 
-	this.fps(60).run();						
+	this.run();
 
 })

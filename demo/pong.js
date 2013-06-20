@@ -98,7 +98,6 @@ var
 	computer.v = 0;
 
 	mouse.move = mouse;
-	this.fps(32);
 
 	this.stage.add([ player, computer, ball, score1, score2, update, ai]);
 	this.run();
