@@ -28,18 +28,18 @@ var
 			stroke: get_color(),
 			rotation: j5g3.rand(Math.PI*2)
 		};
-		
+
 		sides = 1 + j5g3.irand(8);
 
 		polygons.push(sides===2 ? j5g3.circle(p) : (sides===1 ? j5g3.rect(p) : j5g3.Polygon.create(sides, p)));
 		return polygons[polygons.length-1];
 	},
-	
+
 	old,
 
 	on_mouse = function()
 	{
-		if (old) old.line_width = 1; 
+		if (old) old.line_width = 1;
 		if ((old = stage.at(this.x, this.y)))
 			old.line_width = 5;
 	}
@@ -52,5 +52,5 @@ var
 	stage.scale(0.7, 0.7);
 	stage.pos(100,50);
 
-	this.fps(32).run();
+	this.run();
 })

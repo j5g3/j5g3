@@ -2320,10 +2320,6 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 
 		cache = j5g3.dom('CANVAS');
 
-		me.fps(config.fps || me.__fps);
-
-		delete config.fps;
-
 		j5g3.Class.apply(me, [ config ]);
 
 		if (!me.stage_settings)
@@ -2364,13 +2360,17 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	/**
 	 * Set the game Frames per Second.
 	 */
-	fps: function(val)
+	set fps(val)
 	{
-		if (val===undefined)
-			return 1000/this.__fps;
-
 		this.__fps=1000/val;
-		return this;
+	},
+
+	/**
+	 * Gets current fps
+	 */
+	get fps()
+	{
+		return 1000/this.__fps;
 	},
 
 	/**

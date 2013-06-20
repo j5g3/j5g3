@@ -14,13 +14,13 @@ var
 
 	a, x, y,
 
-	map = j5g3.map({ 
+	map = j5g3.map({
 		map: j5g3.ary(COLS, ROWS, 0),
 		_map: j5g3.ary(COLS, ROWS, 0),
 		tw: W,
 		th: H,
 		sprites: [ null ]
-	}), 
+	}),
 
 	/* Returns 1 if cell is alive */
 	get = function(x, y)
@@ -44,9 +44,9 @@ var
 			for (x=0; x<COLS; x++)
 			{
 				a = neighbours(x, y);
-				map._map[y][x] = (a === 2 && map.map[y][x] || a===3) ? 
+				map._map[y][x] = (a === 2 && map.map[y][x] || a===3) ?
 					(map.map[y][x]<COLORS ? map.map[y][x]+1 : COLORS)
-				: 
+				:
 					0;
 			}
 
@@ -64,13 +64,13 @@ var
 
 	for (a=1; a<=COLORS; a++)
 	{
-		map.sprites.push(j5g3.rect({ 
+		map.sprites.push(j5g3.rect({
 			fill: j5g3.hsla(STARTCOLOR + y*a, 100, MINLIGHT + x*a),
 			width: W, height: H
 		}));
 	}
-	
+
 	this.stage.add([ map, update ]);
 
-	this.fps(32).run();
+	this.run();
 })
