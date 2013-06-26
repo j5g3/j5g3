@@ -1,11 +1,11 @@
 
 j5g3.ready(function() {
-	
+
 	j5g3.engine(function(j5g3) {
 
 	module('j5g3.Class');
 	test('Core', function() {
-	var 
+	var
 		Base = j5g3.Class.extend({
 			init: function(a)
 			{
@@ -17,16 +17,16 @@ j5g3.ready(function() {
 		Child = Base.extend({
 			init: function Child(n)
 			{
-				Base.apply(this, [ { a: n } ]);			
+				Base.apply(this, [ { a: n } ]);
 			},
-			method: function() { 
+			method: function() {
 				return 1;
 			},
 			prop: "Hello World"
 		}, { className: 'Child' }),
 
 		Child2 = Child.extend({
-			method: function() { 
+			method: function() {
 				return Child.prototype.method.apply(this) + 1;
 			},
 			prop: 'Radiohead'
@@ -56,7 +56,7 @@ j5g3.ready(function() {
 		ok(Child.name === 'Child');
 		ok(Base.className === 'Base');
 		ok(Child2.className === 'Child2');
-		ok(b.constructor.className === 'Base');
+		ok(b.init.className === 'Base');
 		ok(c.prop === 'Hello World');
 		ok(e.prop === 'Radiohead');
 		ok(c.method() == 1 && d.method() == 1);
@@ -82,7 +82,7 @@ j5g3.ready(function() {
 
 		test('Class Constructor', function()
 		{
-		var 
+		var
 			img = j5g3.id('img'),
 			I = new j5g3.DisplayObject({ source: img })
 		;
@@ -92,7 +92,7 @@ j5g3.ready(function() {
 
 		test('Class Properties', function()
 		{
-		var 
+		var
 			a = new j5g3.DisplayObject(),
 			b = new j5g3.DisplayObject({ source: 'img' }),
 			c = b.set({x: 5})
@@ -109,7 +109,7 @@ j5g3.ready(function() {
 
 		test('Image Constructor', function()
 		{
-		var 
+		var
 			src = 'img',
 			img = j5g3.id(src),
 			a = new j5g3.Image(src),
@@ -122,7 +122,7 @@ j5g3.ready(function() {
 			equal(c.source, d.source);
 			equal(c.width, 320);
 			equal(c.height, 320);
-			
+
 			d.set_source(src);
 			equal(d.source, c.source);
 		});
@@ -131,7 +131,7 @@ j5g3.ready(function() {
 		{
 		var
 			a = j5g3.image('img')
-		;	
+		;
 			ok(a);
 		});
 
@@ -289,7 +289,7 @@ j5g3.ready(function() {
 			equal(s2._sprites.length, 2);
 			s2.push(0,0,10,10);
 			equal(s2._sprites.length, 3);
-			
+
 		});
 
 		test('Spritesheet - Clipping', function()
@@ -308,7 +308,7 @@ j5g3.ready(function() {
 			do_test = function(A, B) {
 				a = j5g3.rect({ fill: 'red', width: 100, height: 50 }).set(A),
 				b = j5g3.rect({ fill: 'green', width: 50, height: 30 }).set(B),
-				ok(a.collides(b));				
+				ok(a.collides(b));
 			}
 		;
 			do_test({ x: 20, y: 20 }, { x: 100, y: 30 });

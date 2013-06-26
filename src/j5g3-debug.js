@@ -57,9 +57,9 @@ var
 ;
 	dbg.fn(j5g3.Engine, '_renderLoop', null, loop);
 
-	j5g3.Class.prototype.toString = function()
+	j5g3.Class.prototype.toString = j5g3.Class.prototype.valueOf = function()
 	{
-		return this.constructor.name;
+		return this.init.name;
 	};
 
 	dbg.fn(j5g3.DisplayObject, 'remove', function()
