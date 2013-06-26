@@ -32,6 +32,7 @@ var
 	})
 ;
 
+	this.fps = 60;
 	this.stage.add(emitter);
 	this.run();
 })

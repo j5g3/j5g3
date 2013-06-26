@@ -1935,13 +1935,15 @@ j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 	source: j5g3.Clip,
 
 	/**
-	 * Function used to replace the draw method for the emitted object.
+	 * Function used to replace the update method for the emitted object.
 	 */
-	container_draw: function(context)
+	container_update: function()
 	{
 		if (this._life--)
-			this._emitter_draw(context);
-		else
+		{
+			if (this._emitter_update!==null)
+				this._emitter_update();
+		} else
 			this.remove();
 	},
 
@@ -1969,8 +1971,9 @@ j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 		clip = new this.source()
 	;
 		clip._life = this.life;
-		clip._emitter_draw = clip.draw;
-		clip.draw = this.container_draw;
+		// TODO see if this might cause conflict later.
+		clip._emitter_update = clip.update;
+		clip.update = this.container_update;
 
 		return clip;
 	},
@@ -1986,7 +1989,7 @@ j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
 			this.on_emit(clip);
 	},
 
-	update: function()
+	update_frame: function()
 	{
 	var
 		i = this.count
