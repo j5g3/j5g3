@@ -1707,7 +1707,7 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 
 		this.update = this.start;
 
-		this.extend(properties);
+		j5g3.DisplayObject.apply(this, [ properties ]);
 	},
 
 	draw: j5g3.Draw.Void,

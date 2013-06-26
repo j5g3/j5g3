@@ -3,7 +3,7 @@
 var
 	LW = 8,
 	NUM = 50,
-	STEP = 10,
+	STEP = 5,
 
 	i=0,
 
