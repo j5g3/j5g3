@@ -86,7 +86,7 @@ var
 	mouse = function(evt)
 	{
 		var yi = player.y, yf;
-		player.y = (yf = evt.offsetY-20);
+		player.y = (yf = this.y-20);
 		// Calculate force, t = 1 frame, m = 1
 		player.F = (yf-yi)/3;
 	}
