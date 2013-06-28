@@ -83,10 +83,10 @@ var
 	computer.v = computer.a = 0;
 	},
 
-	mouse = function(evt)
+	on_move = function(evt)
 	{
 		var yi = player.y, yf;
-		player.y = (yf = evt.offsetY-20);
+		player.y = (yf = this.y-20);
 		// Calculate force, t = 1 frame, m = 1
 		player.F = (yf-yi)/3;
 	}
@@ -97,8 +97,7 @@ var
 	player.F = 0;
 	computer.v = 0;
 
-	mouse.move = mouse;
-	this.fps(32);
+	mouse.move = on_move;
 
 	this.stage.add([ player, computer, ball, score1, score2, update, ai]);
 	this.run();

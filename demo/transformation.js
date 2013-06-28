@@ -15,5 +15,6 @@ var
 
 	stage.add([ plain, reverse, rotate, inverse, all ]);
 
-	this.fps(0).run();
+	this.fps = 0;
+	this.run();
 })

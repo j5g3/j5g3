@@ -11,9 +11,9 @@ var
 		sec: j5g3.dom.image("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAADwCAMAAAA3grSrAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF/wAAAAAAQaMSAwAAAAJ0Uk5T/wDltzBKAAAAUklEQVR42uzYMQoAIAxD0fT+lxbEoUJwaEFEfsY3BZqpChMVUAJBEARBEARBEATBv1AzO0pZtdnSy2gr+fKcGDyj3VIT/RQfxEhWwe5vLWUIMABZGRBta6PNxwAAAABJRU5ErkJggg==")
 
 	},
-	update = function() 
+	update = function()
 	{
-	var 
+	var
 		t = new Date(),
 		pi = Math.PI,
 		_secs = t.getSeconds() + t.getMilliseconds() / 1000,
@@ -27,15 +27,15 @@ var
 	},
 
 	hour  = j5g3.image({ source: resources.hour, x: -10, y: 210, sy: -1}).to_clip(),
-	mins  = j5g3.image({ source: resources.min, x: -10, y: 220, sy: -1}).to_clip(), 
+	mins  = j5g3.image({ source: resources.min, x: -10, y: 220, sy: -1}).to_clip(),
 	secs  = j5g3.image({ source: resources.sec, x: -10, y: 190, sy: -1}).to_clip()
 ;
-	
+
 	this.stage.add([ hour, mins, secs, update ])
 		.align_children('center middle')
 	;
 
 	this.stage.canvas.style.backgroundColor = 'white';
 
-	this.fps(30).run();
+	this.run();
 })

@@ -34,8 +34,8 @@ var
 		{
 			xi = map.map[i].length;
 			while (xi--)
-				if (map.map[i][xi] && collides({ 
-					x: map.x + xi * map.tw, 
+				if (map.map[i][xi] && collides({
+					x: map.x + xi * map.tw,
 					y: map.y + i * map.th,
 					height: map.th,
 					width: map.tw,
@@ -48,7 +48,7 @@ var
 		}
 	},
 
-	shake = function() 
+	shake = function()
 	{
 		stage.add(j5g3.Tween.Shake(stage));
 	},
@@ -106,7 +106,7 @@ var
 		xi = player.x;
 		player.x = e.layerX - PLAYERW2;
 
-		player.F = (player.x-xi)/3; 
+		player.F = (player.x-xi)/3;
 	},
 
 	i, xi, collision
@@ -140,9 +140,9 @@ var
 	{
 		canvas.style.backgroundColor = '';
 		canvas.removeEventListener('mousemove', mousemove);
-	}
-	
+	};
+
 	this.stage.add([ player, ball, map, update ]);
 
-	this.fps(32).run();
+	this.run();
 })

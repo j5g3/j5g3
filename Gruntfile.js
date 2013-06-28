@@ -2,20 +2,20 @@ module.exports = function(grunt) {
 
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
-		
+
 		clean: {
 			j5g3: [ 'build' ]
 		},
-		
+
 		qunit: {
 			files: [ 'test/*.html' ]
 		},
-		
+
 		jshint: {
-			'j5g3': { 
-				options: { jshintrc: '.jshintrc' }, 
-				src: [ 
-					'src/j5g3.js', 'src/j5g3-loader.js',
+			'j5g3': {
+				options: { jshintrc: '.jshintrc' },
+				src: [
+					'src/j5g3-core.js', 'src/j5g3.js', 'src/j5g3-loader.js',
 					'src/j5g3-collision.js', 'src/j5g3-shapes.js',
 					'src/j5g3-support.js'
 				]
@@ -27,7 +27,7 @@ module.exports = function(grunt) {
 				]
 			}
 		},
-		
+
 		concat: {
 			"j5g3": {
 				src: '<%= jshint.j5g3.src %>',
@@ -48,13 +48,13 @@ module.exports = function(grunt) {
 				}
 			}
 		},
-		
+
 		watch: {
-			j5g3: { 
+			j5g3: {
 				files: '<%= jshint.j5g3.src %>',
 				tasks: [ 'jshint:j5g3', 'clean:j5g3', 'concat' ]
 			},
-			
+
 			j5g3dbg: {
 				files: '<%= jshint.j5g3dbg.src %>',
 				tasks: [ 'jshint:j5g3dbg', 'clean:j5g3', 'concat' ]

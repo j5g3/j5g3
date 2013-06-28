@@ -17,7 +17,7 @@ var
 		{
 			j5g3.Circle.apply(this, [ p ]);
 
-			this.radius = (TW>TH ? TH : TW)/2 - 2; 
+			this.radius = (TW>TH ? TH : TW)/2 - 2;
 			this.fill = COLORS[j5g3.irand(COLORS.length)];
 		},
 
@@ -83,17 +83,17 @@ var
 			bubble.remove();
 			for (row = bubble.boardY; row>0; row--)
 			{
-				if (b = this.map[row-1][col])
+				if ((b = this.map[row-1][col]))
 				{
 					b.gravityY += TH;
 					b.boardY += 1;
 				}
-				this.map[row][col] = this.map[row-1][col]; 
+				this.map[row][col] = this.map[row-1][col];
 			}
 
 			this.map[0][col] = null;
 		},
-		
+
 		getPoints: function(n)
 		{
 			return Math.pow(n, 2);
@@ -108,7 +108,7 @@ var
 				for (y=0; y<ROWS; y++)
 				{
 					bubble = this.map[y][x-1];
-					
+
 					this.map[y][x] = bubble;
 					if (bubble)
 					{
@@ -126,7 +126,7 @@ var
 			main: for (x=1; x<COLS; x++)
 			{
 				for (y=0; y<ROWS; y++)
-					if (this.map[y][x]) 
+					if (this.map[y][x])
 						continue main;
 				this.removeColumn(x);
 			}
@@ -146,7 +146,7 @@ var
 		reset: function()
 		{
 			for (i=0; i<this.selected.length; i++)
-				this.selected[i].stroke = null; 
+				this.selected[i].stroke = null;
 
 			this.selected = [];
 		},
@@ -169,10 +169,10 @@ var
 			for (i=2; i<ROWS; i++)
 			{
 				for (a=0; a<COLS; a++)
-					this.map[i][a] = new Bubble({ 
+					this.map[i][a] = new Bubble({
 						boardX: a,
 						boardY: i,
-						x: TW/2 + a*TW, 
+						x: TW/2 + a*TW,
 						y: TH/2 + i*TH
 					});
 				this.add(this.map[i]);
@@ -206,7 +206,7 @@ var
 			this.board = new Board();
 
 			engine.stage.add(this.board);
-			engine.fps(32);
+			engine.fps = 32;
 		},
 
 		run: function()
@@ -219,5 +219,5 @@ var
 ;
 
 	game.run();
-	
+
 })

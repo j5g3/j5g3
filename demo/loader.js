@@ -14,7 +14,7 @@ var
 	loader_clip = j5g3.clip({ line_width: 25, line_join: 'round' }).align('center middle', this.stage),
 	text = j5g3.text({ x: -50, y: 10, font: '30px Arial', fill: 'white' }),
 	loader = j5g3.loader(),
-	
+
 	tween,
 	line
 ;
@@ -25,14 +25,14 @@ var
 
 	for(; i<NUM; i++, a-=angle)
 	{
-		line = j5g3.line({ 
-			cx: 70, x2: 150, 
+		line = j5g3.line({
+			cx: 70, x2: 150,
 			stroke: COLOR, rotation: a
 		});
 
-		tween = j5g3.tween({ 
+		tween = j5g3.tween({
 			target: line, t: i*speed,
-			duration: LIFE, from: { alpha: 1 }, to: { alpha: 0.2 } 
+			duration: LIFE, from: { alpha: 1 }, to: { alpha: 0.2 }
 		});
 
 		loader_clip.add([ line, tween ]);
@@ -40,7 +40,7 @@ var
 
 	loader_clip.add(text);
 
-	loader.on_progress = function(p) { 
+	loader.on_progress = function(p) {
 		text.text = Math.round(p*100) + '%';
 	};
 	loader.ready(function() { text.text = 'READY'; });
@@ -49,7 +49,7 @@ var
 	{
 		loader.destroy();
 	};
-	
+
 	this.stage.add(loader_clip);
-	this.fps(32).run();
+	this.run();
 })

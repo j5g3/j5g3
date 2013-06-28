@@ -72,5 +72,5 @@ var
 
 	this.stage.add(draw);
 
-	this.fps(32).run();
+	this.run();
 })
