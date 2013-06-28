@@ -83,7 +83,7 @@ var
 	computer.v = computer.a = 0;
 	},
 
-	mouse = function(evt)
+	on_move = function(evt)
 	{
 		var yi = player.y, yf;
 		player.y = (yf = this.y-20);
@@ -97,7 +97,7 @@ var
 	player.F = 0;
 	computer.v = 0;
 
-	mouse.move = mouse;
+	mouse.move = on_move;
 
 	this.stage.add([ player, computer, ball, score1, score2, update, ai]);
 	this.run();
