@@ -33,5 +33,6 @@ var
 
 	text.cache();
 
+	this.stage.canvas.style.backgroundColor = '#fff';
 	this.run();
 })
