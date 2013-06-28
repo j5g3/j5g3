@@ -30,9 +30,9 @@
 j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 
 	EVENT: {
-		IMG: 'load',
-		AUDIO: 'canplaythrough',
-		SCRIPT: 'load'
+		'IMG': 'load',
+		'AUDIO': 'canplaythrough',
+		'SCRIPT': 'load'
 	},
 
 	sources: null,

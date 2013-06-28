@@ -60,7 +60,6 @@ module.exports = function(grunt) {
 				tasks: [ 'jshint:j5g3dbg', 'clean:j5g3', 'concat' ]
 			}
 		}
-
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-clean');
