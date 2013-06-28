@@ -23,7 +23,7 @@ var
 		]);
 
 		text.add([
-			j5g3.text({ text: easing, y: y+20, x: x+100, font: '20px Serif' })
+			j5g3.text({ text: easing, y: y, x: x+100, font: '20px Serif' })
 		]);
 
 		if (y > 440) {
