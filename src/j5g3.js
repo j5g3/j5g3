@@ -781,14 +781,12 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 
 	/** @type {number} X Scale */
 	set sx(val) {
-		this.width *= val;
 		this.M.setScaleX(val);
 	},
 	get sx() { return this.M.scaleX; },
 
 	/** @type {number} Y Scale */
 	set sy(val) {
-		this.height *= val;
 		this.M.setScaleY(val);
 	},
 	get sy() { return this.M.scaleY; },
