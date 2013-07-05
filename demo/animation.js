@@ -3,6 +3,7 @@
 var
 	// Load spritesheet
 	ss = j5g3.spritesheet($loader.img('ninja.png')),
+
 	// Create Ninja clip, make sure Clip has no frames.
 	ninja = j5g3.clip({
 		width: 195, height: 256, cx: -195/2, cy: -256/2
