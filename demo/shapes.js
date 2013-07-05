@@ -39,16 +39,25 @@ var
 
 	on_mouse = function()
 	{
-		if (old) old.line_width = 1;
+		if (old)
+		{
+			old.line_width = 1;
+			stage.canvas.style.cursor = '';
+		}
+
 		if ((old = stage.at(this.x, this.y)))
+		{
 			old.line_width = 5;
+			stage.canvas.style.cursor = 'pointer';
+		}
 	}
 
 ;
 	for (i=0; i<MAX; i++)
 		this.stage.add(create());
 
-	mouse.move = on_mouse;
+	$input.move = on_mouse;
+
 	stage.scale(0.7, 0.7);
 	stage.pos(100,50);
 

@@ -12,9 +12,9 @@ var
 		th: 100,
 		width: 400,
 		height: 300,
-		
+
 		sprites: ss.sprites(),
-		map: [ 
+		map: [
 			[0, 1, 2, 3, 4, 5],
 			[6, 7, 8, 9, 10, 11],
 			[12, 13, 14, 15, 16, 17],
@@ -29,7 +29,7 @@ var
 	cache = true
 ;
 
-	mouse.click = function() {
+	$input.click = function() {
 		if (cache)
 		{
 			map.clear_cache();
@@ -39,12 +39,12 @@ var
 			map.cache();
 			text.text = 'Cache Enabled';
 		}
-			
+
 		cache = !cache;
 	};
-	
-	mouse.click();
-	
+
+	$input.click();
+
 	this.stage.add([ map, text ]);
 	this.run();
 })

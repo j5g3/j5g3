@@ -21,8 +21,8 @@ var
 
 		init: function()
 		{
-			this.x = mouse.x-RADIUSMIN+j5g3.rand(RADIUSMIN*2);
-			this.y = mouse.y-RADIUSMIN+j5g3.rand(RADIUSMIN*2);
+			this.x = $input.x-RADIUSMIN+j5g3.rand(RADIUSMIN*2);
+			this.y = $input.y-RADIUSMIN+j5g3.rand(RADIUSMIN*2);
 
 			j5g3.Dot.apply(this);
 		}
@@ -35,8 +35,8 @@ var
 			auto_remove: true, duration: LIFE,
 			target: clip, to: {
 				alpha: 0.1,
-				y: mouse.y-RADIUS+j5g3.rand(RADIUS*2),
-				x: mouse.x-RADIUS+j5g3.rand(RADIUS*2),
+				y: $input.y-RADIUS+j5g3.rand(RADIUS*2),
+				x: $input.x-RADIUS+j5g3.rand(RADIUS*2),
 				red: 255, green: 0, blue: 0
 			}
 		}));

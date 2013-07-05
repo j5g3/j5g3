@@ -15,7 +15,7 @@ var
 	pt, x, y, prev,
 
 	/* Initialize Map to zero so the animation is possible */
-	mapa = j5g3.ary(MAP_WIDTH, MAP_HEIGHT, 0), 
+	mapa = j5g3.ary(MAP_WIDTH, MAP_HEIGHT, 0),
 	rand = j5g3.irand,
 	stage = this.stage,
 
@@ -48,7 +48,7 @@ var
 		if (pts.length)
 			setTimeout(function() { expand(pts); }, DELAY);
 	},
-	
+
 	points = [],
 
 	/* Generate a 11x30 map */
@@ -63,7 +63,7 @@ var
 				[ rand(MAP_WIDTH), rand(MAP_HEIGHT), [8, 9]]
 			);
 		}
-		
+
 		expand(points);
 	},
 
@@ -78,7 +78,7 @@ var
 		else
 			rateX = 0;
 
-		if (this.y > stage.height-MOUSE_MOVE) 
+		if (this.y > stage.height-MOUSE_MOVE)
 			rateY = -this.y + stage.height-MOUSE_MOVE;
 		else if (this.y < MOUSE_MOVE)
 			rateY = MOUSE_MOVE - this.y;
@@ -97,18 +97,18 @@ var
 		else if (map.y > -16) map.y = -16;
 	},
 
-	map = j5g3.map({ 
-		x: -32, y: -16, 
-		sprites: terrain.sprites(), 
+	map = j5g3.map({
+		x: -32, y: -16,
+		sprites: terrain.sprites(),
 		th: 32,
 		tw: 64,
-		map: mapa, 
+		map: mapa,
 		offsetX: -1, offsetY: -1,
 		width: stage.width,
 		height: stage.height
 	})
 ;
-	mouse.move = onmouse;
+	$input.move = onmouse;
 
 	map.paint = j5g3.Paint.Isometric;
 	stage.add([map, update]);
