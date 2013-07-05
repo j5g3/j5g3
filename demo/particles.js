@@ -10,7 +10,7 @@ var
 
 	on_emit= function(clip)
 	{
-		clip.pos(mouse.x+j5g3.rand(60)-30, mouse.y+j5g3.rand(60)-30)
+		clip.pos($input.x+j5g3.rand(60)-30, $input.y+j5g3.rand(60)-30)
 			.scale(0.5, 0.5)
 		;
 

@@ -97,7 +97,7 @@ var
 	player.F = 0;
 	computer.v = 0;
 
-	mouse.move = on_move;
+	$input.move = on_move;
 
 	this.stage.add([ player, computer, ball, score1, score2, update, ai]);
 	this.run();

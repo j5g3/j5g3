@@ -27,9 +27,9 @@ var
 	stage = this.stage
 ;
 
-	mouse.buttonY = function()
+	$input.buttonY = function()
 	{
-		light(mouse.x, mouse.y);
+		light(this.x, this.y);
 	};
 	stage.canvas.style.backgroundColor = '#000';
 

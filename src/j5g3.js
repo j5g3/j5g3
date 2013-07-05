@@ -1076,8 +1076,8 @@ j5g3.Image = j5g3.DisplayObject.extend(
 	{
 		this.source = this._get_source(src);
 
-		if (this.width === null)  this.width = this.source.width;
-		if (this.height === null) this.height = this.source.height;
+		if (this.width === null)  this.width = this.source.naturalWidth;
+		if (this.height === null) this.height = this.source.naturalHeight;
 	}
 
 });
