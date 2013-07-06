@@ -1724,8 +1724,8 @@ j5g3.Sprite = j5g3.DisplayObject.extend({
  */
 j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 
-	width: 0,
-	height: 0,
+	width: null,
+	height: null,
 
 	/**
 	 * @private
@@ -1763,10 +1763,10 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 		if (!src)
 			throw new Error("Invalid source for Spritesheet.");
 
-		if (this.width === 0 && src)
+		if (this.width === null && src)
 			this.width = src.width;
 
-		if (this.height === 0 && src)
+		if (this.height === null && src)
 			this.height = src.height;
 
 		this._source = src;

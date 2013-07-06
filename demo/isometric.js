@@ -9,7 +9,11 @@ var
 	/** @const */ MOUSE_MOVE = 150,
 	/** @const */ MOUSE_RATE = 0.1,
 
-	terrain = j5g3.spritesheet('iso-terrain').grid(10, 10, 1),
+	terrain = j5g3.spritesheet({
+		source: $loader.img('img/iso-terrain.png'),
+		width: 651,
+		height: 320
+	}).grid(10, 10, 1),
 
 	i, a,
 	pt, x, y, prev,

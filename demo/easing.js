@@ -3,7 +3,14 @@
 {
 var
 	// Create our spritesheet and cut it
-	ss = j5g3.spritesheet('batman').grid(6, 7),
+	ss = j5g3.spritesheet({
+		source: $loader.img('img/man.png'),
+		// Manually set the width and height so we dont have to wait for
+		// image to load and grid() works
+		width: 842,
+		height: 980
+		})
+		.grid(6, 7),
 	to = { x: 280 },
 	y = -10,
 	x = 0,
@@ -35,4 +42,4 @@ var
 
 	this.stage.canvas.style.backgroundColor = '#fff';
 	this.run();
-})
+});
