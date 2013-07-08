@@ -574,18 +574,27 @@ j5g3.MatrixLite = j5g3.Class.extend(/** @scope j5g3.MatrixLite.prototype */{
 		return this.calc4();
 	},
 
+	/**
+	 * Sets scaleX value
+	 */
 	setScaleX: function(sx)
 	{
 		this.scaleX = sx;
 		return this.calc4();
 	},
 
+	/**
+	 * Sets scaleY value
+	 */
 	setScaleY: function(sy)
 	{
 		this.scaleY = sy;
 		return this.calc4();
 	},
 
+	/**
+	 * Sets the scale x and y values.
+	 */
 	scale: function(sx, sy)
 	{
 		this.scaleX = sx;
@@ -620,11 +629,17 @@ j5g3.MatrixLite = j5g3.Class.extend(/** @scope j5g3.MatrixLite.prototype */{
  */
 j5g3.Matrix = j5g3.Class.extend(/** @scope j5g3.Matrix.prototype */{
 
+	/** a component */
 	a: 1,
+	/** b component */
 	b: 0,
+	/** c component */
 	c: 0,
+	/** d component */
 	d: 1,
+	/** e component */
 	e: 0,
+	/** f component */
 	f: 0,
 
 	init: function j5g3Matrix(a, b, c, d, e, f)
@@ -636,6 +651,9 @@ j5g3.Matrix = j5g3.Class.extend(/** @scope j5g3.Matrix.prototype */{
 		}
 	},
 
+	/**
+	 * Multiply matric values
+	 */
 	multiply: function(g, h, i, j, k, l)
 	{
 	var
@@ -652,6 +670,9 @@ j5g3.Matrix = j5g3.Class.extend(/** @scope j5g3.Matrix.prototype */{
 		return this;
 	},
 
+	/**
+	 * Returns a new matrix
+	 */
 	clone: function()
 	{
 		return j5g3.matrix().multiply(this.a, this.b, this.c, this.d, this.e, this.f);
@@ -1085,6 +1106,9 @@ j5g3.Image = j5g3.DisplayObject.extend(
  */
 j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 
+	/**
+	 * Text to display
+	 */
 	text: '',
 
 	/**
@@ -1187,6 +1211,9 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 			this.setup();
 	},
 
+	/**
+	 * Invalidates this object for redraw
+	 */
 	invalidate: function(obj)
 	{
 		this.parent.invalidate(obj);
@@ -1526,13 +1553,43 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
  */
 j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 
+	/**
+	 * If true it will remove itself after the animation
+	 * is done
+	 */
 	auto_remove: false,
+
+	/**
+	 * How many times to repeat animation
+	 */
 	repeat: Infinity,
+
+	/**
+	 * Duration of the animation, in frames
+	 */
 	duration: 100,
+
+	/**
+	 * True if the tween is playing.
+	 */
 	is_playing: false,
+
+	/**
+	 * Starting values
+	 */
 	from: null,
+	/**
+	 * Target to animate
+	 */
 	target: null,
+	/**
+	 * Final Values for animation
+	 */
 	to:   null,
+
+	/**
+	 * Current time, in number of frames
+	 */
 	t: 0,
 	/* EVENTS */
 	on_stop: null,
@@ -1569,6 +1626,9 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 		return this;
 	},
 
+	/**
+	 * Resume animation if paused.
+	 */
 	resume: function()
 	{
 		this.update = this._olddraw ? this._olddraw : this.start;
@@ -1576,6 +1636,9 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 		return this;
 	},
 
+	/**
+	 * Restart animation
+	 */
 	rewind: function() {
 		this.repeat -= 1;
 		this.t=0;
@@ -1591,6 +1654,9 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 		return this.stop().start();
 	},
 
+	/**
+	 * Stops animation
+	 */
 	stop: function()
 	{
 		this.pause().rewind();
@@ -1601,6 +1667,9 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 		return this;
 	},
 
+	/**
+	 * Easing function to use. See j5g3.Easing
+	 */
 	easing: function(p) { return p; },
 
 	apply_tween: function(i, v)
@@ -1610,6 +1679,9 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 
 	_remove: j5g3.DisplayObject.prototype.remove,
 
+	/**
+	 * Removes from container and stops animation.
+	 */
 	remove: function()
 	{
 		if (this.on_remove)
@@ -1791,6 +1863,9 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 		return result;
 	},
 
+	/**
+	 * Iterates thorugh sprites.
+	 */
 	each: function(sprites, fn)
 	{
 	var
@@ -2017,7 +2092,9 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
 	/** Tile Height */
 	th: 0,
 
+	/** Offset X */
 	offsetX: 0,
+	/** Offset Y */
 	offsetY: 0,
 
 	init: function j5g3Map(p)
@@ -2143,6 +2220,9 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 		window.cancelAnimationFrame(this._renderLoopId);
 	},
 
+	/**
+	 * Stops the engine and destroys it.
+	 */
 	destroy: function()
 	{
 		this.clear_process();
@@ -2170,6 +2250,9 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 		this.stage.update();
 	},
 
+	/**
+	 * Callback. It is called after the engine is initialized.
+	 */
 	startFn: function() { },
 
 	/**
