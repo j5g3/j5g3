@@ -36,9 +36,21 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 	},
 
 	sources: null,
+
+	/**
+	 * How often to check if objects are ready
+	 */
 	delay: 250,
+
+	/**
+	 * Current loader progress
+	 */
 	progress: 0,
 	start: null,
+
+	/**
+	 * Number of objects loaded.
+	 */
 	length: 0,
 
 	/** Called everytime progress changes */
@@ -112,11 +124,18 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		return result;
 	},
 
+	/**
+	 * Load image. @return DOM object
+	 */
 	img: function(src)
 	{
 		return this.el('IMG', src);
 	},
 
+	/**
+	 * Loads audio file. Automatically selects the right type if
+	 * the current one is not supported. Returns a DOM object.
+	 */
 	audio: function(src)
 	{
 	var
@@ -129,6 +148,10 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		return this.el('AUDIO', src);
 	},
 
+	/**
+	 * Loads data from URL using AJAX and optionally parses it if
+	 * a parser is passed.
+	 */
 	data: function(src, parser)
 	{
 	var
@@ -163,6 +186,10 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		return result;
 	},
 
+	/**
+	 * Loads JSON data, returns an object with the json property
+	 * set as the parsed JSON.
+	 */
 	json: function(src)
 	{
 		return this.data(src, function(result) {
@@ -170,6 +197,9 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		});
 	},
 
+	/**
+	 * Loads a script and executes it. All scripts are loaded asynchronously.
+	 */
 	script: function(src)
 	{
 	var
@@ -179,6 +209,9 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		return result;
 	},
 
+	/**
+	 * Starts loader and calls callback when all objects are loaded.
+	 */
 	ready: function(callback)
 	{
 		if (callback)
@@ -187,6 +220,9 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		this._check_ready();
 	},
 
+	/**
+	 * Stops and destroys Loader
+	 */
 	destroy: function()
 	{
 		window.clearTimeout(this._timeout);
@@ -194,6 +230,7 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 
 });
 
+/** Returns a new j5g3.Loader object */
 j5g3.loader = j5g3.factory(j5g3.Loader);
 
 })(this, this.j5g3);
