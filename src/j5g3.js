@@ -1382,6 +1382,23 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	},
 
 	/**
+	 * Compares all objects in the clip.
+	 *
+	 * @param fn Callback function. It is passed the two objects
+	 * to compare.
+	 */
+	each_pair: function(fn)
+	{
+	var
+		frame = this.frame,
+		next = frame, i
+	;
+		while ((next=i=next._next) !== frame)
+			while ((i=i._next) !== frame)
+				fn(next, i);
+	},
+
+	/**
 	 * Aligns all children
 	 */
 	align_children : function(alignment)
