@@ -127,6 +127,9 @@ j5g3.Circle = j5g3.Shape.extend(/**@scope j5g3.Circle.prototype */ {
 
 	init: function j5g3Circle(p)
 	{
+		if (typeof(p)==='number')
+			p = { radius: p };
+
 		j5g3.Shape.apply(this, [ p ]);
 	},
 

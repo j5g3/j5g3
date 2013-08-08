@@ -143,6 +143,22 @@ j5g3.CollisionQuery = {
  */
 j5g3.CollisionTest = {
 
+	/**
+	 * Circle Collision
+	 */
+	Circle: function(obj)
+	{
+	var
+		r = this.radius + obj.radius,
+		dx= this.x - obj.x,
+		dy= this.y - obj.y
+	;
+		return r*r > (dx*dx + dy*dy);
+	},
+
+	/**
+	 * AABB Collision Test
+	 */
 	AABB: function(obj)
 	{
 	var
