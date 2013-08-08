@@ -87,23 +87,27 @@ j5g3.CollisionQuery = {
 	_AABB: function(obj)
 	{
 	var
-		r1 = this.x + this.width,
-		r2 = obj.x + obj.width,
-		b1 = this.y + this.height,
-		b2 = obj.y + obj.height,
+		x1 = this.x + this.cx, x2 = obj.x + obj.cx,
+		y1 = this.y + this.cy, y2 = obj.y + obj.cy,
+
+		r1 = x1 + this.width,
+		r2 = x2 + obj.width,
+		b1 = y1 + this.height,
+		b2 = y2 + obj.height,
+
 		tx, ty,
 		coll = this.collision
 	;
-		coll.collides = !(obj.x >= r1 || r2 <= this.x || obj.y >= b1 || b2 <= this.y);
+		coll.collides = !(x2 >= r1 || r2 <= x1 || y2 >= b1 || b2 <= y1);
 
 		if (coll.collides)
 		{
 			coll.B = obj;
-			tx = coll.tx = (obj.x+obj.width/2) - (this.x+this.width/2);
-			ty = coll.ty = (obj.y+obj.height/2) - (this.y+this.height/2);
+			tx = coll.tx = (r2/2) - (r1/2);
+			ty = coll.ty = (b2/2) - (b1/2);
 
-			coll[0] = Math.max(this.x, obj.x);
-			coll[1] = Math.max(this.y, obj.y);
+			coll[0] = Math.max(x1, x2);
+			coll[1] = Math.max(y1, y2);
 			coll[2] = Math.min(r1, r2);
 			coll[3] = Math.min(b1, b2);
 
@@ -111,12 +115,12 @@ j5g3.CollisionQuery = {
 			{
 				coll.nx = tx < 0 ? -1 : 1;
 				coll.ny = 0;
-				coll.penetration = tx<0 ? coll[2]-this.x: r1-coll[0];
+				coll.penetration = tx<0 ? coll[2]-x1: r1-coll[0];
 			} else
 			{
 				coll.ny = ty < 0 ? -1 : 1;
 				coll.nx = 0;
-				coll.penetration = ty<0 ? coll[3]-this.y : b1-coll[1];
+				coll.penetration = ty<0 ? coll[3]-y1 : b1-coll[1];
 			}
 
 			return this.collision;
