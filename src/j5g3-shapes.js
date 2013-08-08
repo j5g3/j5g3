@@ -136,7 +136,7 @@ j5g3.Circle = j5g3.Shape.extend(/**@scope j5g3.Circle.prototype */ {
 	paintPath: function(context)
 	{
 		// TODO Optimize
-		context.arc(this.cx, this.cy, this.radius, 0, 2*Math.PI, false);
+		context.arc(this.radius+this.cx, this.radius+this.cy, this.radius, 0, 2*Math.PI, false);
 	},
 
 	at: j5g3.HitTest.Circle

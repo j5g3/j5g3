@@ -23,65 +23,30 @@
 'use strict';
 
 /**
- * Collision Object.
- * @class
- * @extend {j5g3.Class}
- */
-j5g3.Collision = j5g3.Class.extend(/** @scope j5g3.Collision.prototype */{
-
-	/** Object querying the collition */
-	A: null,
-	/** Object colliding with */
-	B: null,
-
-	/** Collision Normal X component */
-	nx: 0,
-	/** Collision Normal Y component */
-	ny: 0,
-	/** Penetration */
-	penetration: 0,
-	/** Number of contacts */
-	length: 0,
-
-	/** Distance of midpoints */
-	tx: 0,
-	/** Distance of midpoints */
-	ty: 0,
-
-	'0': null,
-	'1': null,
-	'2': null,
-	'3': null,
-	'4': null,
-	'5': null,
-	'6': null,
-
-	init: function j5g3Collision(p)
-	{
-		if (p)
-			this.extend(p);
-	}
-
-});
-
-/**
  * @namespace
  * Collision detection algorithms. These algorithms return a Collision object if successful.
  */
 j5g3.CollisionQuery = {
 
 	/**
-	 * Circle Collision
+	 * Circle Collision. Requires a radius property.
 	 */
-	Circle: function(obj)
+	Circle: function(A, B)
 	{
 	var
-		r = this.radius + obj.radius,
-		dx= this.x - obj.x,
-		dy= this.y - obj.y
+		r = A.radius + B.radius,
+		dx= A.radius + A.x - B.radius - B.x,
+		dy= A.radius + A.y - B.radius - B.y
 	;
 		if (r*r > (dx*dx + dy*dy))
-			return { nx: dx, ny: dy };
+		{
+			this.A = A;
+			this.B = B;
+			this.nx = dx;
+			this.ny = dy;
+
+			return true;
+		}
 	},
 
 	_AABB: function(obj)
@@ -195,6 +160,58 @@ j5g3.CollisionTest = {
 	}
 };
 
+/**
+ * Collision Object.
+ * @class
+ * @extend {j5g3.Class}
+ */
+j5g3.Collision = j5g3.Class.extend(/** @scope j5g3.Collision.prototype */{
+
+	/** Object querying the collition */
+	A: null,
+	/** Object colliding with */
+	B: null,
+
+	/** Collision Normal X component */
+	nx: 0,
+	/** Collision Normal Y component */
+	ny: 0,
+	/** Penetration */
+	penetration: 0,
+	/** Number of contacts */
+	length: 0,
+
+	/** Distance of midpoints */
+	tx: 0,
+	/** Distance of midpoints */
+	ty: 0,
+
+	'0': null,
+	'1': null,
+	'2': null,
+	'3': null,
+	'4': null,
+	'5': null,
+	'6': null,
+
+	/**
+	 * Checks for collision and fills collision data.
+	 */
+	query: j5g3.CollisionQuery.Circle,
+
+	/**
+	 * Returns true or false if there is a collision between
+	 * this.A and this.B
+	 */
+	test: j5g3.CollisionTest.Circle,
+
+	init: function j5g3Collision(p)
+	{
+		if (p)
+			this.extend(p);
+	}
+
+});
 /**
  * Tests if object collides with another object obj. See j5g3.Collision for available
  * algorithms.
