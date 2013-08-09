@@ -96,7 +96,6 @@ j5g3.Shape = j5g3.DisplayObject.extend(
 		}
 
 		this._begin(context);
-
 	},
 
 	paintPath: function()

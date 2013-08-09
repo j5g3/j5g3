@@ -23,51 +23,97 @@
 'use strict';
 
 /**
- * @namespace
- * Collision detection algorithms. These algorithms return a Collision object if successful.
+ * Collision Object.
+ * @class
+ * @extend {j5g3.Class}
  */
-j5g3.CollisionQuery = {
+j5g3.Collision = j5g3.Class.extend(/** @scope j5g3.Collision.prototype */{
+
+	/** Object querying the collition */
+	A: null,
+	/** Object colliding with */
+	B: null,
+
+	/** Collision Normal X component */
+	nx: 0,
+	/** Collision Normal Y component */
+	ny: 0,
+	/** Penetration */
+	penetration: 0,
+	/** Number of contacts */
+	length: 0,
+
+	/** Distance of midpoints */
+	tx: 0,
+	/** Distance of midpoints */
+	ty: 0,
+
+	'0': null,
+	'1': null,
+	'2': null,
+	'3': null,
+	'4': null,
+	'5': null,
+	'6': null,
 
 	/**
-	 * Circle Collision. Requires a radius property.
+	 * Checks for collision and fills collision data.
 	 */
-	Circle: function(A, B)
+	query: null
+
+});
+
+/**
+ * Circle Collision. Requires a radius property.
+ */
+j5g3.Collision.Circle = j5g3.Collision.extend({
+
+	query: function(A, B)
 	{
 	var
 		r = A.radius + B.radius,
 		dx= A.radius + A.x - B.radius - B.x,
-		dy= A.radius + A.y - B.radius - B.y
+		dy= A.radius + A.y - B.radius - B.y,
+		me = this
 	;
-		if (r*r > (dx*dx + dy*dy))
+		if ((me.collides = r*r > (dx*dx + dy*dy)))
 		{
-			this.A = A;
-			this.B = B;
-			this.nx = dx;
-			this.ny = dy;
+			me.A = A;
+			me.B = B;
+			me.nx = dx;
+			me.ny = dy;
 
 			return true;
 		}
-	},
+	}
 
-	_AABB: function(obj)
+});
+
+/**
+ * AABB collision algorithm.
+ * TODO apply transformations
+ */
+j5g3.Collision.AABB = j5g3.Collision.extend({
+
+	query: function(A, B)
 	{
 	var
-		x1 = this.x + this.cx, x2 = obj.x + obj.cx,
-		y1 = this.y + this.cy, y2 = obj.y + obj.cy,
+		x1 = A.x + A.cx, x2 = B.x + B.cx,
+		y1 = A.y + A.cy, y2 = B.y + B.cy,
 
-		r1 = x1 + this.width,
-		r2 = x2 + obj.width,
-		b1 = y1 + this.height,
-		b2 = y2 + obj.height,
+		r1 = x1 + A.width,
+		r2 = x2 + B.width,
+		b1 = y1 + A.height,
+		b2 = y2 + B.height,
 
 		tx, ty,
-		coll = this.collision
+		coll = this
 	;
 		coll.collides = !(x2 >= r1 || r2 <= x1 || y2 >= b1 || b2 <= y1);
 
 		if (coll.collides)
 		{
-			coll.B = obj;
+			coll.B = B;
 			tx = coll.tx = (r2/2) - (r1/2);
 			ty = coll.ty = (b2/2) - (b1/2);
 
@@ -88,23 +134,11 @@ j5g3.CollisionQuery = {
 				coll.penetration = ty<0 ? coll[3]-y1 : b1-coll[1];
 			}
 
-			return this.collision;
+			return this;
 		}
-	},
-
-	/**
-	 * AABB collision algorithm.
-	 * TODO apply transformations
-	 */
-	AABB: function(obj)
-	{
-		this.collision = new j5g3.Collision({ length: 2, A: this });
-		this.collides = j5g3.CollisionQuery._AABB;
-
-		return this.collides(obj);
 	}
 
-};
+});
 
 /**
  * @namespace
@@ -158,60 +192,10 @@ j5g3.CollisionTest = {
 
 		return result;
 	}
+
 };
 
-/**
- * Collision Object.
- * @class
- * @extend {j5g3.Class}
- */
-j5g3.Collision = j5g3.Class.extend(/** @scope j5g3.Collision.prototype */{
 
-	/** Object querying the collition */
-	A: null,
-	/** Object colliding with */
-	B: null,
-
-	/** Collision Normal X component */
-	nx: 0,
-	/** Collision Normal Y component */
-	ny: 0,
-	/** Penetration */
-	penetration: 0,
-	/** Number of contacts */
-	length: 0,
-
-	/** Distance of midpoints */
-	tx: 0,
-	/** Distance of midpoints */
-	ty: 0,
-
-	'0': null,
-	'1': null,
-	'2': null,
-	'3': null,
-	'4': null,
-	'5': null,
-	'6': null,
-
-	/**
-	 * Checks for collision and fills collision data.
-	 */
-	query: j5g3.CollisionQuery.Circle,
-
-	/**
-	 * Returns true or false if there is a collision between
-	 * this.A and this.B
-	 */
-	test: j5g3.CollisionTest.Circle,
-
-	init: function j5g3Collision(p)
-	{
-		if (p)
-			this.extend(p);
-	}
-
-});
 /**
  * Tests if object collides with another object obj. See j5g3.Collision for available
  * algorithms.
@@ -220,7 +204,6 @@ j5g3.Collision = j5g3.Class.extend(/** @scope j5g3.Collision.prototype */{
  * @return {boolean}
  */
 j5g3.DisplayObject.prototype.collides = j5g3.CollisionTest.AABB;
-
 j5g3.Clip.prototype.collides = j5g3.CollisionTest.Container;
 
 })(this.j5g3);
