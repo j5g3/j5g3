@@ -1197,7 +1197,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** @private */
 	_playing: true,
 
-	// Time scale
+	/** Time scale */
 	st: 1,
 
 	init: function j5g3Clip(properties)

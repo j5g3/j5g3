@@ -72,8 +72,8 @@ j5g3.Collision.Circle = j5g3.Collision.extend({
 	{
 	var
 		r = A.radius + B.radius,
-		dx= A.radius + A.x - B.radius - B.x,
-		dy= A.radius + A.y - B.radius - B.y,
+		dx= A.radius + A.x + A.cx - B.radius - B.x - B.cx,
+		dy= A.radius + A.y + A.cx - B.radius - B.y - B.cy,
 		me = this
 	;
 		if ((me.collides = r*r > (dx*dx + dy*dy)))
@@ -82,6 +82,8 @@ j5g3.Collision.Circle = j5g3.Collision.extend({
 			me.B = B;
 			me.nx = dx;
 			me.ny = dy;
+			me[0] = A.radius + A.x + A.cx - dx / 2;
+			me[1] = A.radius + A.y + A.cy - dy / 2;
 
 			return true;
 		}

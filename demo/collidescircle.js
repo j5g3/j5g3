@@ -11,10 +11,12 @@ var
 		stage.add([
 			a = j5g3.circle({
 				x: x, y: y, fill: 'red', radius: 10,
+				cx: -10, cy: -10,
 				collides: j5g3.CollisionTest.Circle
 			}),
 			b = j5g3.circle({
 				x: x+B.x, y: y+B.y, fill: 'green', radius: 15,
+				cx: -15, cy: -15,
 				collides: j5g3.CollisionTest.Circle
 			}),
 
@@ -42,30 +44,21 @@ var
 					font: '20px Arial', fill: 'white'
 				})
 			]);
-		console.log(coll);
+
 		y += 40;
 	}
 ;
-
 	do_test({ x: 70, y: 10 });
 	do_test({ x: 90, y: 20 });
 	do_test({ x: 30, y: 20 });
 	do_test({ x: -20, y: 20 });
-
 	do_test({ x: -20, y: 10 });
 	do_test({ x: -20, y: -10 });
 	do_test({ x: 30, y: -10 });
 	do_test({ x: 10, y: 10 });
 	do_test({ x: 40, y: 10 });
-
 	do_test({ x: 100, y: 10 });
 	do_test({ x: 40, y: 30 });
-//	do_test({ x: 20, y: 340, sx: 0.5 }, { x: 100, y: 350 });
-//	do_test({ x: 20, y: 420 }, { x: 100, y: 430, sx: 0.5 });
-
-//	do_test({ x: 320, y: 20 }, { x: 400, y: 30, sx: -2 });
-//	do_test({ x: 320, y: 100, sx: 0.3 }, { x: 400, y: 110, sx: -1 });
-//	do_test({ x: 320, y: 180, sx: 0.5 }, { x: 400, y: 190, sx: -0.5 });
 
 	this.stage.draw();
 });
