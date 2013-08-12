@@ -439,12 +439,11 @@ j5g3.Cache = {
 	/**
 	 * Switches context to CACHE context and executes fn.
 	 */
-	use: function(context, fn, scope)
+	use: function(fn, scope)
 	{
 	var
 		result
 	;
-		// TODO put cache context somewhere?
 		result = fn(scope, cache.getContext('2d'));
 
 		return result;
@@ -1117,6 +1116,21 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 	line_height: 12,
 
 	_align: null,
+
+	/**
+	 * Calculates Text Width and sets cx value based on align.
+	 */
+	align_text: function(align)
+	{
+		this.width = this.get_width();
+
+		if (align==='left')
+			this.cx = 0;
+		else if (align==='center')
+			this.cx = -this.width/2;
+		else if (align==='right')
+			this.cx = -this.width;
+	},
 
 	init: function j5g3Text(properties)
 	{
