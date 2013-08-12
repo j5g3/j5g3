@@ -76,14 +76,17 @@ j5g3.Collision.Circle = j5g3.Collision.extend({
 		y1 = A.y + A.radius + A.cy,
 		dx= x1 - B.radius - B.cx - B.x,
 		dy= y1 - B.radius - B.cy - B.y,
+		mag = dx*dx+dy*dy,
 		me = this
 	;
-		if ((me.collides = r*r > (dx*dx + dy*dy)))
+		if ((me.collides = r*r > mag))
 		{
+			mag = Math.sqrt(mag);
 			me.A = A;
 			me.B = B;
-			me.nx = dx;
-			me.ny = dy;
+			me.nx = dx/mag;
+			me.ny = dy/mag;
+			me.penetration = r-mag;
 			me[0] = x1 - dx / 2;
 			me[1] = y1 - dy / 2;
 
