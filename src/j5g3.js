@@ -1209,7 +1209,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	_lastFrame: null,
 
 	/** @private */
-	_playing: true,
+	playing: true,
 
 	/** Time scale */
 	st: 1,
@@ -1252,7 +1252,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 			if (next.update !== null)
 				next.update();
 
-		if (this._playing)
+		if (this.playing)
 		{
 			this._frame = (this.frame===this._lastFrame) ? 0 : (this._frame + this.st);
 			this.frame = this._frames[this._frame|0];
@@ -1269,17 +1269,12 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/**
 	 * Stops clip.
 	 */
-	stop: function() { this._playing = false; return this;},
+	stop: function() { this.playing = false; return this;},
 
 	/**
 	 * Plays clip.
 	 */
-	play: function() { this._playing = true; return this; },
-
-	/**
-	 * Returns true if clip is playing
-	 */
-	is_playing: function() { return this._playing; },
+	play: function() { this.playing = true; return this; },
 
 	/**
 	 * Adds display_objects to current frame.
@@ -1599,11 +1594,6 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 	 * Duration of the animation, in frames
 	 */
 	duration: 100,
-
-	/**
-	 * True if the tween is playing.
-	 */
-	is_playing: false,
 
 	/**
 	 * Starting values

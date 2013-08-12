@@ -72,8 +72,10 @@ j5g3.Collision.Circle = j5g3.Collision.extend({
 	{
 	var
 		r = A.radius + B.radius,
-		dx= A.radius + A.x + A.cx - B.radius - B.x - B.cx,
-		dy= A.radius + A.y + A.cx - B.radius - B.y - B.cy,
+		x1 = A.x + A.radius + A.cx,
+		y1 = A.y + A.radius + A.cy,
+		dx= x1 - B.radius - B.cx - B.x,
+		dy= y1 - B.radius - B.cy - B.y,
 		me = this
 	;
 		if ((me.collides = r*r > (dx*dx + dy*dy)))
@@ -82,8 +84,8 @@ j5g3.Collision.Circle = j5g3.Collision.extend({
 			me.B = B;
 			me.nx = dx;
 			me.ny = dy;
-			me[0] = A.radius + A.x + A.cx - dx / 2;
-			me[1] = A.radius + A.y + A.cy - dy / 2;
+			me[0] = x1 - dx / 2;
+			me[1] = y1 - dy / 2;
 
 			return true;
 		}
@@ -151,12 +153,15 @@ j5g3.CollisionTest = {
 	/**
 	 * Circle Collision
 	 */
-	Circle: function(obj)
+	Circle: function(B)
 	{
 	var
-		r = this.radius + obj.radius,
-		dx= this.x - obj.x,
-		dy= this.y - obj.y
+		A = this,
+		r = A.radius + B.radius,
+		x1 = A.x + A.radius + A.cx,
+		y1 = A.y + A.radius + A.cy,
+		dx= x1 - B.radius - B.cx - B.x,
+		dy= y1 - B.radius - B.cy - B.y
 	;
 		return r*r > (dx*dx + dy*dy);
 	},
