@@ -1203,10 +1203,9 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	_frame: 0,
 
 	/**
-	 * @private
-	 * Last frame in the clip.
+	 * Number of frames.
 	 */
-	_lastFrame: null,
+	length: null,
 
 	/** @private */
 	playing: true,
@@ -1254,7 +1253,9 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 
 		if (this.playing)
 		{
-			this._frame = (this.frame===this._lastFrame) ? 0 : (this._frame + this.st);
+			if ((this._frame += this.st) >= this.length)
+				this._frame = 0;
+
 			this.frame = this._frames[this._frame|0];
 		}
 	},
@@ -1332,12 +1333,11 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	add_frame: function(objects)
 	{
 	var
-		frame = { }
+		frame = {}
 	;
-		this._lastFrame = frame._previous = frame._next = frame;
-
+		frame._previous = frame._next = frame;
 		this._frames.push(frame);
-		this.go(this._frames.length-1);
+		this.go((this.length =this._frames.length)-1);
 
 		return objects ? this.add(objects) : this;
 	},
@@ -1358,6 +1358,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		frame = frame===undefined ? this._frame : frame;
 		this._frames.splice(frame, 1);
 		this.go(frame-1);
+		this.length = this._frames.length;
 
 		return this;
 	},
