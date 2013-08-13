@@ -1457,6 +1457,11 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 	smoothing: false,
 
 	/**
+	 * If true it will set stage z-index to backgorund
+	 */
+	background: false,
+
+	/**
 	 * Dirty Area
 	 */
 	_dx: 0,
@@ -1466,13 +1471,19 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 
 	_init_canvas: function()
 	{
-
+	var
+		body = window.document.body
+	;
 		if (!this.canvas)
 		{
 			this.canvas = j5g3.dom('CANVAS');
 			this.canvas.width = this.width;
 			this.canvas.height= this.height;
-			window.document.body.appendChild(this.canvas);
+
+			if (this.background)
+				body.insertBefore(this.canvas, body.firstChild);
+			else
+				body.appendChild(this.canvas);
 		}
 	},
 
@@ -1481,6 +1492,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 	var
 		me = this
 	;
+
 		j5g3.Clip.apply(me, [p]);
 
 		me._init_canvas();
@@ -1502,6 +1514,30 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 		me.screen.webkitImageSmoothingEnabled =
 		me.context.webkitImageSmoothingEnabled =
 			me.smoothing;
+	},
+
+	/**
+	 * Creates a new layer, adds it to this stage and sets its
+	 * draw method to j5g3.Draw.RootDirty
+	 */
+	layer: function(p)
+	{
+	var
+		layer, lp
+	;
+		if (typeof(p)==='string')
+			p = { canvas: j5g3.id(p) };
+
+		j5g3.extend(lp = {
+			width: this.width,
+			height: this.height
+		}, p);
+
+		layer = new j5g3.Stage(lp);
+		layer.draw = j5g3.Draw.RootDirty;
+
+		this.add(layer);
+		return layer;
 	},
 
 	/**
@@ -1917,7 +1953,7 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 			if (sprite.height> h) h = sprite.height;
 		});
 
-		return clip.size(w, h);
+		return clip.size(w, h).go(0);
 	},
 
 	/**
