@@ -96,7 +96,6 @@ j5g3.Shape = j5g3.DisplayObject.extend(
 		}
 
 		this._begin(context);
-
 	},
 
 	paintPath: function()
@@ -127,13 +126,16 @@ j5g3.Circle = j5g3.Shape.extend(/**@scope j5g3.Circle.prototype */ {
 
 	init: function j5g3Circle(p)
 	{
+		if (typeof(p)==='number')
+			p = { radius: p };
+
 		j5g3.Shape.apply(this, [ p ]);
 	},
 
 	paintPath: function(context)
 	{
 		// TODO Optimize
-		context.arc(this.cx, this.cy, this.radius, 0, 2*Math.PI, false);
+		context.arc(this.radius+this.cx, this.radius+this.cy, this.radius, 0, 2*Math.PI, false);
 	},
 
 	at: j5g3.HitTest.Circle

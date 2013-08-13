@@ -439,12 +439,11 @@ j5g3.Cache = {
 	/**
 	 * Switches context to CACHE context and executes fn.
 	 */
-	use: function(context, fn, scope)
+	use: function(fn, scope)
 	{
 	var
 		result
 	;
-		// TODO put cache context somewhere?
 		result = fn(scope, cache.getContext('2d'));
 
 		return result;
@@ -1118,6 +1117,21 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 
 	_align: null,
 
+	/**
+	 * Calculates Text Width and sets cx value based on align.
+	 */
+	align_text: function(align)
+	{
+		this.width = this.get_width();
+
+		if (align==='left')
+			this.cx = 0;
+		else if (align==='center')
+			this.cx = -this.width/2;
+		else if (align==='right')
+			this.cx = -this.width;
+	},
+
 	init: function j5g3Text(properties)
 	{
 		if (typeof properties === 'string')
@@ -1189,15 +1203,14 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	_frame: 0,
 
 	/**
-	 * @private
-	 * Last frame in the clip.
+	 * Number of frames.
 	 */
-	_lastFrame: null,
+	length: null,
 
 	/** @private */
-	_playing: true,
+	playing: true,
 
-	// Time scale
+	/** Time scale */
 	st: 1,
 
 	init: function j5g3Clip(properties)
@@ -1238,9 +1251,11 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 			if (next.update !== null)
 				next.update();
 
-		if (this._playing)
+		if (this.playing)
 		{
-			this._frame = (this.frame===this._lastFrame) ? 0 : (this._frame + this.st);
+			if ((this._frame += this.st) >= this.length)
+				this._frame = 0;
+
 			this.frame = this._frames[this._frame|0];
 		}
 	},
@@ -1255,17 +1270,12 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/**
 	 * Stops clip.
 	 */
-	stop: function() { this._playing = false; return this;},
+	stop: function() { this.playing = false; return this;},
 
 	/**
 	 * Plays clip.
 	 */
-	play: function() { this._playing = true; return this; },
-
-	/**
-	 * Returns true if clip is playing
-	 */
-	is_playing: function() { return this._playing; },
+	play: function() { this.playing = true; return this; },
 
 	/**
 	 * Adds display_objects to current frame.
@@ -1323,12 +1333,11 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	add_frame: function(objects)
 	{
 	var
-		frame = { }
+		frame = {}
 	;
-		this._lastFrame = frame._previous = frame._next = frame;
-
+		frame._previous = frame._next = frame;
 		this._frames.push(frame);
-		this.go(this._frames.length-1);
+		this.go((this.length =this._frames.length)-1);
 
 		return objects ? this.add(objects) : this;
 	},
@@ -1349,6 +1358,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		frame = frame===undefined ? this._frame : frame;
 		this._frames.splice(frame, 1);
 		this.go(frame-1);
+		this.length = this._frames.length;
 
 		return this;
 	},
@@ -1379,6 +1389,23 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		}
 
 		return this;
+	},
+
+	/**
+	 * Compares all objects in the clip.
+	 *
+	 * @param fn Callback function. It is passed the two objects
+	 * to compare.
+	 */
+	each_pair: function(fn)
+	{
+	var
+		frame = this.frame,
+		next = frame, i
+	;
+		while ((next=i=next._next) !== frame)
+			while ((i=i._next) !== frame)
+				fn(next, i);
 	},
 
 	/**
@@ -1430,6 +1457,11 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 	smoothing: false,
 
 	/**
+	 * If true it will set stage z-index to backgorund
+	 */
+	background: false,
+
+	/**
 	 * Dirty Area
 	 */
 	_dx: 0,
@@ -1439,13 +1471,19 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 
 	_init_canvas: function()
 	{
-
+	var
+		body = window.document.body
+	;
 		if (!this.canvas)
 		{
 			this.canvas = j5g3.dom('CANVAS');
 			this.canvas.width = this.width;
 			this.canvas.height= this.height;
-			window.document.body.appendChild(this.canvas);
+
+			if (this.background)
+				body.insertBefore(this.canvas, body.firstChild);
+			else
+				body.appendChild(this.canvas);
 		}
 	},
 
@@ -1454,6 +1492,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 	var
 		me = this
 	;
+
 		j5g3.Clip.apply(me, [p]);
 
 		me._init_canvas();
@@ -1475,6 +1514,30 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 		me.screen.webkitImageSmoothingEnabled =
 		me.context.webkitImageSmoothingEnabled =
 			me.smoothing;
+	},
+
+	/**
+	 * Creates a new layer, adds it to this stage and sets its
+	 * draw method to j5g3.Draw.RootDirty
+	 */
+	layer: function(p)
+	{
+	var
+		layer, lp
+	;
+		if (typeof(p)==='string')
+			p = { canvas: j5g3.id(p) };
+
+		j5g3.extend(lp = {
+			width: this.width,
+			height: this.height
+		}, p);
+
+		layer = new j5g3.Stage(lp);
+		layer.draw = j5g3.Draw.RootDirty;
+
+		this.add(layer);
+		return layer;
 	},
 
 	/**
@@ -1568,11 +1631,6 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 	 * Duration of the animation, in frames
 	 */
 	duration: 100,
-
-	/**
-	 * True if the tween is playing.
-	 */
-	is_playing: false,
 
 	/**
 	 * Starting values
@@ -1895,7 +1953,7 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 			if (sprite.height> h) h = sprite.height;
 		});
 
-		return clip.size(w, h);
+		return clip.size(w, h).go(0);
 	},
 
 	/**

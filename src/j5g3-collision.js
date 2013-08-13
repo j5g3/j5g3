@@ -56,54 +56,76 @@ j5g3.Collision = j5g3.Class.extend(/** @scope j5g3.Collision.prototype */{
 	'5': null,
 	'6': null,
 
-	init: function j5g3Collision(p)
+	/**
+	 * Checks for collision and fills collision data.
+	 */
+	query: null
+
+});
+
+/**
+ * Circle Collision. Requires a radius property.
+ */
+j5g3.Collision.Circle = j5g3.Collision.extend({
+
+	query: function(A, B)
 	{
-		if (p)
-			this.extend(p);
+	var
+		r = A.radius + B.radius,
+		x1 = A.x + A.radius + A.cx,
+		y1 = A.y + A.radius + A.cy,
+		dx= x1 - B.radius - B.cx - B.x,
+		dy= y1 - B.radius - B.cy - B.y,
+		mag = dx*dx+dy*dy,
+		me = this
+	;
+		if ((me.collides = r*r > mag))
+		{
+			mag = Math.sqrt(mag);
+			me.A = A;
+			me.B = B;
+			me.nx = dx/mag;
+			me.ny = dy/mag;
+			me.penetration = r-mag;
+			me[0] = x1 - dx / 2;
+			me[1] = y1 - dy / 2;
+
+			return true;
+		}
 	}
 
 });
 
 /**
- * @namespace
- * Collision detection algorithms. These algorithms return a Collision object if successful.
+ * AABB collision algorithm.
+ * TODO apply transformations
  */
-j5g3.CollisionQuery = {
+j5g3.Collision.AABB = j5g3.Collision.extend({
 
-	/**
-	 * Circle Collision
-	 */
-	Circle: function(obj)
+	query: function(A, B)
 	{
 	var
-		r = this.radius + obj.radius,
-		dx= this.x - obj.x,
-		dy= this.y - obj.y
-	;
-		if (r*r > (dx*dx + dy*dy))
-			return { nx: dx, ny: dy };
-	},
+		x1 = A.x + A.cx, x2 = B.x + B.cx,
+		y1 = A.y + A.cy, y2 = B.y + B.cy,
 
-	_AABB: function(obj)
-	{
-	var
-		r1 = this.x + this.width,
-		r2 = obj.x + obj.width,
-		b1 = this.y + this.height,
-		b2 = obj.y + obj.height,
+		r1 = x1 + A.width,
+		r2 = x2 + B.width,
+		b1 = y1 + A.height,
+		b2 = y2 + B.height,
+
 		tx, ty,
-		coll = this.collision
+		coll = this
 	;
-		coll.collides = !(obj.x >= r1 || r2 <= this.x || obj.y >= b1 || b2 <= this.y);
+		coll.collides = !(x2 >= r1 || r2 <= x1 || y2 >= b1 || b2 <= y1);
 
 		if (coll.collides)
 		{
-			coll.B = obj;
-			tx = coll.tx = (obj.x+obj.width/2) - (this.x+this.width/2);
-			ty = coll.ty = (obj.y+obj.height/2) - (this.y+this.height/2);
+			coll.B = B;
+			tx = coll.tx = (r2/2) - (r1/2);
+			ty = coll.ty = (b2/2) - (b1/2);
 
-			coll[0] = Math.max(this.x, obj.x);
-			coll[1] = Math.max(this.y, obj.y);
+			coll[0] = Math.max(x1, x2);
+			coll[1] = Math.max(y1, y2);
 			coll[2] = Math.min(r1, r2);
 			coll[3] = Math.min(b1, b2);
 
@@ -111,31 +133,19 @@ j5g3.CollisionQuery = {
 			{
 				coll.nx = tx < 0 ? -1 : 1;
 				coll.ny = 0;
-				coll.penetration = tx<0 ? coll[2]-this.x: r1-coll[0];
+				coll.penetration = tx<0 ? coll[2]-x1: r1-coll[0];
 			} else
 			{
 				coll.ny = ty < 0 ? -1 : 1;
 				coll.nx = 0;
-				coll.penetration = ty<0 ? coll[3]-this.y : b1-coll[1];
+				coll.penetration = ty<0 ? coll[3]-y1 : b1-coll[1];
 			}
 
-			return this.collision;
+			return this;
 		}
-	},
-
-	/**
-	 * AABB collision algorithm.
-	 * TODO apply transformations
-	 */
-	AABB: function(obj)
-	{
-		this.collision = new j5g3.Collision({ length: 2, A: this });
-		this.collides = j5g3.CollisionQuery._AABB;
-
-		return this.collides(obj);
 	}
 
-};
+});
 
 /**
  * @namespace
@@ -143,6 +153,25 @@ j5g3.CollisionQuery = {
  */
 j5g3.CollisionTest = {
 
+	/**
+	 * Circle Collision
+	 */
+	Circle: function(B)
+	{
+	var
+		A = this,
+		r = A.radius + B.radius,
+		x1 = A.x + A.radius + A.cx,
+		y1 = A.y + A.radius + A.cy,
+		dx= x1 - B.radius - B.cx - B.x,
+		dy= y1 - B.radius - B.cy - B.y
+	;
+		return r*r > (dx*dx + dy*dy);
+	},
+
+	/**
+	 * AABB Collision Test
+	 */
 	AABB: function(obj)
 	{
 	var
@@ -173,7 +202,9 @@ j5g3.CollisionTest = {
 
 		return result;
 	}
+
 };
+
 
 /**
  * Tests if object collides with another object obj. See j5g3.Collision for available
@@ -183,7 +214,6 @@ j5g3.CollisionTest = {
  * @return {boolean}
  */
 j5g3.DisplayObject.prototype.collides = j5g3.CollisionTest.AABB;
-
 j5g3.Clip.prototype.collides = j5g3.CollisionTest.Container;
 
 })(this.j5g3);
