@@ -12,12 +12,15 @@ var
 		clip.radius = 1;
 		clip.stroke= j5g3.hsla(i<255 ? i+=STEP : i=0, 80, 50);
 		clip.line_width = LW;
+		clip.cx = clip.cy = -1;
 
 		this.parent.add(j5g3.tween({
 			target: clip, duration: NUM,
 			auto_remove: true, to: {
 				alpha: 0,
-				radius: NUM*LW
+				radius: NUM*LW,
+				cx: -NUM*LW,
+				cy: -NUM*LW
 			}
 		}));
 	},
