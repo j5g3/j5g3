@@ -2263,10 +2263,11 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	;
 		me.clear_process();
 
-		me._renderLoopFn = me._renderLoop.bind(me);
+		// NOTE: Closures are faster than Function.bind()
+		me._renderLoopFn = function() { me._renderLoop(); };
 		me._renderLoop();
 
-		me._gameLoopFn = me._gameLoop.bind(me);
+		me._gameLoopFn = function() { me._gameLoop(); };
 		me._gameLoopId = window.setInterval(me._gameLoopFn, me.__fps);
 
 		return me;
