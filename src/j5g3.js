@@ -1144,11 +1144,23 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 
 	_get_width: function(obj, context)
 	{
+	var
+		text = obj.text.split("\n"),
+		metrics,
+		l = text.length,
+		max = 0
+	;
 		obj.begin(context);
-		var metrics = context.measureText(obj.text);
+
+		while (l--)
+		{
+			metrics = context.measureText(text[l]);
+			if (metrics.width > max)
+				max = metrics.width;
+		}
 		obj.end(context);
 
-		return metrics.width;
+		return max;
 	},
 
 	_begin: j5g3.DisplayObject.prototype.begin,
