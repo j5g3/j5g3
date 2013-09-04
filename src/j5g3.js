@@ -1145,7 +1145,7 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 	_get_width: function(obj, context)
 	{
 	var
-		text = obj.text.split("\n"),
+		text = (""+obj.text).split("\n"),
 		metrics,
 		l = text.length,
 		max = 0
