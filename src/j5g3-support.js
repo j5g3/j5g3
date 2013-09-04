@@ -63,7 +63,9 @@ var
 	 * @namespace
 	 */
 	j5g3.support = {
-		audio: {}
+		audio: {},
+
+		touch: 'ontouchstart' in window.document
 	};
 
 	if (audioEl && audioEl.canPlayType)
