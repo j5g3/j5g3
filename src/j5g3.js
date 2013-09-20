@@ -2265,6 +2265,9 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	/** GameLoopId */
 	_gameLoopId: 0,
 
+	/// true if engine is not currently running
+	paused: true,
+
 	/**
 	 * Starts the engine.
 	 */
@@ -2282,6 +2285,8 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 		me._gameLoopFn = function() { me._gameLoop(); };
 		me._gameLoopId = window.setInterval(me._gameLoopFn, me.__fps);
 
+		me.paused = false;
+
 		return me;
 	},
 
@@ -2296,9 +2301,7 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	 */
 	destroy: function()
 	{
-		this.clear_process();
-
-		this._renderLoopFn = function() { };
+		this.pause();
 
 		if (this.on_destroy)
 			this.on_destroy();
@@ -2362,12 +2365,9 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	 */
 	pause: function()
 	{
-		if (this.process)
-		{
-			window.clearInterval(this.process);
-			window.cancelAnimationFrame(this.process);
-		}
-		this._rafScopedLoop = function() { };
+		this.clear_process();
+		this._renderLoopFn = function() { };
+		this.paused = true;
 	},
 
 	/**
@@ -2375,8 +2375,8 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	 */
 	resume: function()
 	{
-		if (this.stage)
-			this.stage.play();
+		if (this.paused)
+			this.run();
 	},
 
 
