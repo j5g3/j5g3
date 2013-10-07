@@ -80,6 +80,11 @@ var
 			console.warn('Trying to add DisplayObject without removing first.', display_object);
 	});
 
+	dbg.fn(j5g3.Clip, 'go', function(frame) {
+		if (!(frame >= 0 && frame < this._frames.length))
+			console.warn('Invalid frame number: ' + frame, this);
+	});
+
 	j5g3.id = function(id) {
 		var result = window.document.getElementById(id);
 		if (!result)
