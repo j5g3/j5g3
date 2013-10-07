@@ -1983,10 +1983,10 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
 	 */
 	slice: function(x, y, w, h)
 	{
-			return this._sprites.push({
-				width: w, height: h,
-				source: { image: this.source.source, x: x, y: y, w: w, h: h }
-			})-1;
+		return this._sprites.push({
+			width: w, height: h,
+			source: { image: this.source.source, x: x, y: y, w: w, h: h }
+		})-1;
 	},
 
 	/**
