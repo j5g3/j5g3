@@ -230,7 +230,10 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 
 });
 
-/** Returns a new j5g3.Loader object */
+/**
+ *  @method
+ *  @return a new j5g3.Loader object
+*/
 j5g3.loader = j5g3.factory(j5g3.Loader);
 
 })(this, this.j5g3);
