@@ -1130,6 +1130,8 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
 			this.cx = -this.width/2;
 		else if (align==='right')
 			this.cx = -this.width;
+
+		return this;
 	},
 
 	init: function j5g3Text(properties)
