@@ -162,7 +162,8 @@ j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
 		if (!result)
 		{
 			result = this.sources[src] = {
-				source: src
+				source: src,
+				request: xhr
 			};
 
 			xhr.onreadystatechange = function() {
