@@ -17,7 +17,11 @@ var
 		});
 	},
 
-	extend = j5g3.extend = function(a, b)
+	extend =
+	/**
+	 * Extends object a with properties from object b
+	 */
+	j5g3.extend = function(a, b)
 	{
 		for (var i in b)
 			a[i] = b[i];
