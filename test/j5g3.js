@@ -117,11 +117,11 @@ j5g3.ready(function() {
 			c = j5g3.image(img),
 			d = j5g3.image({ source: src })
 		;
-			ok(a.source.src.indexOf('explosion')>=0);
+			ok(a.source.src.indexOf('earth')>=0);
 			equal(b.source, a.source);
 			equal(c.source, d.source);
-			equal(c.width, 320);
-			equal(c.height, 320);
+			equal(c.width, 266);
+			equal(c.height, 269);
 
 			d.set_source(src);
 			equal(d.source, c.source);
@@ -157,23 +157,23 @@ j5g3.ready(function() {
 			a.add([ aa, ab, ac ]);
 
 			ok(frame);
-			strictEqual(frame.next, aa);
-			strictEqual(frame.previous, ac);
-			strictEqual(aa.next, ab);
-			strictEqual(ab.next, ac);
-			strictEqual(ac.next, frame);
+			strictEqual(frame._next, aa);
+			strictEqual(frame._previous, ac);
+			strictEqual(aa._next, ab);
+			strictEqual(ab._next, ac);
+			strictEqual(ac._next, frame);
 
 			a.add_frame([ aa, ab, ac ]);
 			frame = a.frame;
 
-			strictEqual(frame.next, aa);
-			strictEqual(frame.previous, ac);
-			strictEqual(aa.next, ab);
-			strictEqual(aa.previous, frame);
-			strictEqual(ab.next, ac);
-			strictEqual(ab.previous, aa);
-			strictEqual(ac.next, frame);
-			strictEqual(ac.previous, ab);
+			strictEqual(frame._next, aa);
+			strictEqual(frame._previous, ac);
+			strictEqual(aa._next, ab);
+			strictEqual(aa._previous, frame);
+			strictEqual(ab._next, ac);
+			strictEqual(ab._previous, aa);
+			strictEqual(ac._next, frame);
+			strictEqual(ac._previous, ab);
 		});
 
 		test('Clip - Removing Objects', function()
@@ -188,21 +188,21 @@ j5g3.ready(function() {
 			a.add([aa, ab, ac]);
 			ab.remove();
 
-			equal(frame.next, aa);
-			equal(aa.next, ac);
-			equal(aa.previous, frame);
-			equal(ac.next, frame);
-			equal(ac.previous, aa);
+			equal(frame._next, aa);
+			equal(aa._next, ac);
+			equal(aa._previous, frame);
+			equal(ac._next, frame);
+			equal(ac._previous, aa);
 
 			ac.remove();
-			equal(frame.next, aa);
-			equal(frame.previous, aa);
-			equal(aa.next, frame);
-			equal(aa.previous, frame);
+			equal(frame._next, aa);
+			equal(frame._previous, aa);
+			equal(aa._next, frame);
+			equal(aa._previous, frame);
 
 			aa.remove();
-			equal(frame.next, frame);
-			equal(frame.previous, frame);
+			equal(frame._next, frame);
+			equal(frame._previous, frame);
 		});
 
 		test('Clip - Adding Frames', function()
@@ -215,17 +215,17 @@ j5g3.ready(function() {
 			c.add_frame();
 			frame = c.frame;
 
-			strictEqual(frame.next, frame);
-			strictEqual(frame.previous, frame);
+			strictEqual(frame._next, frame);
+			strictEqual(frame._previous, frame);
 
-			c.next_frame();
+			c.update();
 			strictEqual(c.frame, frame2);
 			ok(frame !== frame2);
 
 			c.add_frame(img);
 			frame = c.frame;
-			strictEqual(frame.next, img);
-			strictEqual(img.next, frame);
+			strictEqual(frame._next, img);
+			strictEqual(img._next, frame);
 		});
 
 		test('Text Construction', function()
