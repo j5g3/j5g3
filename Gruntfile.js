@@ -29,6 +29,11 @@ module.exports = function(grunt) {
 		},
 
 		concat: {
+			options: {
+				banner: grunt.file.read('src/banner.txt'),
+				stripBanners: true,
+			},
+
 			"j5g3": {
 				src: '<%= jshint.j5g3.src %>',
 				dest: 'build/j5g3-all.js'
