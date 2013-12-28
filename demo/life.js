@@ -16,7 +16,7 @@ var
 
 	map = j5g3.map({
 		map: j5g3.ary(COLS, ROWS, 0),
-		_map: j5g3.ary(COLS, ROWS, 0),
+		map2: j5g3.ary(COLS, ROWS, 0),
 		tw: W,
 		th: H,
 		sprites: [ null ]
@@ -44,15 +44,15 @@ var
 			for (x=0; x<COLS; x++)
 			{
 				a = neighbours(x, y);
-				map._map[y][x] = (a === 2 && map.map[y][x] || a===3) ?
+				map.map2[y][x] = (a === 2 && map.map[y][x] || a===3) ?
 					(map.map[y][x]<COLORS ? map.map[y][x]+1 : COLORS)
 				:
 					0;
 			}
 
 		a = map.map;
-		map.map = map._map;
-		map._map = a;
+		map.map = map.map2;
+		map.map2 = a;
 	}
 ;
 
@@ -73,4 +73,4 @@ var
 	this.stage.add([ map, update ]);
 
 	this.run();
-})
+});

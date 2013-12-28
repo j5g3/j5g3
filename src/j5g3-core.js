@@ -8,6 +8,8 @@ var
 	/**
 	 * @namespace
 	 * Creates a new Engine instance on window.load event.
+	 *
+	 * @param engine Engine settings.
 	 */
 	j5g3 = function(engine)
 	{

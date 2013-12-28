@@ -1371,7 +1371,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	{
 		frame = frame===undefined ? this._frame : frame;
 		this._frames.splice(frame, 1);
-		this.go(frame-1);
+		this.go(frame>0 ? frame-1 : 0);
 		this.length = this._frames.length;
 
 		return this;
@@ -2327,9 +2327,13 @@ j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
 	},
 
 	/**
-	 * Callback. It is called after the engine is initialized.
+	 * Callback. It is called after the engine is initialized. Replace this
+	 * with your own function.
+	 *
+	 * @param j5g3 The j5g3 namespace.
+	 * @param me The engine object.
 	 */
-	startFn: function() { },
+	startFn: function(/* j5g3, me */) { },
 
 	/**
 	 * Starts Engine. Creates Main stage. By default uses the canvas

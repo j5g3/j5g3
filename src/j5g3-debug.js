@@ -54,8 +54,20 @@ var
 		screen.translate(0, 20);
 		screen.fillText(Math.floor(1000/(this._time-this._oldTime)) + " FPS", 0, 0);
 		screen.restore();
-	}
+	},
+
+	/** List of methods that can be overriden, by default all methods starting with
+	 * "on_" will be allowed.
+	 */
+	allow_override = [
+		j5g3.Tween.prototype.easing,
+		j5g3.Emitter.prototype.source
+	]
 ;
+	allow_override.forEach(function(fn) {
+		fn.__allow_override = true;
+	});
+
 	dbg.fn(j5g3.Engine, '_renderLoop', null, loop);
 
 	j5g3.Class.prototype.toString = j5g3.Class.prototype.valueOf = function()
@@ -82,7 +94,7 @@ var
 	});
 
 	dbg.fn(j5g3.Clip, 'go', function(frame) {
-		if (!(frame >= 0 && frame < this._frames.length))
+		if (frame < 0 || frame > this._frames.length)
 			console.warn('Invalid frame number: ' + frame, this);
 	});
 
@@ -98,8 +110,11 @@ var
 	{
 		for (var i in props)
 		{
-			if ((typeof this[i] === 'function') && i.indexOf('on_')!==0)
+			if ((typeof this[i] === 'function') &&
+				!(this[i].__allow_override || i.indexOf('on_')===0))
+			{
 				console.warn('Overriding function ' + i, this);
+			}
 
 			if (i[0]==='_')
 				console.warn('Overriding private member ' + i, this);
