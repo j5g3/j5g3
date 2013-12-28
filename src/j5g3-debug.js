@@ -40,22 +40,6 @@ var
 
 	console = window.console,
 
-	loop = function(time)
-	{
-	var
-		screen = this.stage.screen
-	;
-		this._oldTime = this._time;
-		this._time = time || Date.now(); //(new Date()).getTime();
-
-		screen.save();
-		screen.fillStyle = '#009900';
-		screen.font = 'bold 18px Arial';
-		screen.translate(0, 20);
-		screen.fillText(Math.floor(1000/(this._time-this._oldTime)) + " FPS", 0, 0);
-		screen.restore();
-	},
-
 	/** List of methods that can be overriden, by default all methods starting with
 	 * "on_" will be allowed.
 	 */
@@ -67,8 +51,6 @@ var
 	allow_override.forEach(function(fn) {
 		fn.__allow_override = true;
 	});
-
-	dbg.fn(j5g3.Engine, '_renderLoop', null, loop);
 
 	j5g3.Class.prototype.toString = j5g3.Class.prototype.valueOf = function()
 	{

@@ -1239,7 +1239,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	 */
 	invalidate: function(obj)
 	{
-		this.parent.invalidate(obj);
+		this.parent.invalidate(obj || this);
 	},
 
 	/** Function to call after construction */
