@@ -34,7 +34,7 @@
  *
  */
 j5g3.Shape = j5g3.DisplayObject.extend(
-/** @scope j5g3.Shape.prototype */ {
+/** @lends j5g3.Shape.prototype */ {
 
 	/**
 	 * Type of shape for collision handling.
@@ -119,7 +119,7 @@ j5g3.Shape = j5g3.DisplayObject.extend(
  * @class
  * @extend j5g3.Shape
  */
-j5g3.Circle = j5g3.Shape.extend(/**@scope j5g3.Circle.prototype */ {
+j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
 
 	shape: 'circle',
 	radius: 0,
@@ -146,7 +146,7 @@ j5g3.Circle = j5g3.Shape.extend(/**@scope j5g3.Circle.prototype */ {
  * @class
  * @extend j5g3.Shape
  */
-j5g3.Line = j5g3.Shape.extend(/**@scope j5g3.Line.prototype */{
+j5g3.Line = j5g3.Shape.extend(/**@lends j5g3.Line.prototype */{
 
 	x2: 0,
 	y2: 0,
@@ -164,7 +164,7 @@ j5g3.Line = j5g3.Shape.extend(/**@scope j5g3.Line.prototype */{
  * @class
  * @extend j5g3.Shape
  */
-j5g3.Polygon = j5g3.Shape.extend(/**@scope j5g3.Polygon.prototype */{
+j5g3.Polygon = j5g3.Shape.extend(/**@lends j5g3.Polygon.prototype */{
 
 	shape: 'polygon',
 	points: null,
@@ -224,7 +224,7 @@ j5g3.Polygon = j5g3.Shape.extend(/**@scope j5g3.Polygon.prototype */{
 
 	at: j5g3.HitTest.Polygon
 
-}, /** @scope Polygon */{
+}, /** @lends Polygon */{
 	/**
 	 * Creates a polygon based on number of sides.
 	 */
@@ -255,7 +255,7 @@ j5g3.Polygon = j5g3.Shape.extend(/**@scope j5g3.Polygon.prototype */{
  * @extends j5g3.Shape
  *
  */
-j5g3.Rect = j5g3.Shape.extend(/**@scope j5g3.Rect.prototype */{
+j5g3.Rect = j5g3.Shape.extend(/**@lends j5g3.Rect.prototype */{
 
 	shape: 'polygon',
 
@@ -282,7 +282,7 @@ j5g3.Rect = j5g3.Shape.extend(/**@scope j5g3.Rect.prototype */{
  * @class
  * @extends j5g3.Shape
  */
-j5g3.Dot = j5g3.Shape.extend(/**@scope j5g3.Dot.prototype */{
+j5g3.Dot = j5g3.Shape.extend(/**@lends j5g3.Dot.prototype */{
 
 	shape: 'circle',
 	line_cap: 'round',

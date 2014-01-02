@@ -64,6 +64,17 @@ module.exports = function(grunt) {
 				files: '<%= jshint.j5g3dbg.src %>',
 				tasks: [ 'jshint:j5g3dbg', 'clean:j5g3', 'concat' ]
 			}
+		},
+
+		jsdoc: {
+
+			j5g3dbg: {
+				jsdoc: '../jsdoc/jsdoc.js',
+				src: '<%= concat.j5g3dbg.src %>',
+				options: {
+					destination: 'doc'
+				}
+			}
 		}
 	});
 
@@ -72,7 +83,9 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
+	grunt.loadNpmTasks('grunt-jsdoc');
 
 	grunt.registerTask('default', [ 'jshint', 'clean', 'concat' ]);
 	grunt.registerTask('minify', [ 'default', 'uglify' ]);
+	grunt.registerTask('docs', [ 'jsdoc' ]);
 };

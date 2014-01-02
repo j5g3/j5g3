@@ -27,7 +27,7 @@
  * @extend j5g3.Class
  * @requires j5g3-support.js
  */
-j5g3.Loader = j5g3.Class.extend(/** @scope j5g3.Loader.prototype */{
+j5g3.Loader = j5g3.Class.extend(/** @lends j5g3.Loader.prototype */{
 
 	EVENT: {
 		'IMG': 'load',

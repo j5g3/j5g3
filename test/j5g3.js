@@ -1,7 +1,7 @@
 
 j5g3.ready(function() {
 
-	j5g3.engine(function(j5g3) {
+	j5g3.engine(function(j5g3, engine) {
 
 	module('j5g3.Class');
 	test('Core', function() {
@@ -319,6 +319,33 @@ j5g3.ready(function() {
 			do_test({ x: 320, y: 20 }, { x: 400, y: 30, sx: -2 });
 			do_test({ x: 320, y: 100, sx: 0.3 }, { x: 400, y: 110, sx: -1 });
 			do_test({ x: 320, y: 180, sx: 0.5 }, { x: 400, y: 190, sx: -0.5 });
+		});
+
+		test('Invalidate', function()
+		{
+		var
+			a = j5g3.clip({ x: 10, y: 10, width: 5, height: 5 }),
+			b = j5g3.clip({ x: 30, y: 30, width: 10, height: 15 }),
+			stage = engine.stage
+		;
+			stage._dx = stage.width;
+			stage._dy = stage.height;
+			stage._dh = stage._dw = 0;
+
+			stage.add([a, b]);
+			a.invalidate();
+
+			strictEqual(stage._dx, 10);
+			strictEqual(stage._dy, 10);
+
+			b.invalidate();
+
+			strictEqual(stage._dx, 10);
+			strictEqual(stage._dy, 10);
+			strictEqual(stage._dw, 30);
+			strictEqual(stage._dh, 35);
+
+			a.remove(); b.remove();
 		});
 
 	});

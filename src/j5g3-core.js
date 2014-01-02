@@ -30,7 +30,7 @@ var
 	}
 ;
 
-extend(j5g3, {/** @scope j5g3 */
+extend(j5g3, {/** @lends j5g3 */
 
 	/**
 	 * j5g3 Base class
@@ -113,7 +113,6 @@ var
 	i,
 	_super  = this,
 	init   = methods.init || function() { _super.apply(this, arguments); },
-	/** @constructor @ignore */
 	Subclass= function() { },
 	/** @type {Object} */
 	method

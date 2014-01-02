@@ -11,6 +11,8 @@ var
 
 	Particle = j5g3.Dot.extend({
 
+		width: SIZE,
+		height: SIZE,
 		line_cap: 'round',
 		line_join: 'round',
 		line_width: SIZE,
@@ -21,32 +23,31 @@ var
 
 		init: function()
 		{
-			this.x = RADIUSMIN+j5g3.rand(RADIUSMIN*2);
-			this.y = RADIUSMIN+j5g3.rand(RADIUSMIN*2);
+			this.x = $input.x - RADIUSMIN+j5g3.rand(RADIUSMIN*2);
+			this.y = $input.y - RADIUSMIN+j5g3.rand(RADIUSMIN*2);
 
 			j5g3.Dot.apply(this);
 		}
 
 	}),
 
+	Tween = j5g3.Tween.extend({
+		auto_remove: true, duration: LIFE
+	}),
+
 	on_emit = function(clip)
 	{
-		this.parent.add(j5g3.tween({
-			auto_remove: true, duration: LIFE,
+		this.add(new Tween({
 			target: clip, to: {
 				alpha: 0,
-				y: -RADIUS+j5g3.rand(RADIUS*2),
-				x: -RADIUS+j5g3.rand(RADIUS*2),
+				y: $input.y-RADIUS+j5g3.rand(RADIUS*2),
+				x: $input.x-RADIUS+j5g3.rand(RADIUS*2),
 				red: 255, green: 0, blue: 0
 			}
 		}));
-
-		e1.x = $input.x; e1.y = $input.y;
-		clip.invalidate();
 	},
 
 	e1 = j5g3.emitter({
-		width: RADIUS*2, height: RADIUS*2,
 		source: Particle,
 		count: COUNT,
 		life: LIFE,
@@ -56,7 +57,6 @@ var
 
 	e1.blending = 'lighter';
 
-	//this.stage.draw = j5g3.Draw.RootDirty;
 	this.stage.add([ e1 ]);
 	this.run();
 });

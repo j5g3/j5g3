@@ -27,7 +27,7 @@
  * @class
  * @extend {j5g3.Class}
  */
-j5g3.Collision = j5g3.Class.extend(/** @scope j5g3.Collision.prototype */{
+j5g3.Collision = j5g3.Class.extend(/** @lends j5g3.Collision.prototype */{
 
 	/** Object querying the collition */
 	A: null,

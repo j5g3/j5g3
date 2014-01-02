@@ -29,7 +29,7 @@ var
 	extend = j5g3.extend
 ;
 
-extend(j5g3, {/** @scope j5g3 */
+extend(j5g3, {/** @lends j5g3 */
 
 	/**
 	 * @return {number} A random number from 0 to max
@@ -539,7 +539,7 @@ j5g3.HitTest = {
  * @extend {j5g3.Class}
  * @class
  */
-j5g3.MatrixLite = j5g3.Class.extend(/** @scope j5g3.MatrixLite.prototype */{
+j5g3.MatrixLite = j5g3.Class.extend(/** @lends j5g3.MatrixLite.prototype */{
 
 	a: 1,
 	b: 0,
@@ -622,7 +622,7 @@ j5g3.MatrixLite = j5g3.Class.extend(/** @scope j5g3.MatrixLite.prototype */{
  * @class
  * @extend j5g3.Class
  */
-j5g3.Matrix = j5g3.Class.extend(/** @scope j5g3.Matrix.prototype */{
+j5g3.Matrix = j5g3.Class.extend(/** @lends j5g3.Matrix.prototype */{
 
 	/** a component */
 	a: 1,
@@ -746,9 +746,12 @@ j5g3.Matrix = j5g3.Class.extend(/** @scope j5g3.Matrix.prototype */{
  * @class Base for all classes
  *
  */
-j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype */ {
+j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype */ {
 
-	/** @type {Image} Used by the draw function to paint the object */
+	/**
+	 * Used by the draw function to paint the object
+	 * @type {j5g3.Image}
+	 */
 	source: null,
 
 	/**
@@ -774,57 +777,57 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
 	 */
 	M: null,
 
-	/** @type {number} X position */
+	/** X position @type {number} */
 	x: 0,
 
-	/** @type {number} Y position */
+	/** Y position @type {number} */
 	y: 0,
 
-	/** @type {number} Offset X for rotation. */
+	/** Offset X for rotation.  @type {number} */
 	cx: 0,
-	/** @type {number} Offset Y  */
+	/** Offset Y @type {number} */
 	cy: 0,
-	/** @type {number|null} Width */
+	/** @type {number|null} */
 	width: null,
-	/** @type {number|null} Height */
+	/** @type {number|null} */
 	height: null,
 
 	_rotation: 0,
 
-	/** @type {number} Rotation */
+	/** Rotation @type {number} */
 	set rotation(val) { this.M.setRotation((this._rotation = val)); },
 	get rotation() { return this._rotation; },
 
-	/** @type {number} X Scale */
+	/** X Scale @type {number} */
 	set sx(val) {
 		this.M.setScaleX(val);
 	},
 	get sx() { return this.M.scaleX; },
 
-	/** @type {number} Y Scale */
+	/** Y Scale @type {number} */
 	set sy(val) {
 		this.M.setScaleY(val);
 	},
 	get sy() { return this.M.scaleY; },
 
-	/** @type {number} Alpha transparency value */
+	/** ALpha transparency value @type {number} */
 	alpha: 1,
 
-	/** @type {string} Blending Mode */
+	/** Blending Mode. @type {string} */
 	blending: null,
 
 	/**
-	 * @type {string} Stroke style.
+	 * Stroke Style. @type {string}
 	 */
 	stroke: null,
 
 	/**
-	 * @type {string} Fill Style
+	 * Fill Style @type {string}
 	 */
 	fill: null,
 
 	/**
-	 * @type {string} Font
+	 * Font @type {string}
 	 */
 	font: null,
 
@@ -1057,7 +1060,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @scope j5g3.DisplayObject.prototype *
  * @extends j5g3.DisplayObject
  */
 j5g3.Image = j5g3.DisplayObject.extend(
-/** @scope j5g3.Image.prototype */ {
+/** @lends j5g3.Image.prototype */ {
 
 	init: function j5g3Image(properties)
 	{
@@ -1099,7 +1102,7 @@ j5g3.Image = j5g3.DisplayObject.extend(
 /**
  * @class j5g3.Text
  */
-j5g3.Text = j5g3.DisplayObject.extend(/** @scope j5g3.Text.prototype */{
+j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 
 	/**
 	 * Text to display
@@ -1200,14 +1203,12 @@ j5g3.Html = j5g3.DisplayObject.extend({
  * @class Clip
  */
 j5g3.Clip = j5g3.DisplayObject.extend(
-/** @scope j5g3.Clip.prototype */ {
+/** @lends j5g3.Clip.prototype */ {
 
 	/** @private */
 	_frames: null,
 
 	/**
-	 * @private
-	 *
 	 * Stores current frame number
 	 */
 	_frame: 0,
@@ -1438,7 +1439,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
  * @class
  * @extend j5g3.Clip
  */
-j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
+j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 
 	/**
 	 * Current canvas element.
@@ -1571,17 +1572,17 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
 			this._dx = x;
 		if (y < this._dy)
 			this._dy = y;
-		if (child.width > this._dw)
+		if (x+child.width > this._dx + this._dw)
 		{
-			this._dw = child.width;
+			this._dw = x+child.width-this._dx;
 
 			if (this._dx + this._dw > this.width)
 				this._dw = this.width - this._dx;
 		}
 
-		if (child.height > this._dh)
+		if (y+child.height > this._dy + this._dh)
 		{
-			this._dh = child.height;
+			this._dh = y+child.height-this._dy;
 			if (this._dy + this._dh > this.height)
 				this._dh = this.height - this._dy;
 		}
@@ -1624,7 +1625,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @scope j5g3.Stage.prototype */{
  * @property {function}   on_stop
  *
  */
-j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
+j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 
 	/**
 	 * If true it will remove itself after the animation
@@ -1814,7 +1815,7 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@scope j5g3.Tween.prototype */ {
 
 	at: j5g3.HitTest.Void
 
-}, {/** @scope j5g3.Tween */
+}, {/** @lends j5g3.Tween */
 
 	/**
 	 * Shakes screen.
@@ -1862,7 +1863,7 @@ j5g3.Sprite = j5g3.DisplayObject.extend({
  * HTML Image or j5g3 Image.
  *
  */
-j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
+j5g3.Spritesheet = j5g3.Class.extend(/** @lends j5g3.Spritesheet.prototype */ {
 
 	width: null,
 	height: null,
@@ -2061,7 +2062,7 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @scope j5g3.Spritesheet.prototype */ {
  *
  * @extends j5g3.Clip
  */
-j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
+j5g3.Emitter = j5g3.Clip.extend(/**@lends j5g3.Emitter.prototype */ {
 
 	init: function j5g3Emitter(p)
 	{
@@ -2149,7 +2150,7 @@ j5g3.Emitter = j5g3.Clip.extend(/**@scope j5g3.Emitter.prototype */ {
  * @extends j5g3.DisplayObject
  *
  */
-j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
+j5g3.Map = j5g3.DisplayObject.extend(/**@lends j5g3.Map.prototype */ {
 
 	/** Array of sprites */
 	sprites: null,
@@ -2203,7 +2204,7 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@scope j5g3.Map.prototype */ {
  *
  */
 j5g3.Action = j5g3.Class.extend(
-/** @scope j5g3.Action.prototype */ {
+/** @lends j5g3.Action.prototype */ {
 
 	_init: j5g3.Class,
 
@@ -2227,7 +2228,7 @@ j5g3.Action = j5g3.Class.extend(
 	 */
 	remove: j5g3.DisplayObject.prototype.remove
 
-}, /** @scope j5g3.Action */ {
+}, /** @lends j5g3.Action */ {
 
 	/**
 	 * Rotates object forever. Clockwise by default.
@@ -2247,7 +2248,7 @@ j5g3.Action = j5g3.Class.extend(
  * @class
  * Engine class
  */
-j5g3.Engine = j5g3.Class.extend(/** @scope j5g3.Engine.prototype */{
+j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 
 	version: '0.9.0',
 
