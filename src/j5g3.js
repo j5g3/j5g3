@@ -29,7 +29,7 @@ var
 	extend = j5g3.extend
 ;
 
-extend(j5g3, {/** @lends j5g3 */
+extend(j5g3, /** @lends j5g3 */ {
 
 	/**
 	 * @return {number} A random number from 0 to max
@@ -130,7 +130,7 @@ extend(j5g3, {/** @lends j5g3 */
 });
 
 /**
- * This are all the core drawing algorithms. "this" will point to the current
+ * These are all the core drawing algorithms. "this" will point to the current
  * object.
  *
  * @namespace
@@ -743,7 +743,7 @@ j5g3.Matrix = j5g3.Class.extend(/** @lends j5g3.Matrix.prototype */{
 });
 
 /**
- * @class Base for all classes
+ * @class
  *
  */
 j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype */ {
@@ -1052,7 +1052,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 });
 
 /**
- * @class Image Class
+ * @class
  *
  * Constructor takes properties object, a string with the id of an
  * Image or an HTML Image Element.
@@ -1121,14 +1121,14 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 	 */
 	align_text: function(align)
 	{
-		this.width = this.get_width();
+		var width = this.get_width();
 
 		if (align==='left')
 			this.cx = 0;
 		else if (align==='center')
-			this.cx = -this.width/2;
+			this.cx = -width/2;
 		else if (align==='right')
-			this.cx = -this.width;
+			this.cx = -width;
 
 		return this;
 	},
@@ -1200,7 +1200,7 @@ j5g3.Html = j5g3.DisplayObject.extend({
 });
 
 /**
- * @class Clip
+ * @class
  */
 j5g3.Clip = j5g3.DisplayObject.extend(
 /** @lends j5g3.Clip.prototype */ {
@@ -1815,28 +1815,10 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 
 	at: j5g3.HitTest.Void
 
-}, {/** @lends j5g3.Tween */
-
-	/**
-	 * Shakes screen.
-	 */
-	Shake: function(target, radius, duration)
-	{
-		radius = radius || 3;
-		var r2 = radius*2;
-
-		return new j5g3.Tween({
-			duration: duration || 10,
-			target: target,
-			auto_remove: true,
-			to: { x: 0, y: 0 },
-			apply_tween: function(i, v) { return v===1 ? this.to[i] : -radius+j5g3.rand(r2); }
-		});
-	}
 });
 
 /**
- * @class Sprite
+ * @class
  */
 j5g3.Sprite = j5g3.DisplayObject.extend({
 
@@ -2143,11 +2125,10 @@ j5g3.Emitter = j5g3.Clip.extend(/**@lends j5g3.Emitter.prototype */ {
 });
 
 /**
- * @class Maps an array to a spritesheet.
- *
- * Properties:
- *
+ * @class
  * @extends j5g3.DisplayObject
+ *
+ * Maps an array to a spritesheet.
  *
  */
 j5g3.Map = j5g3.DisplayObject.extend(/**@lends j5g3.Map.prototype */ {
@@ -2348,6 +2329,8 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 			config = {};
 
 		cache = j5g3.dom('CANVAS');
+		cache.style.display = 'none';
+		window.document.body.appendChild(cache);
 
 		j5g3.Class.apply(me, [ config ]);
 

@@ -64,18 +64,8 @@ module.exports = function(grunt) {
 				files: '<%= jshint.j5g3dbg.src %>',
 				tasks: [ 'jshint:j5g3dbg', 'clean:j5g3', 'concat' ]
 			}
-		},
-
-		jsdoc: {
-
-			j5g3dbg: {
-				jsdoc: '../jsdoc/jsdoc.js',
-				src: '<%= concat.j5g3dbg.src %>',
-				options: {
-					destination: 'doc'
-				}
-			}
 		}
+
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-clean');
@@ -87,5 +77,4 @@ module.exports = function(grunt) {
 
 	grunt.registerTask('default', [ 'jshint', 'clean', 'concat' ]);
 	grunt.registerTask('minify', [ 'default', 'uglify' ]);
-	grunt.registerTask('docs', [ 'jsdoc' ]);
 };

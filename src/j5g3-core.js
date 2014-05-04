@@ -6,10 +6,10 @@ var
 	document = window.document,
 
 	/**
-	 * @namespace
 	 * Creates a new Engine instance on window.load event.
 	 *
 	 * @param engine Engine settings.
+	 * @namespace j5g3
 	 */
 	j5g3 = function(engine)
 	{
@@ -17,20 +17,21 @@ var
 		{
 			new j5g3.Engine(engine);
 		});
-	},
-
-	extend =
-	/**
-	 * Extends object a with properties from object b
-	 */
-	j5g3.extend = function(a, b)
-	{
-		for (var i in b)
-			a[i] = b[i];
 	}
 ;
 
-extend(j5g3, {/** @lends j5g3 */
+window.j5g3 = j5g3;
+
+/**
+ * Extends object a with properties from object b
+ */
+j5g3.extend = function(a, b)
+{
+	for (var i in b)
+		a[i] = b[i];
+};
+
+j5g3.extend(j5g3, /** @lends j5g3 */ {
 
 	/**
 	 * j5g3 Base class
@@ -60,7 +61,6 @@ extend(j5g3, {/** @lends j5g3 */
 
 	/**
 	 * Returns a DOM element.
-	 * @namespace
 	 *
 	 * @param {string} tagname
 	 */
@@ -114,7 +114,6 @@ var
 	_super  = this,
 	init   = methods.init || function() { _super.apply(this, arguments); },
 	Subclass= function() { },
-	/** @type {Object} */
 	method
 ;
 	Subclass.prototype = _super.prototype;
@@ -147,7 +146,5 @@ j5g3.Class.prototype.extend = function(p)
 	for (var i in p)
 		this[i] = p[i];
 };
-
-window.j5g3 = j5g3;
 
 })(this);
