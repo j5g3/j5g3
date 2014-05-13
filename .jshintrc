@@ -5,5 +5,9 @@
 	"undef":true, 
 	"smarttabs":true, 
 	"trailing":true,
-	"maxdepth":3
+	"maxdepth":3,
+	"freeze": true,
+	"newcap": true,
+	"maxparams": 4,
+	"maxstatements": 10
 }

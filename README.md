@@ -7,7 +7,6 @@ J5G3 is an easy to use, extendable and fast canvas-based Javascript game engine.
 
 Building j5g3
 -------------
-
 1. Install dependencies
 
     npm install

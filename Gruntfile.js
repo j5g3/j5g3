@@ -41,6 +41,11 @@ module.exports = function(grunt) {
 			"j5g3dbg": {
 				src: ['<%= jshint.j5g3.src %>', '<%= jshint.j5g3dbg.src %>'],
 				dest: 'build/j5g3-all.dbg.js'
+			},
+
+			"css": {
+				src: 'src/j5g3.css',
+				dest: 'build/j5g3.css'
 			}
 		},
 
@@ -63,6 +68,11 @@ module.exports = function(grunt) {
 			j5g3dbg: {
 				files: '<%= jshint.j5g3dbg.src %>',
 				tasks: [ 'jshint:j5g3dbg', 'clean:j5g3', 'concat' ]
+			},
+
+			css: {
+				files: '<%= concat.css.src %>',
+				tasks: [ 'concat:css' ]
 			}
 		}
 
