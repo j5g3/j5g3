@@ -8,6 +8,5 @@
 	"maxdepth":3,
 	"freeze": true,
 	"newcap": true,
-	"maxparams": 4,
-	"maxstatements": 10
+	"maxparams": 4
 }

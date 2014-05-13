@@ -1,5 +1,5 @@
 /**
- * Copyright 2010-2013, Giancarlo F Bellido.
+ * Copyright 2010-2014, Giancarlo F Bellido.
  *
  * j5g3 v0.9.0 - Javascript Library
  * http://j5g3.com
@@ -17,11 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
  *
- * Date: 2013-04-05 12:06:30 -0400
- *
  */
 (function(window, j5g3) {
 'use strict';
+/*jshint freeze:false */
 
 var
 	audioEl = j5g3.dom('audio'),

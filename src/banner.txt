@@ -4,7 +4,7 @@
 * j5g3 <%= pkg.version %> - Javascript Graphics Engine
 * http://j5g3.com
 *
-* Copyright 2010-2013, Giancarlo F Bellido
+* Copyright 2010-2014, Giancarlo F Bellido
 *
 * j5g3 is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by

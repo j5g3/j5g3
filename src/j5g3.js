@@ -2,7 +2,7 @@
  * j5g3 - Javascript Graphics Engine
  * http://j5g3.com
  *
- * Copyright 2010-2013, Giancarlo F Bellido
+ * Copyright 2010-2014, Giancarlo F Bellido
  *
  * j5g3 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,11 +25,10 @@
 var
 	/* This is used by the cache mechanism. It is a canvas element. */
 	cache,
-	f = j5g3.factory,
-	extend = j5g3.extend
+	f = j5g3.factory
 ;
 
-extend(j5g3, /** @lends j5g3 */ {
+j5g3.extend(j5g3, /** @lends j5g3 */ {
 
 	/**
 	 * @return {number} A random number from 0 to max
@@ -405,25 +404,16 @@ j5g3.Cache = {
 		cache_canvas = j5g3.dom('CANVAS'),
 		cache_context
 	;
-		w = w || me.width;
-		h = h || me.height;
-
 		// This will also clear the canvas.
-		cache_canvas.width = w;
-		cache_canvas.height= h;
+		cache_canvas.width = w || me.width;
+		cache_canvas.height= h || me.height;
 
 		cache_context = cache_canvas.getContext('2d', false);
 		cache_context.translate(-me.x-me.cx, -me.y-me.cy);
-		/*
-		cache_context.webkitImageSmoothingEnabled =
-		cache_context.imageSmoothingEnabled =
-			context.imageSmoothingEnabled;
-		*/
 
 		me.clear_cache();
 		me.draw(cache_context);
 
-		//image.src = cache_canvas.toDataURL();
 		me._cache_source = cache_canvas;
 
 		me._oldPaint= me.draw;
@@ -623,6 +613,7 @@ j5g3.MatrixLite = j5g3.Class.extend(/** @lends j5g3.MatrixLite.prototype */{
  * @extend j5g3.Class
  */
 j5g3.Matrix = j5g3.Class.extend(/** @lends j5g3.Matrix.prototype */{
+	/*jshint maxparams:6 */
 
 	/** a component */
 	a: 1,

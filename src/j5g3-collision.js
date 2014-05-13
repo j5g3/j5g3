@@ -1,7 +1,7 @@
 /*
  * j5g3 v0.9.0 - Javascript Collision Module
  *
- * Copyright 2010-2012, Giancarlo F Bellido
+ * Copyright 2010-2014, Giancarlo F Bellido
  *
  * j5g3 is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
- *
- * Date: 2013-04-05 12:06:30 -0400
  *
  */
 (function(j5g3, undefined) {
