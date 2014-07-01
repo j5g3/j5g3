@@ -1106,9 +1106,9 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 	text: '',
 
 	/**
-	 * Default line height only for Draw.MultilineText
+	 * Default line height only for Draw.MultilineText. Leave as null for auto.
 	 */
-	line_height: 12,
+	line_height: null,
 
 	_align: null,
 
@@ -1117,7 +1117,7 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 	 */
 	align_text: function(align)
 	{
-		var width = this.get_width();
+		var width = this.measure();
 
 		if (align==='left')
 			this.cx = 0;
@@ -1134,12 +1134,16 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 		if (typeof properties === 'string')
 			properties = { text: properties };
 
-		j5g3.DisplayObject.apply(this, [properties]);
+		j5g3.DisplayObject.call(this, properties);
+
+		if (this.line_height===null)
+			this.measure();
 	},
 
+	_paint: j5g3.Paint.Text,
 	paint : j5g3.Paint.Text,
 
-	_get_width: function(obj, context)
+	_measure: function(obj, context)
 	{
 	var
 		text = (""+obj.text).split("\n"),
@@ -1154,6 +1158,8 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 			metrics = context.measureText(text[l]);
 			if (metrics.width > max)
 				max = metrics.width;
+			if (obj.line_height===null)
+				obj.line_height = parseInt(context.font, 10);
 		}
 		obj.end(context);
 
@@ -1169,9 +1175,9 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 		this._begin(context);
 	},
 
-	get_width : function()
+	measure: function()
 	{
-		return j5g3.Cache.use(this._get_width, this);
+		return j5g3.Cache.use(this._measure, this);
 	}
 });
 
