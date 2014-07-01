@@ -165,13 +165,13 @@ j5g3.Draw =
 	Root: function()
 	{
 		var context = this.context;
-		context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		context.clearRect(0, 0, this.width, this.height);
 
 		this.begin(context);
 		this.paint(context);
 		this.end(context);
 
-		this.screen.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		this.screen.clearRect(0, 0, this.width, this.height);
 		this.screen.drawImage(this.renderCanvas, 0, 0);
 	},
 
@@ -427,12 +427,7 @@ j5g3.Cache = {
 	 */
 	use: function(fn, scope)
 	{
-	var
-		result
-	;
-		result = fn(scope, cache.getContext('2d'));
-
-		return result;
+		return fn(scope, cache.getContext('2d'));
 	}
 
 };
@@ -635,6 +630,12 @@ j5g3.Matrix = j5g3.Class.extend(/** @lends j5g3.Matrix.prototype */{
 			this.a = a; this.b = b; this.c = c;
 			this.d = d; this.e = e; this.f = f;
 		}
+	},
+
+	translate: function(x, y)
+	{
+		this.e += x;
+		this.f += y;
 	},
 
 	/**
@@ -1020,12 +1021,16 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	at: j5g3.HitTest.Rect,
 
 	/**
-	 * Sets scaleX and scaleY values.
+	 * Sets scaleX and scaleY values. If either sx or sy are NaN, they will be
+	 * ignored.
 	 */
 	scale: function(sx, sy)
 	{
-		this.sx = sx;
-		this.sy = sy;
+		if (!window.isNaN(sx))
+			this.sx = sx;
+		if (!window.isNaN(sy))
+			this.sy = sy;
+
 		return this;
 	},
 
@@ -1061,7 +1066,7 @@ j5g3.Image = j5g3.DisplayObject.extend(
 		case 'dom': properties = { source: properties }; break;
 		}
 
-		j5g3.DisplayObject.apply(this, [ properties ]);
+		j5g3.DisplayObject.call(this, properties);
 
 		if (this.source)
 			this.set_source(this.source);
@@ -1084,8 +1089,8 @@ j5g3.Image = j5g3.DisplayObject.extend(
 	{
 		this.source = this._get_source(src);
 
-		if (this.width === null)  this.width = this.source.naturalWidth;
-		if (this.height === null) this.height = this.source.naturalHeight;
+		if (this.width === null)  this.width = this.source.naturalWidth || this.source.width;
+		if (this.height === null) this.height = this.source.naturalHeight || this.source.height;
 	}
 
 });
@@ -1217,7 +1222,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 
 	init: function j5g3Clip(properties)
 	{
-		j5g3.DisplayObject.apply(this, [ properties ]);
+		j5g3.DisplayObject.call(this, properties);
 
 		this._frames = [];
 		this.add_frame();
@@ -1464,6 +1469,11 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	background: false,
 
 	/**
+	 * Where to add the canvas element if none is specified
+	 */
+	container: false,
+
+	/**
 	 * Dirty Area
 	 */
 	_dx: 0,
@@ -1471,22 +1481,44 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	_dw: 0,
 	_dh: 0,
 
+	_init_container: function()
+	{
+		if (this.container===false)
+		{
+			this.container = window.document.body;
+			return this.container;
+		}
+
+		var c = this.container = j5g3.dom('DIV');
+		c.className = 'j5g3-stage';
+		window.document.body.appendChild(c);
+		return c;
+	},
+
 	_init_canvas: function()
 	{
 	var
-		body = window.document.body
+		container = this.container || this._init_container()
 	;
 		if (!this.canvas)
 		{
-			this.canvas = j5g3.dom('CANVAS');
-			this.canvas.width = this.width;
-			this.canvas.height= this.height;
+			this.canvas = j5g3.canvas(this.width, this.height);
 
 			if (this.background)
-				body.insertBefore(this.canvas, body.firstChild);
+				container.insertBefore(this.canvas, container.firstChild);
 			else
-				body.appendChild(this.canvas);
+				container.appendChild(this.canvas);
 		}
+
+		this.renderCanvas = j5g3.dom('CANVAS');
+	},
+
+	_init_context: function()
+	{
+		var me = this;
+
+		me.context = me.renderCanvas.getContext('2d');
+		me.screen  = me.canvas.getContext('2d');
 	},
 
 	init: function j5g3Stage(p)
@@ -1494,33 +1526,23 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	var
 		me = this
 	;
-
-		j5g3.Clip.apply(me, [p]);
+		j5g3.Clip.call(me, p);
 
 		me._init_canvas();
-
-		me.renderCanvas = j5g3.dom('CANVAS');
-		me.context = me.renderCanvas.getContext('2d');
-		me.screen  = me.canvas.getContext('2d');
 
 		me.resolution(
 			me.width || me.canvas.clientWidth || 640,
 			me.height || me.canvas.clientHeight || 480
 		);
+		me._init_context();
 
-		me._dw = me.width;
-		me._dh = me.height;
-
-		me.screen.imageSmoothingEnabled =
-		me.context.imageSmoothingEnabled =
-		me.screen.webkitImageSmoothingEnabled =
-		me.context.webkitImageSmoothingEnabled =
-			me.smoothing;
 	},
 
 	/**
 	 * Creates a new layer, adds it to this stage and sets its
 	 * draw method to j5g3.Draw.RootDirty
+	 *
+	 * @param {string|object} Initialization object for stage or canvas id string.
 	 */
 	layer: function(p)
 	{
@@ -1532,7 +1554,8 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 
 		j5g3.extend(lp = {
 			width: this.width,
-			height: this.height
+			height: this.height,
+			container: this.container
 		}, p);
 
 		layer = new j5g3.Stage(lp);
@@ -1590,8 +1613,8 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		if (w === 0 || h === 0)
 			throw new Error("Invalid stage resolution: " + w + 'x' + h);
 
-		this.canvas.width = this.renderCanvas.width = w;
-		this.canvas.height= this.renderCanvas.height= h;
+		this._dw = this.canvas.width = this.renderCanvas.width = w;
+		this._dh = this.canvas.height= this.renderCanvas.height= h;
 
 		return this.size(w, h);
 	},
@@ -1699,7 +1722,8 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 	/**
 	 * Restart animation
 	 */
-	rewind: function() {
+	rewind: function()
+	{
 		this.repeat -= 1;
 		this.t=0;
 		this.vf= 0;
@@ -1815,7 +1839,7 @@ j5g3.Sprite = j5g3.DisplayObject.extend({
 
 	init: function j5g3Sprite(p)
 	{
-		j5g3.DisplayObject.apply(this, [ p ]);
+		j5g3.DisplayObject.call(this, p);
 
 		if (!this.source)
 			throw new Error("Invalid source property for Sprite");
@@ -1854,7 +1878,7 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @lends j5g3.Spritesheet.prototype */ {
 			break;
 		}
 
-		j5g3.Class.apply(this, [ properties ]);
+		j5g3.Class.call(this, properties);
 	},
 
 	/**

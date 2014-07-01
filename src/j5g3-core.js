@@ -1,24 +1,20 @@
 
-(function(window, undefined) {
+(function(window, document, undefined) {
 'use strict';
 
-var
-	document = window.document,
-
-	/**
-	 * Creates a new Engine instance on window.load event.
-	 *
-	 * @param engine Engine settings.
-	 * @namespace j5g3
-	 */
-	j5g3 = function(engine)
+/**
+ * Creates a new Engine instance on window.load event.
+ *
+ * @param engine Engine settings.
+ * @namespace j5g3
+ */
+function j5g3(engine)
+{
+	window.addEventListener('load', function()
 	{
-		window.addEventListener('load', function()
-		{
-			new j5g3.Engine(engine);
-		});
-	}
-;
+		new j5g3.Engine(engine);
+	});
+}
 
 window.j5g3 = j5g3;
 
@@ -31,7 +27,7 @@ j5g3.extend = function(a, b)
 		a[i] = b[i];
 };
 
-j5g3.extend(j5g3, /** @lends j5g3 */ {
+j5g3.extend(j5g3, {
 
 	/**
 	 * j5g3 Base class
@@ -147,4 +143,4 @@ j5g3.Class.prototype.extend = function(p)
 		this[i] = p[i];
 };
 
-})(this);
+})(this, this.document);

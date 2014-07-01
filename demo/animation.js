@@ -1,8 +1,8 @@
-(function(j5g3) {
+(function(j5g3, engine) {
 
 var
 	// Load spritesheet
-	ss = j5g3.spritesheet($loader.img('ninja.png')),
+	ss = j5g3.spritesheet($loader.img('img/ninja.png')),
 
 	// Create Ninja clip, make sure Clip has no frames.
 	ninja = j5g3.clip({
@@ -106,5 +106,7 @@ var
 	// Add ninja to stage and run
 	this.stage.add([ ninja, text ]);
 	ninja.align('center middle');
-	this.run();
+	$loader.ready(function() {
+		engine.run();
+	});
 });

@@ -24,8 +24,8 @@
 
 var
 	audioEl = j5g3.dom('audio'),
-	audioFormats = [ "mp3", "ogg", "mp4", "wav"],
-	audioMime = [ "audio/mpeg", "audio/ogg", "audio/mp4", "audio/wav" ]
+	audioFormats = [ "wav", "mp3", "ogg" ],
+	audioMime = [ "audio/wav", "audio/mpeg", "audio/ogg" ]
 ;
 
 	/// bind() polyfill

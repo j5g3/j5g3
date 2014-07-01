@@ -8,7 +8,7 @@
  * - Actions
  */
 
-(function (j5g3)
+(function (j5g3, engine)
 {
 var
 	logo = $loader.img('img/j5g3.png'),
@@ -26,6 +26,8 @@ var
 	this.stage.canvas.style.backgroundColor = 'white';
 	this.stage.add([logo, { source: logo, y:200, sy:-1 }, rotate, update, img ]);
 
-	this.run();
+	$loader.ready(function() {
+		engine.run();
+	});
 });
 
