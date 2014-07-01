@@ -24,7 +24,7 @@
 
 var
 	/* This is used by the cache mechanism. It is a canvas element. */
-	cache,
+	cache = j5g3.dom('CANVAS'),
 	f = j5g3.factory
 ;
 
@@ -2349,7 +2349,6 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 		if (config===undefined)
 			config = {};
 
-		cache = j5g3.dom('CANVAS');
 		cache.style.display = 'none';
 		window.document.body.appendChild(cache);
 
