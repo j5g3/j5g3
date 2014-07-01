@@ -1589,9 +1589,15 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		y = child.y + child.cy
 	;
 		if (x < this._dx)
+		{
+			this._dw += this._dx-x;
 			this._dx = x;
+		}
 		if (y < this._dy)
+		{
+			this._dh += this._dy-y;
 			this._dy = y;
+		}
 		if (x+child.width > this._dx + this._dw)
 		{
 			this._dw = x+child.width-this._dx;
