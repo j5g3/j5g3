@@ -211,8 +211,7 @@ j5g3.Draw =
 		me.screen.clearRect(dx, dy, dw, dh);
 		me.screen.drawImage(me.renderCanvas, dx, dy, dw, dh, dx, dy, dw, dh);
 
-		me._dx = me.width;
-		me._dy = me.height;
+		me._dx = me._dy = null;
 		me._dh = me._dw = 0;
 	},
 
@@ -1605,11 +1604,15 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		x = child.x + child.cx,
 		y = child.y + child.cy
 	;
-		if (x < this._dx)
+		if (this._dx===null)
+			this._dx = x;
+		else if (x < this._dx)
 		{
 			this._dw += this._dx-x;
 			this._dx = x;
 		}
+		if (this._dy===null)
+			this._dy = y;
 		if (y < this._dy)
 		{
 			this._dh += this._dy-y;
