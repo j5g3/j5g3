@@ -28,6 +28,18 @@ var
 	f = j5g3.factory
 ;
 
+
+function compute(obj, property)
+{
+	do {
+		if (obj[property] !== null)
+			return obj[property];
+		if (obj instanceof j5g3.Stage)
+			break;
+
+	} while ((obj = obj.parent));
+}
+
 j5g3.extend(j5g3, /** @lends j5g3 */ {
 
 	/**
@@ -1149,18 +1161,23 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 		text = (""+obj.text).split("\n"),
 		metrics,
 		l = text.length,
-		max = 0
+		max = 0,
+		font = compute(obj, 'font')
 	;
 		obj.begin(context);
+		if (font)
+			context.font = font;
 
 		while (l--)
 		{
 			metrics = context.measureText(text[l]);
 			if (metrics.width > max)
 				max = metrics.width;
-			if (obj.line_height===null)
-				obj.line_height = parseInt(context.font, 10);
 		}
+
+		if (obj.line_height===null)
+			obj.line_height = parseInt(context.font, 10);
+
 		obj.end(context);
 
 		return max;
@@ -2356,6 +2373,7 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 			config = {};
 
 		cache.style.display = 'none';
+		cache.setAttribute('id', 'j5g3-cache');
 		window.document.body.appendChild(cache);
 
 		j5g3.Class.apply(me, [ config ]);

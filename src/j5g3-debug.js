@@ -5,6 +5,10 @@
 (function(window, j5g3, undefined)
 {
 var
+	// jQUery is required only if using the debug toolbar.
+	$ = window.jQuery,
+	$body,
+
 	dbg =
 
 	/**
@@ -114,6 +118,74 @@ var
 
 		return source;
 	};
+
+	function Tab(p)
+	{
+	var
+		me = this,
+		tab = me.$tab = $('<a href="#">'),
+		section = me.$section = $('<section>'),
+		bar = p.toolbar
+	;
+		tab.html(p.label)
+			.click(function(ev) {
+				bar.setActive(me);
+				if (p.onclick) p.onclick(ev);
+				ev.preventDefault();
+			})
+		;
+
+		$body.append(section);
+		bar.$el.append(tab);
+
+		if (!bar.active)
+			bar.setActive(me);
+	}
+
+	function Toolbar()
+	{
+	var
+		r = this.$el = $('<div class="j5g3-dbg-toolbar">')
+	;
+		this.tabs = {
+			game: new Tab({ toolbar: this, label: 'Game' }),
+			cache: new Tab({ toolbar: this, label: 'Cache' })
+		};
+
+		this.tabs.game.$section.append($('canvas'));
+		this.tabs.cache.$section.append($('#j5g3-cache').show());
+
+		$body.append(r);
+	}
+
+	Toolbar.prototype = {
+
+		setActive: function(tab)
+		{
+			if (this.active)
+			{
+				this.active.$tab.removeClass('active');
+				this.active.$section.removeClass('active');
+			}
+
+			tab.$tab.addClass('active');
+			tab.$section.addClass('active');
+			this.active = tab;
+		}
+
+	};
+
+	dbg.attachToolbar = function()
+	{
+		if (!$)
+			return console.error('[j5g3-dbg] attachToolbar requires jQuery.');
+
+		$body = $(window.document.body);
+		$body.addClass('j5g3-dbg');
+
+		new Toolbar();
+	};
+
 
 })(this, this.j5g3);
 
