@@ -1,0 +1,62 @@
+/*!
+* @license
+*
+* j5g3 0.9.0 - Javascript Graphics Engine
+* http://j5g3.com
+*
+* Copyright 2010-2014, Giancarlo F Bellido
+*
+* j5g3 is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* j5g3 is distributed in the hope that it will be useful
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with j5g3. If not, see <http://www.gnu.org/licenses/>.
+*
+* Date: Mon Jul 14 2014 12:56:37 GMT-0500 (CDT)
+*
+*/
+body {
+	background: #111; margin: 0; padding: 0;
+	font: 12px sans-serif;	
+	color: #eee;
+}
+
+canvas {
+	position: absolute;
+	display: block;
+}
+
+.j5g3-stage-full { position: absolute; top: 0; left: 0; bottom: 0; right: 0; }
+.j5g3-stage-full canvas { width: 100%; height: 100%; }
+.j5g3-stage-full .j5g3-stage { position: relative; }
+
+.j5g3-dbg { padding-top: 50px; }
+
+.j5g3-dbg .j5g3-stage-full { top: 49px; }
+
+.j5g3-dbg-toolbar {
+	position: absolute; top: 0; left: 0; right: 0; height: 45px;
+	background-color: #333; font-size: 14px;
+}
+.j5g3-dbg-toolbar a {
+	display: inline-block; line-height: 45px; padding: 0 15px; color: #eee;
+	text-decoration: none;
+}
+.j5g3-dbg-toolbar .active {
+	background-color: #555}
+.j5g3-dbg-toolbar a:hover {
+	background-color: #777; text-decoration: underline;
+}
+
+.j5g3-dbg section.active { display: block; }
+.j5g3-dbg section { display: none; }
+	
+.j5g3-res-1080 { width: 1920px; height: 1080px; }
+.j5g3-aspect-16-9 canvas { width: 100%; height: 56%; }
