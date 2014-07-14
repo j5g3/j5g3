@@ -1511,6 +1511,9 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 			return this.container;
 		}
 
+		if (j5g3.get_type(this.container)==='dom')
+			return this.container;
+
 		var c = this.container = j5g3.dom('DIV');
 		c.className = 'j5g3-stage';
 		window.document.body.appendChild(c);
@@ -1520,7 +1523,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	_init_canvas: function()
 	{
 	var
-		container = this.container || this._init_container()
+		container = this._init_container()
 	;
 		if (!this.canvas)
 		{
@@ -1657,19 +1660,6 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 
 /**
  * @class Tween Class
- *
- * @property {Boolean}             auto_remove    Removes tween from clip at
- *           the end. Defaults to false.
- * @property {j5g3.DisplayObject}  target         Object to animate.
- * @property {Object}              from           Start Value(s)
- * @property {Object}              to             Final Value(s)
- * @property {Number}              duration       Duration of tween
- *           in frames. Default to 100 frames.
- * @property {Number}              repeat         How many times to repeat.
- * @property {Number}              t              Current Time of the animation.
- *
- * @property {function}   on_stop
- *
  */
 j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 
@@ -1706,7 +1696,8 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 	 * Current time, in number of frames
 	 */
 	t: 0,
-	/* EVENTS */
+
+	/* Fired when tween stops. @event */
 	on_stop: null,
 
 	/**
@@ -1806,6 +1797,7 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 		this._remove();
 	},
 
+	/** @private */
 	_calculate: function()
 	{
 	var
@@ -2100,8 +2092,6 @@ j5g3.Emitter = j5g3.Clip.extend(/**@lends j5g3.Emitter.prototype */ {
 
 	/**
 	 * Class of the object to Emit.
-	 * @default j5g3.Clip
-	 *
 	 */
 	source: j5g3.Clip,
 

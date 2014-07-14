@@ -7,9 +7,17 @@ body {
 
 canvas {
 	position: absolute;
+	display: block;
 }
 
+.j5g3-stage-full { position: absolute; top: 0; left: 0; bottom: 0; right: 0; }
+.j5g3-stage-full canvas { width: 100%; height: 100%; }
+.j5g3-stage-full .j5g3-stage { position: relative; }
+
 .j5g3-dbg { padding-top: 50px; }
+
+.j5g3-dbg .j5g3-stage-full { top: 49px; }
+
 .j5g3-dbg-toolbar {
 	position: absolute; top: 0; left: 0; right: 0; height: 45px;
 	background-color: #333; font-size: 14px;

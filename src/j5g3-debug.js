@@ -145,17 +145,19 @@ var
 	function Toolbar()
 	{
 	var
-		r = this.$el = $('<div class="j5g3-dbg-toolbar">')
+		r = this.$el = $('<div class="j5g3-dbg-toolbar">'),
+		content = $('body').children(':not(script)')
 	;
 		this.tabs = {
 			game: new Tab({ toolbar: this, label: 'Game' }),
 			cache: new Tab({ toolbar: this, label: 'Cache' })
 		};
 
-		this.tabs.game.$section.append($('canvas'));
+		this.tabs.game.$section.append(content);
 		this.tabs.cache.$section.append($('#j5g3-cache').show());
 
 		$body.append(r);
+		window.dispatchEvent(new window.Event('resize'));
 	}
 
 	Toolbar.prototype = {
