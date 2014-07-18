@@ -19,13 +19,14 @@
 * You should have received a copy of the GNU General Public License
 * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
 *
-* Date: Mon Jul 14 2014 12:56:37 GMT-0500 (CDT)
+* Date: Fri Jul 18 2014 11:57:16 GMT-0500 (CDT)
 *
 */
 body {
 	background: #111; margin: 0; padding: 0;
 	font: 12px sans-serif;	
 	color: #eee;
+	overflow: hidden;
 }
 
 canvas {

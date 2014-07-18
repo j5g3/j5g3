@@ -19,7 +19,7 @@
 * You should have received a copy of the GNU General Public License
 * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
 *
-* Date: Mon Jul 14 2014 12:56:37 GMT-0500 (CDT)
+* Date: Fri Jul 18 2014 11:57:16 GMT-0500 (CDT)
 *
 */
 (function(window, document, undefined) {
@@ -411,6 +411,14 @@ j5g3.Paint = {
 	Image: function (context)
 	{
 		context.drawImage(this.source, this.cx, this.cy);
+	},
+
+	/**
+	 * Image scaled.
+	 */
+	ImageScaled: function(context)
+	{
+		context.drawImage(this.source, this.cx, this.cy, this.width, this.height);
 	},
 
 	/**
@@ -2689,6 +2697,13 @@ j5g3.stage = f(j5g3.Stage);
  * @return {j5g3.Text}
  */
 j5g3.mtext  = function(p) { var t = new j5g3.Text(p); t.paint = j5g3.Paint.MultilineText; return t; };
+
+/**
+ * Returns a Stroke/Fill Text object
+ * @return {j5g3.Text}
+ */
+j5g3.sftext  = function(p) { var t = new j5g3.Text(p); t.paint = j5g3.Paint.TextStrokeFill; return t; };
+
 /** @function
  * @return {j5g3.Matrix} */
 j5g3.matrix = function(a, b, c, d ,e ,f) { return new j5g3.Matrix(a, b, c, d, e, f); };
