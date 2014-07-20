@@ -1045,6 +1045,9 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	 */
 	scale: function(sx, sy)
 	{
+		if (sy===undefined)
+			sy = sx;
+
 		if (!window.isNaN(sx))
 			this.sx = sx;
 		if (!window.isNaN(sy))

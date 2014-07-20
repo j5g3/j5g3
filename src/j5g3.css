@@ -11,7 +11,10 @@ canvas {
 	display: block;
 }
 
-.j5g3-stage-full { position: absolute; top: 0; left: 0; bottom: 0; right: 0; }
+.j5g3-stage-full {
+	position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+	background-position: 50% 50%; background-size: auto 100%;
+}
 .j5g3-stage-full canvas { width: 100%; height: 100%; }
 .j5g3-stage-full .j5g3-stage { position: relative; }
 

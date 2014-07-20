@@ -19,7 +19,7 @@
 * You should have received a copy of the GNU General Public License
 * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
 *
-* Date: Fri Jul 18 2014 11:57:16 GMT-0500 (CDT)
+* Date: Sat Jul 19 2014 17:29:57 GMT-0500 (CDT)
 *
 */
 (function(window, document, undefined) {
@@ -1194,6 +1194,9 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	 */
 	scale: function(sx, sy)
 	{
+		if (sy===undefined)
+			sy = sx;
+
 		if (!window.isNaN(sx))
 			this.sx = sx;
 		if (!window.isNaN(sy))
