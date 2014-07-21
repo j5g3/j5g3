@@ -1253,12 +1253,21 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** Time scale */
 	st: 1,
 
-	init: function j5g3Clip(properties)
+	/**
+	 * @private
+	 * It will initialize object without calling setup()
+	 */
+	_init: function(properties)
 	{
 		j5g3.DisplayObject.call(this, properties);
 
 		this._frames = [];
 		this.add_frame();
+	},
+
+	init: function j5g3Clip(properties)
+	{
+		this._init(properties);
 
 		if (this.setup!==null)
 			this.setup();
@@ -1728,10 +1737,6 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 		this.update = this.start;
 
 		j5g3.DisplayObject.apply(this, [ properties ]);
-
-		// Make sure initial conditions are set.
-		if (this.target && this.from)
-			this.target.set(this.from);
 	},
 
 	draw: j5g3.Draw.Void,
