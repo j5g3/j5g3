@@ -1728,6 +1728,10 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 		this.update = this.start;
 
 		j5g3.DisplayObject.apply(this, [ properties ]);
+
+		// Make sure initial conditions are set.
+		if (this.target && this.from)
+			this.target.set(this.from);
 	},
 
 	draw: j5g3.Draw.Void,
@@ -1860,6 +1864,7 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 		me.vf= 0;
 
 		me.update = me._calculate;
+		me.update();
 		return this;
 	},
 
