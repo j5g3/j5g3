@@ -177,14 +177,10 @@ j5g3.Draw =
 	Root: function()
 	{
 		var context = this.context;
-		context.clearRect(0, 0, this.width, this.height);
-
+		context.clearRect(0,0,this.width, this.height);
 		this.begin(context);
 		this.paint(context);
 		this.end(context);
-
-		this.screen.clearRect(0, 0, this.width, this.height);
-		this.screen.drawImage(this.renderCanvas, 0, 0);
 	},
 
 	/**
@@ -213,18 +209,6 @@ j5g3.Draw =
 
 		me._dx = me._dy = null;
 		me._dh = me._dw = 0;
-	},
-
-	/**
-	 * Renders directly to canvas.
-	 */
-	RootDirect: function()
-	{
-		var context = this.context;
-		this.clearRect(0,0,this.canvas.width, this.canvas.height);
-		this.begin(context);
-		this.paint(context);
-		this.end(context);
 	},
 
 	/**
@@ -270,6 +254,15 @@ j5g3.Paint = {
 	ImageScaled: function(context)
 	{
 		context.drawImage(this.source, this.cx, this.cy, this.width, this.height);
+	},
+
+	/**
+	 * Paints a section of the Image and repeats if necessary
+	 */
+	ImageRepeat: function(context)
+	{
+		context.drawImage(this.source, -this.cx, -this.cy, this.width, this.height,
+			0, 0, this.width, this.height);
 	},
 
 	/**
@@ -1473,7 +1466,8 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 });
 
 /**
- * Root Clips
+ * A Stage represent a Canvas element and it's responsible for drawing and updating
+ * its children.
  * @class
  * @extend j5g3.Clip
  */
@@ -1490,38 +1484,16 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	context: null,
 
 	/**
-	 * Context for display canvas.
-	 */
-	screen: null,
-
-	/**
-	 * Canvas used for rendering.
-	 */
-	renderCanvas: null,
-
-	/**
-	 * Enable smoothing.
-	 * @default false
-	 */
-	smoothing: false,
-
-	/**
-	 * If true it will set stage z-index to backgorund
-	 */
-	background: false,
-
-	/**
 	 * Where to add the canvas element if none is specified
 	 */
 	container: false,
 
 	/**
-	 * Dirty Area
+	 * Treat the stage as background. If true and no canvas property is specified,
+	 * it will create one and set it behind the main stage. It will also set it
+	 * as opaque(no transparency).
 	 */
-	_dx: 0,
-	_dy: 0,
-	_dw: 0,
-	_dh: 0,
+	background: false,
 
 	_init_container: function()
 	{
@@ -1550,20 +1522,17 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 			this.canvas = j5g3.canvas(this.width, this.height);
 
 			if (this.background)
+			{
+				this.canvas.setAttribute('mox-opaque', true);
 				container.insertBefore(this.canvas, container.firstChild);
-			else
+			} else
 				container.appendChild(this.canvas);
 		}
-
-		this.renderCanvas = j5g3.dom('CANVAS');
 	},
 
 	_init_context: function()
 	{
-		var me = this;
-
-		me.context = me.renderCanvas.getContext('2d');
-		me.screen  = me.canvas.getContext('2d');
+		this.context = this.canvas.getContext('2d', { opaque: this.background });
 	},
 
 	init: function j5g3Stage(p)
@@ -1580,34 +1549,68 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 			me.height || me.canvas.clientHeight || 480
 		);
 		me._init_context();
-
 	},
 
+	invalidate: function() { },
+
 	/**
-	 * Creates a new layer, adds it to this stage and sets its
-	 * draw method to j5g3.Draw.RootDirty
+	 * Sets Screen Resolution and Root Width and Height
 	 *
-	 * @param {string|object} Initialization object for stage or canvas id string.
+	 * @param {number} w Width
+	 * @param {number} h Height
 	 */
-	layer: function(p)
+	resolution: function(w, h)
 	{
-	var
-		layer, lp
-	;
-		if (typeof(p)==='string')
-			p = { canvas: j5g3.id(p) };
+		if (w === 0 || h === 0)
+			throw new Error("Invalid stage resolution: " + w + 'x' + h);
 
-		j5g3.extend(lp = {
-			width: this.width,
-			height: this.height,
-			container: this.container
-		}, p);
+		this.canvas.width = w;
+		this.canvas.height= h;
 
-		layer = new j5g3.Stage(lp);
-		layer.draw = j5g3.Draw.RootDirty;
+		return this.size(w, h);
+	},
 
-		this.add(layer);
-		return layer;
+	draw: j5g3.Draw.Root
+
+});
+
+
+/**
+ * @class
+ * A more complex stage. Will require a call to invalidate in order to draw.
+ */
+j5g3.StageDirty = j5g3.Stage.extend(/** @lends j5g3.StageDirty# */{
+
+	/**
+	 * Context for display canvas.
+	 */
+	screen: null,
+
+	/**
+	 * Canvas used for rendering.
+	 */
+	renderCanvas: null,
+
+	draw: j5g3.Draw.RootDirty,
+
+	/**
+	 * Dirty Area
+	 */
+	_dx: 0,
+	_dy: 0,
+	_dw: 0,
+	_dh: 0,
+
+	_init_canvas: function()
+	{
+		j5g3.Stage.prototype._init_canvas.call(this);
+		this.renderCanvas = j5g3.dom('CANVAS');
+	},
+
+	_init_context: function()
+	{
+		this.context = this.renderCanvas.getContext('2d');
+		this.screen  = this.canvas.getContext('2d');
 	},
 
 	/**
@@ -1657,24 +1660,14 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		}
 	},
 
-	/**
-	 * Sets Screen Resolution and Root Width and Height
-	 *
-	 * @param {number} w Width
-	 * @param {number} h Height
-	 */
+
 	resolution: function(w, h)
 	{
-		if (w === 0 || h === 0)
-			throw new Error("Invalid stage resolution: " + w + 'x' + h);
+		this._dw = this.renderCanvas.width = w;
+		this._dh = this.renderCanvas.height= h;
 
-		this._dw = this.canvas.width = this.renderCanvas.width = w;
-		this._dh = this.canvas.height= this.renderCanvas.height= h;
-
-		return this.size(w, h);
-	},
-
-	draw: j5g3.Draw.Root
+		return j5g3.Stage.prototype.resolution.call(this, w, h);
+	}
 
 });
 
@@ -2306,6 +2299,12 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 	/// true if engine is not currently running
 	paused: true,
 
+	/// @type {Array} Array of layers. Includes the main stage.
+	layers: null,
+
+	/// Main Layer. By default it will be a j5g3.Stage object.
+	stage: null,
+
 	/**
 	 * Starts the engine.
 	 */
@@ -2350,7 +2349,11 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 	 */
 	_renderLoop: function()
 	{
-		this.stage.draw();
+		var i=0, l=this.layers.length;
+
+		for (;i<l; i++)
+			this.layers[i].draw();
+
 		this._renderLoopId = window.requestAnimationFrame(this._renderLoopFn);
 	},
 
@@ -2359,6 +2362,11 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 	 */
 	_gameLoop: function()
 	{
+		var i=0, l=this.layers.length;
+
+		for (;i<l; i++)
+			this.layers[i].draw();
+
 		this.stage.update();
 	},
 
@@ -2382,8 +2390,7 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 	;
 		if (typeof(config)==='function')
 			config = { startFn: config };
-
-		if (config===undefined)
+		else if (config===undefined)
 			config = {};
 
 		cache.style.display = 'none';
@@ -2392,6 +2399,9 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 
 		j5g3.Class.apply(me, [ config ]);
 
+		if (!me.layers)
+			me.layers = [];
+
 		if (!me.stage_settings)
 			me.stage_settings = {};
 
@@ -2399,7 +2409,9 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 			me.stage_settings.canvas = j5g3.id('screen');
 
 		if (!me.stage)
-			me.stage = new j5g3.Stage(me.stage_settings);
+			me.stage = me.layers.length > 0 ? me.layers[1] : new j5g3.Stage(me.stage_settings);
+
+		me.layers.push(me.stage);
 
 		me.startFn(j5g3, me);
 	},
@@ -2473,7 +2485,33 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 		return this.stage.context.createImageData(
 			w || this.stage.canvas.width, h || this.stage.canvas.height
 		);
-	}
+	},
+
+	/**
+	 * Creates a new layer.
+	 *
+	 * @param {string|object} Initialization object for stage or canvas id string.
+	 */
+	layer: function(p)
+	{
+	var
+		stage = this.stage, layer, lp
+	;
+		if (typeof(p)==='string')
+			p = { canvas: j5g3.id(p) };
+
+		j5g3.extend(lp = {
+			width: stage.width,
+			height: stage.height,
+			container: stage.container
+		}, p);
+
+		layer = new j5g3.StageDirty(lp);
+		this.layers.push(layer);
+
+		return layer;
+	},
+
 
 });
 
