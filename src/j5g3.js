@@ -1202,26 +1202,6 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 });
 
 /**
- * Display HTML
- * @class
- * @extend j5g3.DisplayObject
- * TODO
- */
-j5g3.Html = j5g3.DisplayObject.extend({
-
-	html: '',
-
-	init: function j5g3Html(properties)
-	{
-		if (typeof(properties) === 'string')
-			properties = { html: j5g3.dom(properties).innerHTML };
-
-		j5g3.DisplayObject.apply(this, [ properties ]);
-	}
-
-});
-
-/**
  * @class
  */
 j5g3.Clip = j5g3.DisplayObject.extend(
@@ -1528,6 +1508,11 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 			} else
 				container.appendChild(this.canvas);
 		}
+
+		if (this.width===null)
+			this.width = this.canvas.width;
+		if (this.height===null)
+			this.height= this.canvas.height;
 	},
 
 	_init_context: function()
@@ -2618,9 +2603,7 @@ j5g3.emitter= f(j5g3.Emitter);
 /** @function
  * @return {j5g3.Map} */
 j5g3.map    = f(j5g3.Map);
-/** @function
- * @return {j5g3.Html} */
-j5g3.html   = f(j5g3.Html);
+
 /** @function
  * @return {j5g3.Engine} */
 j5g3.engine = f(j5g3.Engine);
