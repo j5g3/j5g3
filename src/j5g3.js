@@ -1503,7 +1503,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 
 			if (this.background)
 			{
-				this.canvas.setAttribute('mox-opaque', true);
+				this.canvas.setAttribute('moz-opaque', true);
 				container.insertBefore(this.canvas, container.firstChild);
 			} else
 				container.appendChild(this.canvas);
