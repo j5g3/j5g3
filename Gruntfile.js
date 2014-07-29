@@ -15,7 +15,7 @@ module.exports = function(grunt) {
 			'j5g3': {
 				options: { jshintrc: '.jshintrc' },
 				src: [
-					'src/j5g3-core.js', 'src/j5g3.js', 'src/j5g3-loader.js',
+					'src/j5g3-core.js', 'src/j5g3-matrix.js', 'src/j5g3.js', 'src/j5g3-loader.js',
 					'src/j5g3-collision.js', 'src/j5g3-shapes.js',
 					'src/j5g3-support.js'
 				]
