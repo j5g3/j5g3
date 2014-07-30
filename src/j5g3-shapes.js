@@ -148,13 +148,10 @@ j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
  */
 j5g3.Line = j5g3.Shape.extend(/**@lends j5g3.Line.prototype */{
 
-	x2: 0,
-	y2: 0,
-
 	paintPath: function(context)
 	{
 		context.moveTo(this.cx, this.cy);
-		context.lineTo(this.x2, this.y2);
+		context.lineTo(this.width, this.height);
 	}
 
 });
@@ -270,8 +267,10 @@ j5g3.Rect = j5g3.Shape.extend(/**@lends j5g3.Rect.prototype */{
 
 	paint : function(context)
 	{
-		context.fillRect(this.cx, this.cy, this.width, this.height);
-		context.strokeRect(this.cx, this.cy, this.width, this.height);
+		if (this.fill !== false)
+			context.fillRect(this.cx, this.cy, this.width, this.height);
+		if (this.stroke !== false)
+			context.strokeRect(this.cx, this.cy, this.width, this.height);
 	}
 
 });

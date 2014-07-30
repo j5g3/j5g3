@@ -23,7 +23,6 @@
 
 j5g3.BoundingBox = function j5g3BoundingBox(x, y, w, h)
 {
-	this.dirty = [];
 	this.set(x,y,w,h);
 };
 
@@ -56,11 +55,13 @@ j5g3.BoundingBox.prototype = {
 		this.y = y;
 		this.r = x+w;
 		this.b = y+h;
+		this.w = w;
+		this.h = h;
 	},
 
-	intersect: function()
+	intersect: function(B)
 	{
-		return true;
+		return !(B.x > this.r || B.r < this.x || B.y > this.b || B.b < this.y);
 	},
 
 	transform: function(obj, M)

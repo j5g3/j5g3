@@ -158,11 +158,13 @@ j5g3.Render =
 	 */
 	Default: function(context, BB)
 	{
-		if (BB && !BB.intersect(this))
-			return;
-		this.begin(context);
-		this.paint(context, BB);
-		this.end(context);
+		if (this.dirty || BB.intersect(this.box))
+		{
+			this.begin(context);
+			this.paint(context, BB);
+			this.end(context);
+			this.dirty = false;
+		}
 	},
 
 	/**
@@ -303,7 +305,7 @@ j5g3.Paint = {
 	/**
 	 * Paints a 2D map.
 	 */
-	Map: function(context)
+	Map: function(context, BB)
 	{
 		var map = this.map, y = map.length, x, sprites = this.sprites, s, cm;
 
@@ -320,7 +322,7 @@ j5g3.Paint = {
 			{
 				context.translate(-this.tw, 0);
 				if ((s = sprites[cm[x]]))
-					s.render(context);
+					s.render(context, BB);
 			}
 		}
 	},
@@ -328,7 +330,7 @@ j5g3.Paint = {
 	/**
 	 * Paints an isometric map.
 	 */
-	Isometric: function(context)
+	Isometric: function(context, BB)
 	{
 	var
 		map = this.map, y = 0, x, l=map.length,
@@ -352,7 +354,7 @@ j5g3.Paint = {
 			{
 				context.translate(-this.tw, 0);
 				if ((s = sprites[cm[x]]))
-					s.render(context);
+					s.render(context, BB);
 			}
 
 		}
@@ -388,7 +390,7 @@ j5g3.Cache = {
 		cache_context.translate(-me.x-me.cx, -me.y-me.cy);
 
 		me.clear_cache();
-		me.render(cache_context);
+		me.render(cache_context, me.box);
 
 		me._cache_source = cache_canvas;
 
@@ -538,27 +540,24 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 
 	_rotation: 0,
 
-	__dirty: false,
+	dirty: false,
 
 	/** Rotation @type {number} */
 	set rotation(val)
 	{
 		this.M.setRotation((this._rotation = val));
-		this.invalidate();
 	},
 	get rotation() { return this._rotation; },
 
 	/** X Scale @type {number} */
 	set sx(val) {
 		this.M.setScaleX(val);
-		this.invalidate();
 	},
 	get sx() { return this.M.scaleX; },
 
 	/** Y Scale @type {number} */
 	set sy(val) {
 		this.M.setScaleY(val);
-		this.invalidate();
 	},
 	get sy() { return this.M.scaleY; },
 
@@ -595,9 +594,8 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	init: function j5g3DisplayObject(properties)
 	{
 		this.M = new j5g3.Matrix();
-		this.box = new j5g3.BoundingBox();
-
 		this.set(properties);
+		this.box = new j5g3.BoundingBox(this.x, this.y, this.width, this.height);
 	},
 
 	/**
@@ -651,17 +649,17 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	 */
 	invalidate: function()
 	{
-		this.__dirty = true;
+		this.dirty = true;
 	},
 
-	validate: function(BB, M)
+	validate: function(BB, M, force)
 	{
-		if (this.__dirty)
+		if (this.dirty || force)
 		{
-			if (M)
-				this.box.transform(this, M);
 			BB.union(this.box);
-			this.__dirty = false;
+			this.box.transform(this, M);
+			BB.union(this.box);
+			this.dirty = true;
 		}
 	},
 
@@ -961,20 +959,23 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** Function to call after construction */
 	setup: null,
 
-	validate: function(BB, M)
+	validate: function(BB, M, force)
 	{
 	var
-		next = this.frame, M2
+		next = this.frame,
+		M2
 	;
-		if (this.__dirty)
-			j5g3.DisplayObject.prototype.validate.call(this, BB, M);
-		else
+		if (this.dirty || force)
 		{
-			M2 = M.product(this.M, this.x, this.y);
-			while ((next = next._next) !== this.frame)
-				if (next.validate)
-					next.validate(BB, M2);
+			this.__M = M.product(this.M, this.x, this.y);
+			force = true;
 		}
+
+		M2 = this.__M;
+
+		while ((next = next._next) !== this.frame)
+			if (next.validate)
+				next.validate(BB, M2, force);
 	},
 
 	/**
@@ -1195,7 +1196,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	 */
 	background: false,
 
-	__dirty: true,
+	dirty: true,
 
 	_init_container: function()
 	{
@@ -1282,7 +1283,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 
 	render: function()
 	{
-		if (this.__dirty)
+		if (this.dirty)
 		{
 			var context = this.context;
 			context.clearRect(0,0,this.width, this.height);
@@ -1290,7 +1291,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 			this.paint(context);
 			this.end(context);
 
-			this.__dirty = false;
+			this.dirty = false;
 		}
 	},
 
@@ -1327,16 +1328,20 @@ j5g3.StageDirty = j5g3.Stage.extend(/** @lends j5g3.StageDirty# */{
 		dx = me.box.x, dw = me.box.w,
 		dy = me.box.y, dh = me.box.h
 	;
-		if (dw === 0 || dh === 0)
-			return;
+		if (dw !== 0 && dh !== 0)
+		{
+			context.clearRect(dx, dy, dw, dh);
 
-		context.clearRect(dx, dy, dw, dh);
+			me.begin(context);
+			me.paint(context, me.box);
+			me.end(context);
 
-		me.begin(context);
-		me.paint(context, me.box);
-		me.end(context);
+			me.dirty = false;
+			me.box.reset();
 
-		me.screen.drawImage(me.renderCanvas, dx, dy, dw, dh, dx, dy, dw, dh);
+			me.screen.clearRect(dx, dy, dw, dh);
+			me.screen.drawImage(me.renderCanvas, dx, dy, dw, dh, dx, dy, dw, dh);
+		}
 	},
 
 	_init_canvas: function()
@@ -1349,16 +1354,13 @@ j5g3.StageDirty = j5g3.Stage.extend(/** @lends j5g3.StageDirty# */{
 	{
 		this.context = this.renderCanvas.getContext('2d');
 		this.screen  = this.canvas.getContext('2d');
-		this.screen.globalCompositeOperation = 'copy';
 	},
 
 	__validate: j5g3.Clip.prototype.validate,
 
 	validate: function()
 	{
-		var b = this.box.reset();
-		this.__validate(b, this.M);
-
+		this.__validate(this.box, this.M);
 		return this;
 	},
 
@@ -1526,6 +1528,8 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 		for (i in me.to)
 			// TODO See if calling apply_tween affects performance.
 			target[i] = me.apply_tween(i, me.vf);
+
+		target.invalidate();
 
 		if (me.t<me.duration)
 		{
