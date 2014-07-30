@@ -35,7 +35,7 @@ j5g3.extend(j5g3, {
 	 * @param {Object} p
 	 */
 	Class: function j5g3Class(p) {
-		this.set(p);
+		this.extend(p);
 	},
 
 	factory: function(Klass)
@@ -135,13 +135,12 @@ var
 };
 
 /**
- * Extends this instance with properties from p
+ * Extends this instance with properties from p.
  */
-j5g3.Class.prototype.set = function(p)
+j5g3.Class.prototype.extend = function(p)
 {
 	for (var i in p)
 		this[i] = p[i];
-	return this;
 };
 
 })(this, this.document);

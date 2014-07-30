@@ -23,6 +23,7 @@
 
 j5g3.BoundingBox = function j5g3BoundingBox(x, y, w, h)
 {
+	this.M = new j5g3.Matrix();
 	this.set(x,y,w,h);
 };
 
@@ -37,9 +38,12 @@ j5g3.BoundingBox.prototype = {
 	/// Bounding box y2 position
 	b: 0,
 
+	/// Width
 	w: 0,
-
+	/// Height
 	h: 0,
+	/// Last transformation matrix used.
+	M: null,
 
 	reset: function()
 	{
@@ -59,6 +63,15 @@ j5g3.BoundingBox.prototype = {
 		this.h = h;
 	},
 
+	/// Clip box to max coordinates
+	clip: function(x, y, r, b)
+	{
+		if (this.x < x) this.x = x;
+		if (this.y < y) this.y = y;
+		if (this.r > r) { this.r = r; this.w = this.r-this.x; }
+		if (this.b > b) { this.b = b; this.h = this.b-this.y; }
+	},
+
 	intersect: function(B)
 	{
 		return !(B.x > this.r || B.r < this.x || B.y > this.b || B.b < this.y);
@@ -66,9 +79,12 @@ j5g3.BoundingBox.prototype = {
 
 	transform: function(obj, M)
 	{
-		var x, y, x2, y2, x3, y3;
+		var x, y, x2, y2, x3, y3, M2=obj.M;
 
-		M = M.product(obj.M, obj.x, obj.y);
+		M = this.M.copy(M)
+			.multiply(M2.a, M2.b, M2.c, M2.d, M2.e, M2.f)
+		;
+
 		M.to_world(obj.cx, obj.cy);
 		x = M.x; y = M.y;
 		M.to_world(obj.width+obj.cx, obj.height+obj.cy);
@@ -83,6 +99,7 @@ j5g3.BoundingBox.prototype = {
 		this.b = Math.max(y, y2, y3, M.y) | 0;
 		this.w = this.r - this.x;
 		this.h = this.b - this.y;
+		this.M = M;
 	},
 
 	union: function(B)
@@ -254,6 +271,13 @@ j5g3.Matrix.prototype = {
 	product: function(M, x, y)
 	{
 		return this.clone().multiply(M.a, M.b, M.c, M.d, x || M.e || 0, y || M.f || 0);
+	},
+
+	copy: function(B)
+	{
+		this.a = B.a; this.b = B.b; this.c = B.c;
+		this.d = B.d; this.e = B.e; this.f = B.f;
+		return this;
 	},
 
 	/**

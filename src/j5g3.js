@@ -428,28 +428,30 @@ j5g3.HitTest = {
 	/**
 	 * Circle HitTest
 	 */
-	Circle: function(x, y, M)
+	Circle: function(x, y)
 	{
-		M = M ? M.product(this.M, this.x, this.y) : this.M;
-		M.to_client(x, y);
+	var
+		M = this.box.M.to_client(x, y),
+		r = this.radius
+	;
+		x = M.x-r;
+		y = M.y-r;
 
-		return (M.x*M.x+M.y*M.y <= this.radius*this.radius) ? this : false;
+		return (x*x+y*y <= r*r) ? this : false;
 	},
 
 	/**
 	 * Test hit in all children.
 	 */
-	Container: function(x, y, M)
+	Container: function(x, y)
 	{
 	var
 		frame = this.frame,
 		previous = frame,
 		result
 	;
-		M = M ? M.product(this.M, this.x, this.y) : this.M;
-
 		while ((previous = previous._previous) !== frame)
-			if ((result = previous.at(x, y, M)))
+			if ((result = previous.at(x, y)))
 				break;
 
 		return result;
@@ -458,10 +460,9 @@ j5g3.HitTest = {
 	/**
 	 * Rectangle HitTest
 	 */
-	Rect: function(x, y, M)
+	Rect: function(x, y)
 	{
-		M = M ? M.product(this.M, this.x, this.y) : this.M;
-		M.to_client(x, y);
+		var M = this.box.M.to_client(x, y);
 
 		return ((M.x>0 && M.x<this.width)&&(M.y>0 && M.y<this.height)) ? this : false;
 	},
@@ -469,16 +470,15 @@ j5g3.HitTest = {
 	/**
 	 * Polygon HitTest
 	 */
-	Polygon: function(x, y, M)
+	Polygon: function(x, y)
 	{
 	var
 		points = this.points,
 		normals = this.normals,
 		i = 0, l = points.length,
-		dot
+		dot,
+		M = this.box.M.to_client(x, y)
 	;
-		M = M ? M.product(this.M, this.x, this.y) : this.M;
-		M.to_client(x, y);
 
 		for (; i<l; i+=2)
 		{
@@ -523,10 +523,12 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	box: null,
 
 	/** X position @type {number} */
-	x: 0,
+	set x(val) { this.M.e = val; },
+	get x() { return this.M.e; },
 
 	/** Y position @type {number} */
-	y: 0,
+	set y(val) { this.M.f = val; },
+	get y() { return this.M.f; },
 
 	/** Offset X for rotation.  @type {number} */
 	cx: 0,
@@ -540,7 +542,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 
 	_rotation: 0,
 
-	dirty: false,
+	dirty: true,
 
 	/** Rotation @type {number} */
 	set rotation(val)
@@ -553,13 +555,13 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	set sx(val) {
 		this.M.setScaleX(val);
 	},
-	get sx() { return this.M.scaleX; },
+	get sx() { return this.M.sx; },
 
 	/** Y Scale @type {number} */
 	set sy(val) {
 		this.M.setScaleY(val);
 	},
-	get sy() { return this.M.scaleY; },
+	get sy() { return this.M.sy; },
 
 	/** ALpha transparency value @type {number} */
 	alpha: 1,
@@ -594,8 +596,22 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	init: function j5g3DisplayObject(properties)
 	{
 		this.M = new j5g3.Matrix();
-		this.set(properties);
+		this.extend(properties);
 		this.box = new j5g3.BoundingBox(this.x, this.y, this.width, this.height);
+	},
+
+	set: function(p)
+	{
+		for (var i in p)
+			this[i] = p[i];
+
+		return this;
+	},
+
+	invalidate: function()
+	{
+		this.dirty = true;
+		return this;
 	},
 
 	/**
@@ -620,7 +636,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 		if (me.line_join!==null) context.lineJoin = me.line_join;
 		if (me.miter_limit!==null) context.miterLimit = me.miter_limit;
 
-		context.transform(m.a, m.b, m.c, m.d, me.x, me.y);
+		context.transform(m.a, m.b, m.c, m.d, m.e, m.f);
 	},
 
 	/**
@@ -643,14 +659,6 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	 * This property is used to store the old paint method when assigning effects.
 	 */
 	_paint: null,
-
-	/**
-	 * Sets object to dirty and forces paint.
-	 */
-	invalidate: function()
-	{
-		this.dirty = true;
-	},
 
 	validate: function(BB, M, force)
 	{
@@ -754,7 +762,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	at: j5g3.HitTest.Rect,
 
 	/**
-	 * Sets scaleX and scaleY values. If either sx or sy are NaN, they will be
+	 * Sets sx and sy values. If either sx or sy are NaN, they will be
 	 * ignored.
 	 */
 	scale: function(sx, sy)
@@ -762,10 +770,8 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 		if (sy===undefined)
 			sy = sx;
 
-		if (!window.isNaN(sx))
-			this.sx = sx;
-		if (!window.isNaN(sy))
-			this.sy = sy;
+		this.sx = sx || 0;
+		this.sy = sy || 0;
 
 		return this;
 	}
@@ -962,20 +968,17 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	validate: function(BB, M, force)
 	{
 	var
-		next = this.frame,
-		M2
+		next = this.frame
 	;
 		if (this.dirty || force)
 		{
-			this.__M = M.product(this.M, this.x, this.y);
+			this.box.transform(this, M);
 			force = true;
 		}
 
-		M2 = this.__M;
-
 		while ((next = next._next) !== this.frame)
 			if (next.validate)
-				next.validate(BB, M2, force);
+				next.validate(BB, this.box.M, force);
 	},
 
 	/**
@@ -1196,8 +1199,6 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	 */
 	background: false,
 
-	dirty: true,
-
 	_init_container: function()
 	{
 		if (this.container===false)
@@ -1314,7 +1315,7 @@ j5g3.StageDirty = j5g3.Stage.extend(/** @lends j5g3.StageDirty# */{
 	renderCanvas: null,
 
 	/// Dirty Box.
-	box: null,
+	dbox: null,
 
 	/**
 	 * Renders screen to buffer then only updates region under
@@ -1325,19 +1326,19 @@ j5g3.StageDirty = j5g3.Stage.extend(/** @lends j5g3.StageDirty# */{
 	var
 		me = this,
 		context = this.context,
-		dx = me.box.x, dw = me.box.w,
-		dy = me.box.y, dh = me.box.h
+		dx = me.dbox.x, dw = me.dbox.w,
+		dy = me.dbox.y, dh = me.dbox.h
 	;
 		if (dw !== 0 && dh !== 0)
 		{
 			context.clearRect(dx, dy, dw, dh);
 
 			me.begin(context);
-			me.paint(context, me.box);
+			me.paint(context, me.dbox);
 			me.end(context);
 
 			me.dirty = false;
-			me.box.reset();
+			me.dbox.reset();
 
 			me.screen.clearRect(dx, dy, dw, dh);
 			me.screen.drawImage(me.renderCanvas, dx, dy, dw, dh, dx, dy, dw, dh);
@@ -1356,11 +1357,17 @@ j5g3.StageDirty = j5g3.Stage.extend(/** @lends j5g3.StageDirty# */{
 		this.screen  = this.canvas.getContext('2d');
 	},
 
-	__validate: j5g3.Clip.prototype.validate,
-
 	validate: function()
 	{
-		this.__validate(this.box, this.M);
+	var
+		next = this.frame
+	;
+		while ((next = next._next) !== this.frame)
+			if (next.validate)
+				next.validate(this.dbox, this.M, this.dirty);
+
+		this.dbox.clip(0,0,this.width, this.height);
+
 		return this;
 	},
 
@@ -1368,7 +1375,7 @@ j5g3.StageDirty = j5g3.Stage.extend(/** @lends j5g3.StageDirty# */{
 	{
 		this.renderCanvas.width = w;
 		this.renderCanvas.height= h;
-		this.box = new j5g3.BoundingBox(0, 0, w, h);
+		this.dbox = new j5g3.BoundingBox(0, 0, w, h);
 
 		return j5g3.Stage.prototype.resolution.call(this, w, h);
 	}
@@ -1529,7 +1536,7 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 			// TODO See if calling apply_tween affects performance.
 			target[i] = me.apply_tween(i, me.vf);
 
-		target.invalidate();
+		target.dirty = true;
 
 		if (me.t<me.duration)
 		{
