@@ -49,8 +49,10 @@ module.exports = function(grunt) {
 			},
 
 			"release": {
-				src: 'build/j5g3.css',
-				dest: 'build/j5g3-<%= pkg.version %>.css'
+				files: {
+					'build/j5g3-<%= pkg.version %>.css': 'build/j5g3.css',
+					'build/j5g3-all-<%= pkg.version %>.dbg.js': '<%= concat.j5g3dbg.src %>'
+				}
 			}
 		},
 
