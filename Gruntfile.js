@@ -46,6 +46,11 @@ module.exports = function(grunt) {
 			"css": {
 				src: 'src/j5g3.css',
 				dest: 'build/j5g3.css'
+			},
+
+			"release": {
+				src: 'build/j5g3.css',
+				dest: 'build/j5g3-<%= pkg.version %>.css'
 			}
 		},
 
@@ -56,18 +61,25 @@ module.exports = function(grunt) {
 				files: {
 					'build/j5g3-all.min.js': 'build/j5g3-all.js'
 				}
+			},
+
+			release: {
+				compress: true,
+				files: {
+					'build/j5g3-all-<%= pkg.version %>.min.js': 'build/j5g3-all.js'
+				}
 			}
 		},
 
 		watch: {
 			j5g3: {
 				files: '<%= jshint.j5g3.src %>',
-				tasks: [ 'jshint:j5g3', 'clean:j5g3', 'concat' ]
+				tasks: [ 'jshint:j5g3', 'concat:j5g3', 'concat:j5g3dbg' ]
 			},
 
 			j5g3dbg: {
 				files: '<%= jshint.j5g3dbg.src %>',
-				tasks: [ 'jshint:j5g3dbg', 'clean:j5g3', 'concat' ]
+				tasks: [ 'jshint:j5g3dbg', 'concat:j5g3dbg' ]
 			},
 
 			css: {
@@ -85,6 +97,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-jsdoc');
 
-	grunt.registerTask('default', [ 'jshint', 'clean', 'concat' ]);
-	grunt.registerTask('minify', [ 'default', 'uglify' ]);
+	grunt.registerTask('default', [ 'jshint', 'clean', 'concat:j5g3', 'concat:css', 'concat:j5g3dbg' ]);
+	grunt.registerTask('minify', [ 'default', 'uglify:j5g3' ]);
+	grunt.registerTask('release', [ 'default', 'concat:release', 'uglify:release']);
 };
