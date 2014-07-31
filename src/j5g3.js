@@ -1199,6 +1199,19 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	 */
 	background: false,
 
+	/**
+	 * Context for display canvas.
+	 */
+	screen: null,
+
+	/**
+	 * Canvas used for rendering.
+	 */
+	renderCanvas: null,
+
+	/// Dirty Box.
+	dbox: null,
+
 	_init_container: function()
 	{
 		if (this.container===false)
@@ -1237,16 +1250,14 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 			this.width = this.canvas.width;
 		if (this.height===null)
 			this.height= this.canvas.height;
+
+		this.renderCanvas = j5g3.dom('CANVAS');
 	},
 
 	_init_context: function()
 	{
-		this.context = this.canvas.getContext('2d', { opaque: this.background });
-	},
-
-	validate: function()
-	{
-		return this;
+		this.context = this.renderCanvas.getContext('2d', { opaque: this.background });
+		this.screen  = this.canvas.getContext('2d', { opaque: this.background });
 	},
 
 	init: function j5g3Stage(p)
@@ -1276,46 +1287,12 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		if (w === 0 || h === 0)
 			throw new Error("Invalid stage resolution: " + w + 'x' + h);
 
-		this.canvas.width = w;
-		this.canvas.height= h;
+		this.renderCanvas.width = this.canvas.width = w;
+		this.renderCanvas.height = this.canvas.height= h;
+		this.dbox = new j5g3.BoundingBox(0, 0, w, h);
 
 		return this.size(w, h);
 	},
-
-	render: function()
-	{
-		if (this.dirty)
-		{
-			var context = this.context;
-			context.clearRect(0,0,this.width, this.height);
-			this.begin(context);
-			this.paint(context);
-			this.end(context);
-
-			this.dirty = false;
-		}
-	},
-
-});
-
-/**
- * @class
- * A more complex stage. Will require a call to invalidate in order to draw.
- */
-j5g3.StageDirty = j5g3.Stage.extend(/** @lends j5g3.StageDirty# */{
-
-	/**
-	 * Context for display canvas.
-	 */
-	screen: null,
-
-	/**
-	 * Canvas used for rendering.
-	 */
-	renderCanvas: null,
-
-	/// Dirty Box.
-	dbox: null,
 
 	/**
 	 * Renders screen to buffer then only updates region under
@@ -1345,18 +1322,6 @@ j5g3.StageDirty = j5g3.Stage.extend(/** @lends j5g3.StageDirty# */{
 		}
 	},
 
-	_init_canvas: function()
-	{
-		j5g3.Stage.prototype._init_canvas.call(this);
-		this.renderCanvas = j5g3.dom('CANVAS');
-	},
-
-	_init_context: function()
-	{
-		this.context = this.renderCanvas.getContext('2d');
-		this.screen  = this.canvas.getContext('2d');
-	},
-
 	validate: function()
 	{
 	var
@@ -1369,15 +1334,6 @@ j5g3.StageDirty = j5g3.Stage.extend(/** @lends j5g3.StageDirty# */{
 		this.dbox.clip(0,0,this.width, this.height);
 
 		return this;
-	},
-
-	resolution: function(w, h)
-	{
-		this.renderCanvas.width = w;
-		this.renderCanvas.height= h;
-		this.dbox = new j5g3.BoundingBox(0, 0, w, h);
-
-		return j5g3.Stage.prototype.resolution.call(this, w, h);
 	}
 
 });
@@ -2209,7 +2165,7 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 			container: stage.container
 		}, p);
 
-		layer = new j5g3.StageDirty(lp);
+		layer = new j5g3.Stage(lp);
 		this.layers.push(layer);
 
 		return layer;
