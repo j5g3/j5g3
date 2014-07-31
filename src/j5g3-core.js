@@ -135,7 +135,7 @@ var
 };
 
 /**
- * Extends this instance with properties from p
+ * Extends this instance with properties from p.
  */
 j5g3.Class.prototype.extend = function(p)
 {

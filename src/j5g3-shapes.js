@@ -74,7 +74,7 @@ j5g3.Shape = j5g3.DisplayObject.extend(
 
 	init: function j5g3Shape(p)
 	{
-		j5g3.DisplayObject.apply(this, [p]);
+		j5g3.DisplayObject.call(this, p);
 	},
 
 	_begin: j5g3.DisplayObject.prototype.begin,
@@ -122,7 +122,19 @@ j5g3.Shape = j5g3.DisplayObject.extend(
 j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
 
 	shape: 'circle',
-	radius: 0,
+
+	__radius: 0,
+
+	set radius(val)
+	{
+		this.__radius = val;
+		this.width = this.height = val*2;
+	},
+
+	get radius()
+	{
+		return this.__radius;
+	},
 
 	init: function j5g3Circle(p)
 	{
@@ -134,8 +146,7 @@ j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
 
 	paintPath: function(context)
 	{
-		// TODO Optimize
-		context.arc(this.radius+this.cx, this.radius+this.cy, this.radius, 0, 2*Math.PI, false);
+		context.arc(this.__radius+this.cx, this.__radius+this.cy, this.__radius, 0, 2*Math.PI, false);
 	},
 
 	at: j5g3.HitTest.Circle
@@ -148,13 +159,10 @@ j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
  */
 j5g3.Line = j5g3.Shape.extend(/**@lends j5g3.Line.prototype */{
 
-	x2: 0,
-	y2: 0,
-
 	paintPath: function(context)
 	{
 		context.moveTo(this.cx, this.cy);
-		context.lineTo(this.x2, this.y2);
+		context.lineTo(this.width, this.height);
 	}
 
 });
@@ -241,6 +249,8 @@ j5g3.Polygon = j5g3.Shape.extend(/**@lends j5g3.Polygon.prototype */{
 			p.points.push(Math.cos(a)*p.radius, Math.sin(a)*p.radius);
 			a += angle;
 		}
+		p.cx = p.cy = -p.radius;
+		p.width = p.height = p.radius*2;
 
 		return new j5g3.Polygon(p);
 	}
@@ -262,16 +272,14 @@ j5g3.Rect = j5g3.Shape.extend(/**@lends j5g3.Rect.prototype */{
 	init: function j5g3Rect(p)
 	{
 		j5g3.Shape.apply(this, [p]);
-		if (this.width===null)
-		{
-			this.height = this.width = this.radius*2;
-		}
 	},
 
 	paint : function(context)
 	{
-		context.fillRect(this.cx, this.cy, this.width, this.height);
-		context.strokeRect(this.cx, this.cy, this.width, this.height);
+		if (this.fill !== false)
+			context.fillRect(this.cx, this.cy, this.width, this.height);
+		if (this.stroke !== false)
+			context.strokeRect(this.cx, this.cy, this.width, this.height);
 	}
 
 });
