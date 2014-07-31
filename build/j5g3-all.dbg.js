@@ -1,7 +1,7 @@
 /*!
 * @license
 *
-* j5g3 0.9.0 - Javascript Graphics Engine
+* j5g3 1.0.0 - Javascript Graphics Engine
 * http://j5g3.com
 *
 * Copyright 2010-2014, Giancarlo F Bellido
@@ -19,7 +19,7 @@
 * You should have received a copy of the GNU General Public License
 * along with j5g3. If not, see <http://www.gnu.org/licenses/>.
 *
-* Date: Thu Jul 24 2014 01:52:26 GMT-0500 (CDT)
+* Date: Thu Jul 31 2014 15:25:40 GMT-0500 (CDT)
 *
 */
 (function(window, document, undefined) {
@@ -158,7 +158,7 @@ var
 };
 
 /**
- * Extends this instance with properties from p
+ * Extends this instance with properties from p.
  */
 j5g3.Class.prototype.extend = function(p)
 {
@@ -168,6 +168,312 @@ j5g3.Class.prototype.extend = function(p)
 
 })(this, this.document);
 
+(function(j5g3, undefined) {
+"use strict";
+/*jshint maxparams:6 */
+
+j5g3.BoundingBox = function j5g3BoundingBox(x, y, w, h)
+{
+	this.M = new j5g3.Matrix();
+	this.set(x,y,w,h);
+};
+
+j5g3.BoundingBox.prototype = {
+
+	/// Bounding box x position
+	x: null,
+	/// Bounding box y position
+	y: null,
+	/// Bounding box x2 position
+	r: 0,
+	/// Bounding box y2 position
+	b: 0,
+
+	/// Width
+	w: 0,
+	/// Height
+	h: 0,
+	/// Last transformation matrix used.
+	M: null,
+
+	reset: function()
+	{
+		this.x = this.y = Infinity;
+		this.w = this.h = this.r = this.b = 0;
+
+		return this;
+	},
+
+	set: function(x, y, w, h)
+	{
+		this.x = x;
+		this.y = y;
+		this.r = x+w;
+		this.b = y+h;
+		this.w = w;
+		this.h = h;
+	},
+
+	/// Clip box to max coordinates
+	clip: function(x, y, r, b)
+	{
+		if (this.x < x) this.x = x;
+		if (this.y < y) this.y = y;
+		if (this.r > r) { this.r = r; this.w = this.r-this.x; }
+		if (this.b > b) { this.b = b; this.h = this.b-this.y; }
+	},
+
+	intersect: function(B)
+	{
+		return !(B.x > this.r || B.r < this.x || B.y > this.b || B.b < this.y);
+	},
+
+	transform: function(obj, M)
+	{
+		var x, y, x2, y2, x3, y3, M2=obj.M;
+
+		M = this.M.copy(M)
+			.multiply(M2.a, M2.b, M2.c, M2.d, M2.e, M2.f)
+		;
+
+		M.to_world(obj.cx, obj.cy);
+		x = M.x; y = M.y;
+		M.to_world(obj.width+obj.cx, obj.height+obj.cy);
+		x2 = M.x; y2 = M.y;
+		M.to_world(obj.cx, obj.height+obj.cy);
+		x3 = M.x; y3 = M.y;
+		M.to_world(obj.width+obj.cx, obj.cy);
+
+		this.x = Math.min(x, x2, x3, M.x) | 0;
+		this.y = Math.min(y, y2, y3, M.y) | 0;
+		this.r = Math.max(x, x2, x3, M.x) | 0;
+		this.b = Math.max(y, y2, y3, M.y) | 0;
+		this.w = this.r - this.x;
+		this.h = this.b - this.y;
+		this.M = M;
+	},
+
+	union: function(B)
+	{
+	var
+		A = this
+	;
+		if (B.x < A.x)
+			A.x = B.x;
+
+		if (B.y < A.y)
+			A.y = B.y;
+
+		if (B.r > A.r)
+			A.r = B.r;
+
+		if (B.b > A.b)
+			A.b = B.b;
+
+		A.w = A.r-A.x;
+		A.h = A.b-A.y;
+	}
+};
+
+/**
+ * 2D Transformation Matrix.
+ * @class
+ */
+j5g3.Matrix = function j5g3Matrix(a, b, c, d, e, f)
+{
+	if (a!==undefined)
+	{
+		this.a = a; this.b = b; this.c = c;
+		this.d = d; this.e = e; this.f = f;
+	}
+};
+
+j5g3.Matrix.prototype = {
+
+	/** a component */
+	a: 1,
+	/** b component */
+	b: 0,
+	/** c component */
+	c: 0,
+	/** d component */
+	d: 1,
+	/** e component (x coord) */
+	e: 0,
+	/** f component (y coord) */
+	f: 0,
+
+	/// Precalculated Cosine
+	_cos: 1,
+	/// Precalculated Sine
+	_sin: 0,
+
+	/// Scale X
+	sx: 1,
+	/// Scale Y
+	sy: 1,
+
+	/** Sets Matrix rotation and calculates a,b,c and d values. */
+	setRotation: function(val)
+	{
+		this._cos = Math.cos(val);
+		this._sin = Math.sin(val);
+
+		return this.calc4();
+	},
+
+	/**
+	 * Sets scaleX value
+	 */
+	setScaleX: function(sx)
+	{
+		this.sx = sx;
+		return this.calc4();
+	},
+
+	/**
+	 * Sets scaleY value
+	 */
+	setScaleY: function(sy)
+	{
+		this.sy = sy;
+		return this.calc4();
+	},
+
+	/**
+	 * Sets the scale x and y values.
+	 */
+	scale: function(sx, sy)
+	{
+		this.sx = sx;
+		this.sy = sy;
+		return this.calc4();
+	},
+
+	calc4: function()
+	{
+		this.a = this.sx * this._cos;
+		this.b = this.sx * this._sin;
+		this.c = -this.sy * this._sin;
+		this.d = this.sy * this._cos;
+		return this;
+	},
+
+
+	translate: function(x, y)
+	{
+		this.e += x;
+		this.f += y;
+	},
+
+	/**
+	 * Multiply matric values
+	 */
+	multiply: function(g, h, i, j, k, l)
+	{
+	var
+		A = this.a, B = this.b, C = this.c,
+		D= this.d
+	;
+		this.a = A*g + C*h;
+		this.b = B*g + D*h;
+		this.c = A*i + C*j;
+		this.d = B*i + D*j;
+		this.e += A*k + C*l;
+		this.f += B*k + D*l;
+
+		return this;
+	},
+
+	/**
+	 * Returns a new matrix
+	 */
+	clone: function()
+	{
+		return j5g3.matrix(this.a, this.b, this.c, this.d, this.e, this.f);
+	},
+
+	/**
+	 * Returns a new inverse matrix
+	 *
+	 * @return {j5g3.Matrix}
+	 */
+	inverse: function()
+	{
+	var
+		m = this.clone(),
+		adbc = this.a*this.d-this.b*this.c
+	;
+		m.a = this.d / adbc;
+		m.b = this.b / -adbc;
+		m.c = this.c / -adbc;
+		m.d = this.a / adbc;
+		m.e = (this.d*this.e-this.c*this.f) / -adbc;
+		m.f = (this.b*this.e-this.a*this.f) / adbc;
+
+		return m;
+	},
+
+	/**
+	 * Multiplies matrix by M and optional x and y
+	 *
+	 * @return {j5g3.Matrix}
+	 */
+	product: function(M, x, y)
+	{
+		return this.clone().multiply(M.a, M.b, M.c, M.d, x || M.e || 0, y || M.f || 0);
+	},
+
+	copy: function(B)
+	{
+		this.a = B.a; this.b = B.b; this.c = B.c;
+		this.d = B.d; this.e = B.e; this.f = B.f;
+		return this;
+	},
+
+	/**
+	 * Resets matrix.
+	 */
+	reset: function()
+	{
+		this.a = 1; this.b = 0; this.c = 0;
+		this.d = 1; this.e = 0; this.f = 0;
+
+		return this;
+	},
+
+	/**
+	 * Applies transformations and stores them in this.x, this.y.
+	 */
+	to_world: function(x, y)
+	{
+		this.x = this.a * x + this.c * y + this.e;
+		this.y = this.b * x + this.d * y + this.f;
+
+		return this;
+	},
+
+	/**
+	 * Finds client x and y and stores it in this.x, this.y respectively.
+	 */
+	to_client: function(x, y)
+	{
+	var
+		adbc = this.a * this.d - this.b * this.c
+	;
+		this.x = (this.d*x - this.c*y + this.c*this.f-this.d*this.e)/adbc;
+		this.y = (-this.b*x + this.a*y + this.b*this.e-this.a*this.f)/adbc;
+
+		return this;
+	}
+
+};
+
+/** @function
+ * @return {j5g3.Matrix} */
+j5g3.matrix = function(a, b, c, d ,e ,f) { return new j5g3.Matrix(a, b, c, d, e, f); };
+
+})(this.j5g3);
 (function(window, j5g3, undefined) {
 'use strict';
 
@@ -290,12 +596,12 @@ j5g3.extend(j5g3, /** @lends j5g3 */ {
 });
 
 /**
- * These are all the core drawing algorithms. "this" will point to the current
+ * These are all the core rendering algorithms. "this" will point to the current
  * object.
  *
  * @namespace
  */
-j5g3.Draw =
+j5g3.Render =
 {
 	/**
 	 * Draws nothing
@@ -305,11 +611,15 @@ j5g3.Draw =
 	/**
 	 * Default drawing algorithm.
 	 */
-	Default: function(context)
+	Default: function(context, BB)
 	{
-		this.begin(context);
-		this.paint(context);
-		this.end(context);
+		if (this.dirty || BB.intersect(this.box))
+		{
+			this.begin(context);
+			this.paint(context, BB);
+			this.end(context);
+			this.dirty = false;
+		}
 	},
 
 	/**
@@ -318,46 +628,6 @@ j5g3.Draw =
 	NoTransform: function(context)
 	{
 		this.paint(context);
-	},
-
-	/**
-	 * Renders to render canvas then draws to main canvas.
-	 */
-	Root: function()
-	{
-		var context = this.context;
-		context.clearRect(0,0,this.width, this.height);
-		this.begin(context);
-		this.paint(context);
-		this.end(context);
-	},
-
-	/**
-	 * Renders screen to buffer then only updates region under
-	 * _dx, _dy, _dw, _dh
-	 */
-	RootDirty: function()
-	{
-	var
-		me = this,
-		context = this.context,
-		dx = me._dx, dw = me._dw,
-		dy = me._dy, dh = me._dh
-	;
-		if (dw === 0 || dh === 0)
-			return;
-
-		context.clearRect(dx, dy, dw, dh);
-
-		me.begin(context);
-		me.paint(context);
-		me.end(context);
-
-		me.screen.clearRect(dx, dy, dw, dh);
-		me.screen.drawImage(me.renderCanvas, dx, dy, dw, dh, dx, dy, dw, dh);
-
-		me._dx = me._dy = null;
-		me._dh = me._dw = 0;
 	},
 
 	/**
@@ -431,15 +701,17 @@ j5g3.Paint = {
 	/**
 	 * Paint function for Clips and other containers.
 	 */
-	Container: function (context)
+	Container: function (context, BB)
 	{
 	var
 		frame = this.frame,
 		next = frame
 	;
-		context.translate(this.cx, this.cy);
+		if (this.cx || this.cy)
+			context.translate(this.cx, this.cy);
+
 		while ((next=next._next) !== frame)
-			next.draw(context);
+			next.render(context, BB);
 	},
 
 	/**
@@ -488,7 +760,7 @@ j5g3.Paint = {
 	/**
 	 * Paints a 2D map.
 	 */
-	Map: function(context)
+	Map: function(context, BB)
 	{
 		var map = this.map, y = map.length, x, sprites = this.sprites, s, cm;
 
@@ -505,7 +777,7 @@ j5g3.Paint = {
 			{
 				context.translate(-this.tw, 0);
 				if ((s = sprites[cm[x]]))
-					s.draw(context);
+					s.render(context, BB);
 			}
 		}
 	},
@@ -513,7 +785,7 @@ j5g3.Paint = {
 	/**
 	 * Paints an isometric map.
 	 */
-	Isometric: function(context)
+	Isometric: function(context, BB)
 	{
 	var
 		map = this.map, y = 0, x, l=map.length,
@@ -537,7 +809,7 @@ j5g3.Paint = {
 			{
 				context.translate(-this.tw, 0);
 				if ((s = sprites[cm[x]]))
-					s.draw(context);
+					s.render(context, BB);
 			}
 
 		}
@@ -569,16 +841,16 @@ j5g3.Cache = {
 		cache_canvas.width = w || me.width;
 		cache_canvas.height= h || me.height;
 
-		cache_context = cache_canvas.getContext('2d', false);
+		cache_context = cache_canvas.getContext('2d');
 		cache_context.translate(-me.x-me.cx, -me.y-me.cy);
 
 		me.clear_cache();
-		me.draw(cache_context);
+		me.render(cache_context, me.box);
 
 		me._cache_source = cache_canvas;
 
-		me._oldPaint= me.draw;
-		me.draw = j5g3.Draw.Cache;
+		me._oldPaint= me.render;
+		me.render = j5g3.Render.Cache;
 
 		return this;
 	},
@@ -611,28 +883,30 @@ j5g3.HitTest = {
 	/**
 	 * Circle HitTest
 	 */
-	Circle: function(x, y, M)
+	Circle: function(x, y)
 	{
-		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
-		M.to_client(x, y);
+	var
+		M = this.box.M.to_client(x, y),
+		r = this.radius
+	;
+		x = M.x-r;
+		y = M.y-r;
 
-		return (M.x*M.x+M.y*M.y <= this.radius*this.radius) ? this : false;
+		return (x*x+y*y <= r*r) ? this : false;
 	},
 
 	/**
 	 * Test hit in all children.
 	 */
-	Container: function(x, y, M)
+	Container: function(x, y)
 	{
 	var
 		frame = this.frame,
 		previous = frame,
 		result
 	;
-		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
-
 		while ((previous = previous._previous) !== frame)
-			if ((result = previous.at(x, y, M)))
+			if ((result = previous.at(x, y)))
 				break;
 
 		return result;
@@ -641,10 +915,9 @@ j5g3.HitTest = {
 	/**
 	 * Rectangle HitTest
 	 */
-	Rect: function(x, y, M)
+	Rect: function(x, y)
 	{
-		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
-		M.to_client(x, y);
+		var M = this.box.M.to_client(x, y);
 
 		return ((M.x>0 && M.x<this.width)&&(M.y>0 && M.y<this.height)) ? this : false;
 	},
@@ -652,16 +925,15 @@ j5g3.HitTest = {
 	/**
 	 * Polygon HitTest
 	 */
-	Polygon: function(x, y, M)
+	Polygon: function(x, y)
 	{
 	var
 		points = this.points,
 		normals = this.normals,
 		i = 0, l = points.length,
-		dot
+		dot,
+		M = this.box.M.to_client(x, y)
 	;
-		M = M ? M.product(this.M, this.x, this.y) : this.M.to_m(this.x, this.y);
-		M.to_client(x, y);
 
 		for (; i<l; i+=2)
 		{
@@ -676,236 +948,10 @@ j5g3.HitTest = {
 };
 
 /**
- * Light 2D Transformation Matrix for DisplayObjects. Use j5g3.Matrix to
- * perform operations. e and f are always 0.
- *
- * [ a c ]
- * [ b d ]
- *
- * @extend {j5g3.Class}
- * @class
- */
-j5g3.MatrixLite = j5g3.Class.extend(/** @lends j5g3.MatrixLite.prototype */{
-
-	a: 1,
-	b: 0,
-	c: 0,
-	d: 1,
-
-	_cos: 1,
-	_sin: 0,
-
-	scaleX: 1,
-	scaleY: 1,
-
-	init: function j5g3MatrixLite(a, b, c, d)
-	{
-		if (a!==undefined)
-		{
-			this.a = a; this.b = b; this.c = c; this.d = d;
-		}
-	},
-
-	/** Sets Matrix rotation and calculates a,b,c and d values. */
-	setRotation: function(val)
-	{
-		this._cos = Math.cos(val);
-		this._sin = Math.sin(val);
-
-		return this.calc4();
-	},
-
-	/**
-	 * Sets scaleX value
-	 */
-	setScaleX: function(sx)
-	{
-		this.scaleX = sx;
-		return this.calc4();
-	},
-
-	/**
-	 * Sets scaleY value
-	 */
-	setScaleY: function(sy)
-	{
-		this.scaleY = sy;
-		return this.calc4();
-	},
-
-	/**
-	 * Sets the scale x and y values.
-	 */
-	scale: function(sx, sy)
-	{
-		this.scaleX = sx;
-		this.scaleY = sy;
-		return this.calc4();
-	},
-
-	calc4: function()
-	{
-		this.a = this.scaleX * this._cos;
-		this.b = this.scaleX * this._sin;
-		this.c = -this.scaleY * this._sin;
-		this.d = this.scaleY * this._cos;
-		return this;
-	},
-
-	/**
-	 * Returns a copy of this matrix as a j5g3.Matrix object.
-	 *
-	 * @return {j5g3.Matrix}
-	 */
-	to_m: function(x, y)
-	{
-		return new j5g3.Matrix(this.a, this.b, this.c, this.d, x || 0, y || 0);
-	}
-});
-
-/**
- * 2D Transformation Matrix.
- * @class
- * @extend j5g3.Class
- */
-j5g3.Matrix = j5g3.Class.extend(/** @lends j5g3.Matrix.prototype */{
-	/*jshint maxparams:6 */
-
-	/** a component */
-	a: 1,
-	/** b component */
-	b: 0,
-	/** c component */
-	c: 0,
-	/** d component */
-	d: 1,
-	/** e component */
-	e: 0,
-	/** f component */
-	f: 0,
-
-	init: function j5g3Matrix(a, b, c, d, e, f)
-	{
-		if (a!==undefined)
-		{
-			this.a = a; this.b = b; this.c = c;
-			this.d = d; this.e = e; this.f = f;
-		}
-	},
-
-	translate: function(x, y)
-	{
-		this.e += x;
-		this.f += y;
-	},
-
-	/**
-	 * Multiply matric values
-	 */
-	multiply: function(g, h, i, j, k, l)
-	{
-	var
-		A = this.a, B = this.b, C = this.c,
-		D= this.d
-	;
-		this.a = A*g + C*h;
-		this.b = B*g + D*h;
-		this.c = A*i + C*j;
-		this.d = B*i + D*j;
-		this.e += A*k + C*l;
-		this.f += B*k + D*l;
-
-		return this;
-	},
-
-	/**
-	 * Returns a new matrix
-	 */
-	clone: function()
-	{
-		return j5g3.matrix().multiply(this.a, this.b, this.c, this.d, this.e, this.f);
-	},
-
-	/**
-	 * Returns a new inverse matrix
-	 *
-	 * @return {j5g3.Matrix}
-	 */
-	inverse: function()
-	{
-	var
-		m = this.clone(),
-		adbc = this.a*this.d-this.b*this.c
-	;
-		m.a = this.d / adbc;
-		m.b = this.b / -adbc;
-		m.c = this.c / -adbc;
-		m.d = this.a / adbc;
-		m.e = (this.d*this.e-this.c*this.f) / -adbc;
-		m.f = (this.b*this.e-this.a*this.f) / adbc;
-
-		return m;
-	},
-
-	/**
-	 * Multiplies matrix by M and optional x and y
-	 *
-	 * @return {j5g3.Matrix}
-	 */
-	product: function(M, x, y)
-	{
-		return this.clone().multiply(M.a, M.b, M.c, M.d, M.e || x || 0, M.f || y || 0);
-	},
-
-	/**
-	 * Resets matrix.
-	 */
-	reset: function()
-	{
-		this.a = 1; this.b = 0; this.c = 0;
-		this.d = 1; this.e = 0; this.f = 0;
-
-		return this;
-	},
-
-	/**
-	 * Applies only rotation and scaling transformations. Stores it in this.x, this.y.
-	 */
-	to_world: function(x, y)
-	{
-		this.x = this.a * x + this.c * y + this.e;
-		this.y = this.b * x + this.d * y + this.f;
-
-		return this;
-	},
-
-	/**
-	 * Finds client x and y and stores it in this.x, this.y respectively.
-	 */
-	to_client: function(x, y)
-	{
-	var
-		adbc = this.a * this.d - this.b * this.c
-	;
-		this.x = (this.d*x - this.c*y + this.c*this.f-this.d*this.e)/adbc;
-		this.y = (-this.b*x + this.a*y + this.b*this.e-this.a*this.f)/adbc;
-
-		return this;
-	}
-
-});
-
-/**
  * @class
  *
  */
 j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype */ {
-
-	/**
-	 * Used by the draw function to paint the object
-	 * @type {j5g3.Image}
-	 */
-	source: null,
 
 	/**
 	 * Next display object to render
@@ -925,43 +971,52 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	 */
 	parent: null,
 
-	/**
-	 * Transformation Matrix
-	 */
+	/// @type {j5g3.Matrix} Transformation Matrix
 	M: null,
 
+	/// @type {j5g3.BoundingBox} Bounding box in World coordinates
+	box: null,
+
 	/** X position @type {number} */
-	x: 0,
+	set x(val) { this.M.e = val; },
+	get x() { return this.M.e; },
 
 	/** Y position @type {number} */
-	y: 0,
+	set y(val) { this.M.f = val; },
+	get y() { return this.M.f; },
 
 	/** Offset X for rotation.  @type {number} */
 	cx: 0,
 	/** Offset Y @type {number} */
 	cy: 0,
-	/** @type {number|null} */
+
+	/** @private @type {number|null} */
 	width: null,
-	/** @type {number|null} */
+	/** @private @type {number|null} */
 	height: null,
 
 	_rotation: 0,
 
+	dirty: true,
+
 	/** Rotation @type {number} */
-	set rotation(val) { this.M.setRotation((this._rotation = val)); },
+	set rotation(val)
+	{
+		this.M.setRotation((this._rotation = val));
+	},
 	get rotation() { return this._rotation; },
 
 	/** X Scale @type {number} */
 	set sx(val) {
 		this.M.setScaleX(val);
 	},
-	get sx() { return this.M.scaleX; },
+	get sx() { return this.M.sx; },
 
 	/** Y Scale @type {number} */
 	set sy(val) {
 		this.M.setScaleY(val);
 	},
-	get sy() { return this.M.scaleY; },
+	get sy() { return this.M.sy; },
 
 	/** ALpha transparency value @type {number} */
 	alpha: 1,
@@ -993,13 +1048,25 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	/** Miter limit */
 	miter_limit: null,
 
-	dirty: true,
-
 	init: function j5g3DisplayObject(properties)
 	{
-		this.M = new j5g3.MatrixLite();
-
+		this.M = new j5g3.Matrix();
 		this.extend(properties);
+		this.box = new j5g3.BoundingBox(this.x, this.y, this.width, this.height);
+	},
+
+	set: function(p)
+	{
+		for (var i in p)
+			this[i] = p[i];
+
+		return this;
+	},
+
+	invalidate: function()
+	{
+		this.dirty = true;
+		return this;
 	},
 
 	/**
@@ -1024,7 +1091,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 		if (me.line_join!==null) context.lineJoin = me.line_join;
 		if (me.miter_limit!==null) context.miterLimit = me.miter_limit;
 
-		context.transform(m.a, m.b, m.c, m.d, me.x, me.y);
+		context.transform(m.a, m.b, m.c, m.d, m.e, m.f);
 	},
 
 	/**
@@ -1041,19 +1108,22 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	 * function. Replace this function if you need to add extra
 	 * functionality to the draw process, ie: transformations or keyboard handling.
 	 */
-	draw: j5g3.Draw.Default,
+	render: j5g3.Render.Default,
 
 	/**
 	 * This property is used to store the old paint method when assigning effects.
 	 */
 	_paint: null,
 
-	/**
-	 * Sets object to dirty and forces paint. Invalidates runs only once.
-	 */
-	invalidate: function()
+	validate: function(BB, M, force)
 	{
-		this.parent.invalidate(this);
+		if (this.dirty || force)
+		{
+			BB.union(this.box);
+			this.box.transform(this, M);
+			BB.union(this.box);
+			this.dirty = true;
+		}
 	},
 
 	/**
@@ -1120,37 +1190,11 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	},
 
 	/**
-	 * Moves Display Object relative to the current position
-	 */
-	move: function(x, y)
-	{
-		this.x += x;
-		this.y += y;
-		return this;
-	},
-
-	/**
-	 * Returns true if object is visible
-	 */
-	visible: function()
-	{
-		return this.alpha > 0;
-	},
-
-	/**
 	 * Sets the scaleX and scaleY properties according to w and h
 	 */
 	stretch: function(w, h)
 	{
 		return this.scale(w / this.width, h/this.height);
-	},
-
-	/**
-	 * Encloses Object into a Clip.
-	 */
-	to_clip: function()
-	{
-		return j5g3.clip({width: this.width, height: this.height }).add(this);
 	},
 
 	/**
@@ -1164,16 +1208,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	clear_cache: function()
 	{
 		if (this._oldPaint)
-			this.draw = this._oldPaint;
-	},
-
-	/**
-	 * Sets properties.
-	 */
-	set: function(properties)
-	{
-		this.extend(properties);
-		return this;
+			this.render = this._oldPaint;
 	},
 
 	/**
@@ -1182,7 +1217,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	at: j5g3.HitTest.Rect,
 
 	/**
-	 * Sets scaleX and scaleY values. If either sx or sy are NaN, they will be
+	 * Sets sx and sy values. If either sx or sy are NaN, they will be
 	 * ignored.
 	 */
 	scale: function(sx, sy)
@@ -1190,22 +1225,9 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 		if (sy===undefined)
 			sy = sx;
 
-		if (!window.isNaN(sx))
-			this.sx = sx;
-		if (!window.isNaN(sy))
-			this.sy = sy;
+		this.sx = sx || 0;
+		this.sy = sy || 0;
 
-		return this;
-	},
-
-	/**
-	 * Rotates object by a radians.
-	 *
-	 * @param {number} a
-	 */
-	rotate: function(a)
-	{
-		this.rotation += a;
 		return this;
 	}
 
@@ -1270,7 +1292,7 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 	text: '',
 
 	/**
-	 * Default line height only for Draw.MultilineText. Leave as null for auto.
+	 * Default line height only for Paint.MultilineText. Leave as null for auto.
 	 */
 	line_height: null,
 
@@ -1395,16 +1417,24 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 			this.setup();
 	},
 
-	/**
-	 * Invalidates this object for redraw
-	 */
-	invalidate: function(obj)
-	{
-		this.parent.invalidate(obj || this);
-	},
-
 	/** Function to call after construction */
 	setup: null,
+
+	validate: function(BB, M, force)
+	{
+	var
+		next = this.frame
+	;
+		if (this.dirty || force)
+		{
+			this.box.transform(this, M);
+			force = true;
+		}
+
+		while ((next = next._next) !== this.frame)
+			if (next.validate)
+				next.validate(BB, this.box.M, force);
+	},
 
 	/**
 	 * Runs clip logic and advances frame.
@@ -1652,7 +1682,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 
 			if (this.background)
 			{
-				this.canvas.setAttribute('mox-opaque', true);
+				this.canvas.setAttribute('moz-opaque', true);
 				container.insertBefore(this.canvas, container.firstChild);
 			} else
 				container.appendChild(this.canvas);
@@ -1667,6 +1697,11 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	_init_context: function()
 	{
 		this.context = this.canvas.getContext('2d', { opaque: this.background });
+	},
+
+	validate: function()
+	{
+		return this;
 	},
 
 	init: function j5g3Stage(p)
@@ -1685,8 +1720,6 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		me._init_context();
 	},
 
-	invalidate: function() { },
-
 	/**
 	 * Sets Screen Resolution and Root Width and Height
 	 *
@@ -1704,10 +1737,21 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		return this.size(w, h);
 	},
 
-	draw: j5g3.Draw.Root
+	render: function()
+	{
+		if (this.dirty)
+		{
+			var context = this.context;
+			context.clearRect(0,0,this.width, this.height);
+			this.begin(context);
+			this.paint(context);
+			this.end(context);
+
+			this.dirty = false;
+		}
+	},
 
 });
-
 
 /**
  * @class
@@ -1725,15 +1769,36 @@ j5g3.StageDirty = j5g3.Stage.extend(/** @lends j5g3.StageDirty# */{
 	 */
 	renderCanvas: null,
 
-	draw: j5g3.Draw.RootDirty,
+	/// Dirty Box.
+	dbox: null,
 
 	/**
-	 * Dirty Area
+	 * Renders screen to buffer then only updates region under
+	 * dirty box
 	 */
-	_dx: 0,
-	_dy: 0,
-	_dw: 0,
-	_dh: 0,
+	render: function()
+	{
+	var
+		me = this,
+		context = this.context,
+		dx = me.dbox.x, dw = me.dbox.w,
+		dy = me.dbox.y, dh = me.dbox.h
+	;
+		if (dw !== 0 && dh !== 0)
+		{
+			context.clearRect(dx, dy, dw, dh);
+
+			me.begin(context);
+			me.paint(context, me.dbox);
+			me.end(context);
+
+			me.dirty = false;
+			me.dbox.reset();
+
+			me.screen.clearRect(dx, dy, dw, dh);
+			me.screen.drawImage(me.renderCanvas, dx, dy, dw, dh, dx, dy, dw, dh);
+		}
+	},
 
 	_init_canvas: function()
 	{
@@ -1747,58 +1812,25 @@ j5g3.StageDirty = j5g3.Stage.extend(/** @lends j5g3.StageDirty# */{
 		this.screen  = this.canvas.getContext('2d');
 	},
 
-	/**
-	 * We override this function because stages cannot be invalidated.
-	 */
-	invalidate: function(child)
+	validate: function()
 	{
-		if (child===undefined)
-		{
-			this._dx = this._dy = 0;
-			this._dh = this.height;
-			this._dw = this.width;
-			return;
-		}
-
 	var
-		x = child.x + child.cx,
-		y = child.y + child.cy
+		next = this.frame
 	;
-		if (this._dx===null)
-			this._dx = x;
-		else if (x < this._dx)
-		{
-			this._dw += this._dx-x;
-			this._dx = x;
-		}
-		if (this._dy===null)
-			this._dy = y;
-		if (y < this._dy)
-		{
-			this._dh += this._dy-y;
-			this._dy = y;
-		}
-		if (x+child.width > this._dx + this._dw)
-		{
-			this._dw = x+child.width-this._dx;
+		while ((next = next._next) !== this.frame)
+			if (next.validate)
+				next.validate(this.dbox, this.M, this.dirty);
 
-			if (this._dx + this._dw > this.width)
-				this._dw = this.width - this._dx;
-		}
+		this.dbox.clip(0,0,this.width, this.height);
 
-		if (y+child.height > this._dy + this._dh)
-		{
-			this._dh = y+child.height-this._dy;
-			if (this._dy + this._dh > this.height)
-				this._dh = this.height - this._dy;
-		}
+		return this;
 	},
-
 
 	resolution: function(w, h)
 	{
-		this._dw = this.renderCanvas.width = w;
-		this._dh = this.renderCanvas.height= h;
+		this.renderCanvas.width = w;
+		this.renderCanvas.height= h;
+		this.dbox = new j5g3.BoundingBox(0, 0, w, h);
 
 		return j5g3.Stage.prototype.resolution.call(this, w, h);
 	}
@@ -1866,7 +1898,7 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 		j5g3.DisplayObject.apply(this, [ properties ]);
 	},
 
-	draw: j5g3.Draw.Void,
+	render: j5g3.Render.Void,
 
 	/**
 	 * Pause Tween
@@ -1958,6 +1990,8 @@ j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
 		for (i in me.to)
 			// TODO See if calling apply_tween affects performance.
 			target[i] = me.apply_tween(i, me.vf);
+
+		target.dirty = true;
 
 		if (me.t<me.duration)
 		{
@@ -2379,7 +2413,7 @@ j5g3.Action = j5g3.Class.extend(
 	 */
 	update: null,
 
-	draw: j5g3.Draw.Void,
+	render: j5g3.Render.Void,
 
 	init: function j5g3Action(p)
 	{
@@ -2394,20 +2428,6 @@ j5g3.Action = j5g3.Class.extend(
 	 */
 	remove: j5g3.DisplayObject.prototype.remove
 
-}, /** @lends j5g3.Action */ {
-
-	/**
-	 * Rotates object forever. Clockwise by default.
-	 *
-	 * @param {j5g3.DisplayObject} obj Object to rotate.
-	 */
-	rotate: function(obj)
-	{
-		return function() {
-			obj.rotation = obj.rotation < 6.1 ? obj.rotation+0.1 : 0;
-		};
-	}
-
 });
 
 /**
@@ -2416,10 +2436,10 @@ j5g3.Action = j5g3.Class.extend(
  */
 j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 
-	version: '0.9.0',
+	version: '1.0.0',
 
 	/* Frames per Second */
-	__fps: 31,
+	__fps: null,
 
 	/** Scoped render loop */
 	_renderLoopFn: null,
@@ -2449,12 +2469,24 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 	;
 		me.clear_process();
 
-		// NOTE: Closures are faster than Function.bind()
-		me._renderLoopFn = function() { me._renderLoop(); };
-		me._renderLoop();
-
-		me._gameLoopFn = function() { me._gameLoop(); };
-		me._gameLoopId = window.setInterval(me._gameLoopFn, me.__fps);
+		if (this.__fps)
+		{
+			// NOTE: Closures are faster than Function.bind()
+			me._renderLoopFn = function() { me._renderLoop(); };
+			me._gameLoopFn = function() {
+				me._gameLoop();
+				me._renderLoopId = window.requestAnimationFrame(me._renderLoopFn);
+			};
+			me._gameLoopId = window.setInterval(me._gameLoopFn, me.__fps);
+		} else
+		{
+			me._gameLoopFn = function() {
+				me._gameLoop();
+				me._renderLoop();
+				me._renderLoopId = window.requestAnimationFrame(me._gameLoopFn);
+			};
+			me._gameLoopFn();
+		}
 
 		me.paused = false;
 
@@ -2479,29 +2511,25 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 	},
 
 	/**
-	 * Game Loop for requestAnimationFrame
+	 * @Private Render Loop for requestAnimationFrame
 	 */
 	_renderLoop: function()
 	{
 		var i=0, l=this.layers.length;
 
 		for (;i<l; i++)
-			this.layers[i].draw();
-
-		this._renderLoopId = window.requestAnimationFrame(this._renderLoopFn);
+			this.layers[i].validate().render();
 	},
 
 	/**
-	 * This is here to allow overriding by Debug.js
+	 * @private Game Loop. Runs Logic and Updates all clips.
 	 */
 	_gameLoop: function()
 	{
 		var i=0, l=this.layers.length;
 
 		for (;i<l; i++)
-			this.layers[i].draw();
-
-		this.stage.update();
+			this.layers[i].update();
 	},
 
 	/**
@@ -2558,15 +2586,8 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 		this.clear_process();
 		this._renderLoopFn = function() { };
 		this.paused = true;
-	},
 
-	/**
-	 * Resume game execution.
-	 */
-	resume: function()
-	{
-		if (this.paused)
-			this.run();
+		return this;
 	},
 
 
@@ -2576,6 +2597,9 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 	set fps(val)
 	{
 		this.__fps=1000/val;
+
+		if (!this.paused)
+			this.pause().run();
 	},
 
 	/**
@@ -2740,9 +2764,6 @@ j5g3.mtext  = function(p) { var t = new j5g3.Text(p); t.paint = j5g3.Paint.Multi
  */
 j5g3.sftext  = function(p) { var t = new j5g3.Text(p); t.paint = j5g3.Paint.TextStrokeFill; return t; };
 
-/** @function
- * @return {j5g3.Matrix} */
-j5g3.matrix = function(a, b, c, d ,e ,f) { return new j5g3.Matrix(a, b, c, d, e, f); };
 /** @function
  * @return {j5g3.Tween} */
 j5g3.tween  = f(j5g3.Tween);
@@ -3233,7 +3254,7 @@ j5g3.Shape = j5g3.DisplayObject.extend(
 
 	init: function j5g3Shape(p)
 	{
-		j5g3.DisplayObject.apply(this, [p]);
+		j5g3.DisplayObject.call(this, p);
 	},
 
 	_begin: j5g3.DisplayObject.prototype.begin,
@@ -3281,7 +3302,19 @@ j5g3.Shape = j5g3.DisplayObject.extend(
 j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
 
 	shape: 'circle',
-	radius: 0,
+
+	__radius: 0,
+
+	set radius(val)
+	{
+		this.__radius = val;
+		this.width = this.height = val*2;
+	},
+
+	get radius()
+	{
+		return this.__radius;
+	},
 
 	init: function j5g3Circle(p)
 	{
@@ -3293,8 +3326,7 @@ j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
 
 	paintPath: function(context)
 	{
-		// TODO Optimize
-		context.arc(this.radius+this.cx, this.radius+this.cy, this.radius, 0, 2*Math.PI, false);
+		context.arc(this.__radius+this.cx, this.__radius+this.cy, this.__radius, 0, 2*Math.PI, false);
 	},
 
 	at: j5g3.HitTest.Circle
@@ -3307,13 +3339,10 @@ j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
  */
 j5g3.Line = j5g3.Shape.extend(/**@lends j5g3.Line.prototype */{
 
-	x2: 0,
-	y2: 0,
-
 	paintPath: function(context)
 	{
 		context.moveTo(this.cx, this.cy);
-		context.lineTo(this.x2, this.y2);
+		context.lineTo(this.width, this.height);
 	}
 
 });
@@ -3400,6 +3429,8 @@ j5g3.Polygon = j5g3.Shape.extend(/**@lends j5g3.Polygon.prototype */{
 			p.points.push(Math.cos(a)*p.radius, Math.sin(a)*p.radius);
 			a += angle;
 		}
+		p.cx = p.cy = -p.radius;
+		p.width = p.height = p.radius*2;
 
 		return new j5g3.Polygon(p);
 	}
@@ -3421,16 +3452,14 @@ j5g3.Rect = j5g3.Shape.extend(/**@lends j5g3.Rect.prototype */{
 	init: function j5g3Rect(p)
 	{
 		j5g3.Shape.apply(this, [p]);
-		if (this.width===null)
-		{
-			this.height = this.width = this.radius*2;
-		}
 	},
 
 	paint : function(context)
 	{
-		context.fillRect(this.cx, this.cy, this.width, this.height);
-		context.strokeRect(this.cx, this.cy, this.width, this.height);
+		if (this.fill !== false)
+			context.fillRect(this.cx, this.cy, this.width, this.height);
+		if (this.stroke !== false)
+			context.strokeRect(this.cx, this.cy, this.width, this.height);
 	}
 
 });
