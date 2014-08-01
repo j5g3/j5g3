@@ -68,8 +68,10 @@ j5g3.BoundingBox.prototype = {
 	{
 		if (this.x < x) this.x = x;
 		if (this.y < y) this.y = y;
-		if (this.r > r) { this.r = r; this.w = this.r-this.x; }
-		if (this.b > b) { this.b = b; this.h = this.b-this.y; }
+		if (this.r > r) this.r = r;
+		if (this.b > b) this.b = b;
+		this.w = this.r-this.x;
+		this.h = this.b-this.y;
 	},
 
 	intersect: function(B)
