@@ -523,11 +523,11 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	box: null,
 
 	/** X position @type {number} */
-	set x(val) { this.M.e = val; this.M.invalidate(true, false); },
+	set x(val) { this.M.e = val; this.M.dirty = true; },
 	get x() { return this.M.e; },
 
 	/** Y position @type {number} */
-	set y(val) { this.M.f = val; this.M.invalidate(true, false); },
+	set y(val) { this.M.f = val; this.M.dirty = true; },
 	get y() { return this.M.f; },
 
 	/** Offset X for rotation.  @type {number} */
@@ -636,7 +636,10 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 		if (me.line_join!==null) context.lineJoin = me.line_join;
 		if (me.miter_limit!==null) context.miterLimit = me.miter_limit;
 
-		context.transform(m.a, m.b, m.c, m.d, m.e, m.f);
+		if (!m.identity)
+			context.transform(m.a, m.b, m.c, m.d, m.e, m.f);
+		else if (m.f !==0 || m.e !== 0)
+			context.translate(m.e, m.f);
 	},
 
 	/**

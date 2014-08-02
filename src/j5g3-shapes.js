@@ -159,6 +159,8 @@ j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
  */
 j5g3.Line = j5g3.Shape.extend(/**@lends j5g3.Line.prototype */{
 
+	line_width: 1,
+
 	paintPath: function(context)
 	{
 		context.moveTo(this.cx, this.cy);

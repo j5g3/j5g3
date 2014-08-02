@@ -79,13 +79,9 @@ j5g3.BoundingBox.prototype = {
 		return !(B.x > this.r || B.r < this.x || B.y > this.b || B.b < this.y);
 	},
 
-	transform: function(obj, M)
+	transform_full: function(obj, M)
 	{
-		var x, y, x2, y2, x3, y3, M2=obj.M;
-
-		M = this.M.copy(M);
-		if (!M2.identity)
-			M.multiply(M2.a, M2.b, M2.c, M2.d, M2.e, M2.f);
+		var x, y, x2, y2, x3, y3;
 
 		if (obj.cx!==0 && obj.cy !==0)
 		{
@@ -105,6 +101,28 @@ j5g3.BoundingBox.prototype = {
 		this.y = Math.min(y, y2, y3, M.y) | 0;
 		this.r = Math.max(x, x2, x3, M.x) | 0;
 		this.b = Math.max(y, y2, y3, M.y) | 0;
+	},
+
+	transform: function(obj, M)
+	{
+		var M2 = obj.M;
+
+		M = this.M.copy(M);
+
+		if (!M2.identity)
+			M.multiply(M2.a, M2.b, M2.c, M2.d, M2.e, M2.f);
+		else {
+			M.e += M2.e;
+			M.f += M2.f;
+		}
+
+		if (M.identity)
+		{
+			this.x = M.e + obj.cx; this.y = M.f + obj.cy;
+			this.r = this.x + obj.width; this.b = this.y + obj.height;
+		} else
+			this.transform_full(obj, M);
+
 		this.w = this.r - this.x;
 		this.h = this.b - this.y;
 		this.M = M;
@@ -136,14 +154,10 @@ j5g3.BoundingBox.prototype = {
  * 2D Transformation Matrix.
  * @class
  */
-j5g3.Matrix = function j5g3Matrix(a, b, c, d, e, f)
+j5g3.Matrix = function j5g3Matrix(A)
 {
-	if (a!==undefined)
-	{
-		this.a = a; this.b = b; this.c = c;
-		this.d = d; this.e = e; this.f = f;
-		this.invalidate(true, false);
-	}
+	if (A)
+		this.copy(A);
 };
 
 j5g3.Matrix.prototype = {
@@ -253,7 +267,7 @@ j5g3.Matrix.prototype = {
 	 */
 	clone: function()
 	{
-		return j5g3.matrix(this.a, this.b, this.c, this.d, this.e, this.f);
+		return j5g3.matrix(this);
 	},
 
 	/**
