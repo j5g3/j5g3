@@ -1400,8 +1400,7 @@ j5g3.Tween = j5g3.Class.extend(/**@lends j5g3.Tween.prototype */ {
 			properties = { target: properties };
 
 		this.update = this.start;
-
-		j5g3.DisplayObject.apply(this, [ properties ]);
+		this.extend(properties);
 	},
 
 	render: j5g3.Render.Void,

@@ -83,10 +83,18 @@ j5g3.BoundingBox.prototype = {
 	{
 		var x, y, x2, y2, x3, y3, M2=obj.M;
 
-		M = this.M.copy(M).multiply(M2.a, M2.b, M2.c, M2.d, M2.e, M2.f);
+		M = this.M.copy(M);
+		if (!M2.identity)
+			M.multiply(M2.a, M2.b, M2.c, M2.d, M2.e, M2.f);
 
-		M.to_world(obj.cx, obj.cy);
-		x = M.x; y = M.y;
+		if (obj.cx!==0 && obj.cy !==0)
+		{
+			M.to_world(obj.cx, obj.cy);
+			x = M.x; y = M.y;
+		} else
+		{
+			x = M.e; y = M.f;
+		}
 		M.to_world(obj.width+obj.cx, obj.height+obj.cy);
 		x2 = M.x; y2 = M.y;
 		M.to_world(obj.cx, obj.height+obj.cy);
