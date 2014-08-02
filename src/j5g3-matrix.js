@@ -83,9 +83,7 @@ j5g3.BoundingBox.prototype = {
 	{
 		var x, y, x2, y2, x3, y3, M2=obj.M;
 
-		M = this.M.copy(M)
-			.multiply(M2.a, M2.b, M2.c, M2.d, M2.e, M2.f)
-		;
+		M = this.M.copy(M).multiply(M2.a, M2.b, M2.c, M2.d, M2.e, M2.f);
 
 		M.to_world(obj.cx, obj.cy);
 		x = M.x; y = M.y;
@@ -136,6 +134,7 @@ j5g3.Matrix = function j5g3Matrix(a, b, c, d, e, f)
 	{
 		this.a = a; this.b = b; this.c = c;
 		this.d = d; this.e = e; this.f = f;
+		this.invalidate(true, false);
 	}
 };
 
@@ -153,6 +152,10 @@ j5g3.Matrix.prototype = {
 	e: 0,
 	/** f component (y coord) */
 	f: 0,
+
+	dirty: true,
+
+	identity: true,
 
 	/// Precalculated Cosine
 	_cos: 1,
@@ -207,14 +210,8 @@ j5g3.Matrix.prototype = {
 		this.b = this.sx * this._sin;
 		this.c = -this.sy * this._sin;
 		this.d = this.sy * this._cos;
-		return this;
-	},
 
-
-	translate: function(x, y)
-	{
-		this.e += x;
-		this.f += y;
+		return this.invalidate(true, false);
 	},
 
 	/**
@@ -233,6 +230,13 @@ j5g3.Matrix.prototype = {
 		this.e += A*k + C*l;
 		this.f += B*k + D*l;
 
+		return this.invalidate(true, false);
+	},
+
+	invalidate: function(dirty, identity)
+	{
+		this.dirty = dirty;
+		this.identity = identity;
 		return this;
 	},
 
@@ -262,7 +266,7 @@ j5g3.Matrix.prototype = {
 		m.e = (this.d*this.e-this.c*this.f) / -adbc;
 		m.f = (this.b*this.e-this.a*this.f) / adbc;
 
-		return m;
+		return m.invalidate(true, false);
 	},
 
 	/**
@@ -279,7 +283,7 @@ j5g3.Matrix.prototype = {
 	{
 		this.a = B.a; this.b = B.b; this.c = B.c;
 		this.d = B.d; this.e = B.e; this.f = B.f;
-		return this;
+		return this.invalidate(true, B.identity);
 	},
 
 	/**
@@ -289,8 +293,7 @@ j5g3.Matrix.prototype = {
 	{
 		this.a = 1; this.b = 0; this.c = 0;
 		this.d = 1; this.e = 0; this.f = 0;
-
-		return this;
+		return this.invalidate(true, true);
 	},
 
 	/**

@@ -523,11 +523,11 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	box: null,
 
 	/** X position @type {number} */
-	set x(val) { this.M.e = val; },
+	set x(val) { this.M.e = val; this.M.dirty = true; },
 	get x() { return this.M.e; },
 
 	/** Y position @type {number} */
-	set y(val) { this.M.f = val; },
+	set y(val) { this.M.f = val; this.M.dirty = true; },
 	get y() { return this.M.f; },
 
 	/** Offset X for rotation.  @type {number} */
@@ -665,8 +665,12 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 		if (this.dirty || force)
 		{
 			BB.union(this.box);
-			this.box.transform(this, M);
-			BB.union(this.box);
+			if (M.dirty || this.M.dirty)
+			{
+				this.box.transform(this, M);
+				BB.union(this.box);
+				this.box.M.dirty = this.M.dirty = false;
+			}
 			this.dirty = true;
 		}
 	},
@@ -970,15 +974,15 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	var
 		next = this.frame
 	;
-		if (this.dirty || force)
-		{
+		if (M.dirty || this.M.dirty)
 			this.box.transform(this, M);
-			force = true;
-		}
 
 		while ((next = next._next) !== this.frame)
 			if (next.validate)
-				next.validate(BB, this.box.M, force);
+				next.validate(BB, this.box.M, this.dirty || force);
+
+		this.M.dirty = false;
+		this.box.M.dirty = false;
 	},
 
 	/**
@@ -1332,6 +1336,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 				next.validate(this.dbox, this.M, this.dirty);
 
 		this.dbox.clip(0,0,this.width, this.height);
+		this.M.dirty = false;
 
 		return this;
 	}
@@ -1341,7 +1346,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 /**
  * @class Tween Class
  */
-j5g3.Tween = j5g3.DisplayObject.extend(/**@lends j5g3.Tween.prototype */ {
+j5g3.Tween = j5g3.Class.extend(/**@lends j5g3.Tween.prototype */ {
 
 	/**
 	 * If true it will remove itself after the animation
