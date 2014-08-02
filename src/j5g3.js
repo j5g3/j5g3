@@ -1255,7 +1255,8 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		if (this.height===null)
 			this.height= this.canvas.height;
 
-		this.renderCanvas = j5g3.dom('CANVAS');
+		if (!this.renderCanvas)
+			this.renderCanvas = j5g3.dom('CANVAS');
 	},
 
 	_init_context: function()
@@ -2166,7 +2167,8 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 		j5g3.extend(lp = {
 			width: stage.width,
 			height: stage.height,
-			container: stage.container
+			container: stage.container,
+			renderCanvas: stage.renderCanvas
 		}, p);
 
 		layer = new j5g3.Stage(lp);

@@ -69,6 +69,31 @@ j5g3.Collision.Circle = j5g3.Collision.extend({
 	query: function(A, B)
 	{
 	var
+		a = A.box, b= B.box,
+		r = (a.w + b.w)/2,
+		dx = b.x - a.r + r,
+		dy = b.y - a.b + r,
+		mag = dx*dx+dy*dy,
+		me = this
+	;
+		if ((me.collides = r*r > mag))
+		{
+			mag = Math.sqrt(mag);
+			me.A = A;
+			me.B = B;
+			me.nx = dx/mag;
+			me.ny = dy/mag;
+			me.penetration = r-mag;
+			me[0] = a.x + (a.w + dx)/2;
+			me[1] = a.y + (a.h + dy)/2;
+
+			return true;
+		}
+	},
+
+	query_old: function(A, B)
+	{
+	var
 		r = A.radius + B.radius,
 		x1 = A.x + A.radius + A.cx,
 		y1 = A.y + A.radius + A.cy,
