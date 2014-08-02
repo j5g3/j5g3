@@ -523,11 +523,11 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	box: null,
 
 	/** X position @type {number} */
-	set x(val) { this.M.e = val; this.M.dirty = true; },
+	set x(val) { this.M.e = val; this.M.invalidate(true, false); },
 	get x() { return this.M.e; },
 
 	/** Y position @type {number} */
-	set y(val) { this.M.f = val; this.M.dirty = true; },
+	set y(val) { this.M.f = val; this.M.invalidate(true, false); },
 	get y() { return this.M.f; },
 
 	/** Offset X for rotation.  @type {number} */
@@ -911,7 +911,6 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 	begin: function(context)
 	{
 		context.textBaseline = 'top';
-
 		this._begin(context);
 	},
 
