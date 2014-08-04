@@ -143,17 +143,25 @@ var
 			bar.setActive(me);
 	}
 
-	var DirtyBox = j5g3.Rect.extend({
+	var DirtyBox = j5g3.DisplayObject.extend({
 
 		fill: '#66e',
-		stroke: false,
 		alpha: 0.5,
 
-		validate: function(bb)
+		validate: function()
 		{
-			this.x = bb.x; this.y = bb.y;
-			this.width = bb.w; this.height = bb.h;
-			j5g3.DisplayObject.prototype.validate.call(this, bb, true);
+			this.dirty = true;
+		},
+
+		render: function(ctx)
+		{
+			var BB = this.parent.box;
+			ctx.save();
+			ctx.setTransform(1, 0, 0, 1, 0, 0);
+			ctx.fillStyle = this.fill;
+			ctx.globalAlpha *= this.alpha;
+			ctx.fillRect(BB.x, BB.y, BB.w, BB.h);
+			ctx.restore();
 		}
 
 	});

@@ -873,7 +873,7 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 
 		j5g3.DisplayObject.call(this, properties);
 
-		if (this.line_height===null)
+		if (this.width===null || this.line_height===null || this.height===null)
 			this.measure();
 	},
 
@@ -902,6 +902,10 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 
 		if (obj.line_height===null)
 			obj.line_height = parseInt(context.font, 10);
+		if (obj.width===null)
+			obj.width = max;
+		if (obj.height===null)
+			obj.height = obj.line_height;
 
 		obj.end(context);
 
@@ -972,10 +976,16 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** Function to call after construction */
 	setup: null,
 
+	validate_children: function(next, force)
+	{
+		while ((next = next._next) !== this.frame)
+			if (next.validate)
+				next.validate(this.box, force);
+	},
+
 	validate: function(BB, force)
 	{
 	var
-		next = this.frame,
 		me = this
 	;
 		if (me.dirty)
@@ -987,13 +997,12 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		if (BB.M.dirty || me.M.dirty)
 			me.box.transform(me, BB.M);
 
-		while ((next = next._next) !== me.frame)
-			if (next.validate)
-				next.validate(me.box, me.dirty || force);
+		me.validate_children(me.frame, me.dirty || force);
 
 		if (me.box.dirty)
 		{
 			BB.union(me.box);
+			BB.dirty = true;
 			me.box.dirty = false;
 		}
 		me.box.M.dirty = me.M.dirty = false;
@@ -1290,7 +1299,8 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		j5g3.Clip.call(me, p);
 
 		me._init_canvas();
-		me.box.M = me.M;
+		me.dbox = new j5g3.BoundingBox();
+		me.dbox.M = me.box.M = me.M;
 
 		me.resolution(
 			me.width || me.canvas.clientWidth || 640,
@@ -1325,15 +1335,15 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	var
 		me = this,
 		context = this.context,
-		dx = me.box.x, dw = me.box.w,
-		dy = me.box.y, dh = me.box.h
+		dx = me.dbox.x, dw = me.dbox.w,
+		dy = me.dbox.y, dh = me.dbox.h
 	;
 		if (dw !== 0 && dh !== 0)
 		{
 			context.clearRect(dx, dy, dw, dh);
 
 			me.begin(context);
-			me.paint(context, me.box);
+			me.paint(context, me.dbox);
 			me.end(context);
 
 			me.dirty = false;
@@ -1347,17 +1357,25 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	{
 	var
 		next = this.frame,
-		me = this
+		me = this,
+		x,y,w,h,
+		BB = me.dbox
 	;
-		me.box.reset();
+		BB.reset();
 
 		while ((next = next._next) !== me.frame)
 			if (next.validate)
-				next.validate(me.box, me.dirty);
+				next.validate(BB, me.dirty);
 
-		me.box.M.dirty = me.M.dirty = false;
-
-		return this;
+		if (BB.w && BB.h)
+		{
+			x = BB.x; y = BB.y; w = BB.w; h = BB.h;
+			BB.union(me.box);
+			BB.clip(0, 0, me.width, me.height);
+			me.box.set(x, y, w, h);
+		}
+		me.M.dirty = false;
+		return me;
 	}
 
 });

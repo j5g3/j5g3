@@ -49,6 +49,7 @@ j5g3.BoundingBox.prototype = {
 	{
 		this.x = this.y = Infinity;
 		this.w = this.h = this.r = this.b = 0;
+		this.dirty = false;
 
 		return this;
 	},
