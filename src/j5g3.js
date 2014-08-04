@@ -663,14 +663,15 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	 */
 	_paint: null,
 
-	validate: function(BB, M, force)
+	validate: function(BB, force)
 	{
 		if (this.dirty || force)
 		{
 			BB.union(this.box);
-			if (M.dirty || this.M.dirty)
+
+			if (BB.M.dirty || this.M.dirty)
 			{
-				this.box.transform(this, M);
+				this.box.transform(this, BB.M);
 				BB.union(this.box);
 				this.box.M.dirty = this.M.dirty = false;
 			}
@@ -948,6 +949,8 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** Time scale */
 	st: 1,
 
+	/// Dirty Box.
+	dbox: null,
 	/**
 	 * @private
 	 * It will initialize object without calling setup()
@@ -971,20 +974,26 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** Function to call after construction */
 	setup: null,
 
-	validate: function(BB, M, force)
+	validate: function(BB, force)
 	{
 	var
-		next = this.frame
+		next = this.frame,
+		me = this
 	;
-		if (M.dirty || this.M.dirty)
-			this.box.transform(this, M);
+		if (me.dirty)
+			BB.union(me.box);
 
-		while ((next = next._next) !== this.frame)
+		me.box.reset();
+
+		if (BB.M.dirty || me.M.dirty)
+			me.box.transform(me, BB.M);
+
+		while ((next = next._next) !== me.frame)
 			if (next.validate)
-				next.validate(BB, this.box.M, this.dirty || force);
+				next.validate(me.box, me.dirty || force);
 
-		this.M.dirty = false;
-		this.box.M.dirty = false;
+		BB.union(me.box);
+		me.box.M.dirty = me.M.dirty = false;
 	},
 
 	/**
@@ -1008,7 +1017,13 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 			if ((this._frame += this.st) >= this.length)
 				this._frame = 0;
 
-			this.frame = this._frames[this._frame|0];
+			next = this._frames[this._frame|0];
+
+			if (next !== this.frame)
+			{
+				this.frame = next;
+				this.dirty = true;
+			}
 		}
 	},
 
@@ -1215,9 +1230,6 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	 */
 	renderCanvas: null,
 
-	/// Dirty Box.
-	dbox: null,
-
 	_init_container: function()
 	{
 		if (this.container===false)
@@ -1275,6 +1287,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		j5g3.Clip.call(me, p);
 
 		me._init_canvas();
+		me.box.M = me.M;
 
 		me.resolution(
 			me.width || me.canvas.clientWidth || 640,
@@ -1296,7 +1309,6 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 
 		this.renderCanvas.width = this.canvas.width = w;
 		this.renderCanvas.height = this.canvas.height= h;
-		this.dbox = new j5g3.BoundingBox(0, 0, w, h);
 
 		return this.size(w, h);
 	},
@@ -1310,19 +1322,16 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	var
 		me = this,
 		context = this.context,
-		dx = me.dbox.x, dw = me.dbox.w,
-		dy = me.dbox.y, dh = me.dbox.h
+		dx = me.box.x, dw = me.box.w,
+		dy = me.box.y, dh = me.box.h
 	;
 		if (dw !== 0 && dh !== 0)
 		{
 			context.clearRect(dx, dy, dw, dh);
 
 			me.begin(context);
-			me.paint(context, me.dbox);
+			me.paint(context, me.box);
 			me.end(context);
-
-			me.dirty = false;
-			me.dbox.reset();
 
 			me.screen.clearRect(dx, dy, dw, dh);
 			me.screen.drawImage(me.renderCanvas, dx, dy, dw, dh, dx, dy, dw, dh);
@@ -1332,14 +1341,16 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	validate: function()
 	{
 	var
-		next = this.frame
+		next = this.frame,
+		me = this
 	;
-		while ((next = next._next) !== this.frame)
-			if (next.validate)
-				next.validate(this.dbox, this.M, this.dirty);
+		me.box.reset();
 
-		this.dbox.clip(0,0,this.width, this.height);
-		this.M.dirty = false;
+		while ((next = next._next) !== me.frame)
+			if (next.validate)
+				next.validate(me.box, me.dirty);
+
+		me.box.M.dirty = me.M.dirty = false;
 
 		return this;
 	}
@@ -1876,7 +1887,7 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@lends j5g3.Map.prototype */ {
 
 	init: function j5g3Map(p)
 	{
-		j5g3.DisplayObject.apply(this, [p]);
+		j5g3.DisplayObject.call(this, p);
 
 		if (this.map===null)
 			this.map = [];
@@ -1885,6 +1896,7 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@lends j5g3.Map.prototype */ {
 	/**
 	 * Gets the top left coordinate of the tile at x,y for isometric maps.
 	 */
+	/*
 	to_iso: function(x, y)
 	{
 	var
@@ -1899,6 +1911,7 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@lends j5g3.Map.prototype */ {
 
 		return { x: nx, y: ny };
 	},
+	*/
 
 	paint: j5g3.Paint.Map
 
