@@ -981,18 +981,20 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		me = this
 	;
 		if (me.dirty)
+		{
 			BB.union(me.box);
-
-		me.box.reset();
+			me.box.reset();
+		}
 
 		if (BB.M.dirty || me.M.dirty)
-			me.box.transform(me, BB.M);
+			me.box.multiply(me, BB.M);
 
 		while ((next = next._next) !== me.frame)
 			if (next.validate)
 				next.validate(me.box, me.dirty || force);
 
-		BB.union(me.box);
+		if (me.box.w > 0 && me.box.h > 0)
+			BB.union(me.box);
 		me.box.M.dirty = me.M.dirty = false;
 	},
 
@@ -1332,6 +1334,8 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 			me.begin(context);
 			me.paint(context, me.box);
 			me.end(context);
+
+			me.dirty = false;
 
 			me.screen.clearRect(dx, dy, dw, dh);
 			me.screen.drawImage(me.renderCanvas, dx, dy, dw, dh, dx, dy, dw, dh);

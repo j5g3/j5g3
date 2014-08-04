@@ -25,9 +25,9 @@ var
 		fn: function(Klass, fn_name, pre, post)
 		{
 		var
-			fn = Klass.prototype[fn_name]
+			fn = Klass[fn_name]
 		;
-			Klass.prototype[fn_name] = function()
+			Klass[fn_name] = function()
 			{
 			var
 				args = arguments,
@@ -39,6 +39,7 @@ var
 
 				return result;
 			};
+			Klass[fn_name].old = fn;
 		}
 	},
 
@@ -61,25 +62,25 @@ var
 		return this.init.name;
 	};
 
-	dbg.fn(j5g3.DisplayObject, 'remove', function()
+	dbg.fn(j5g3.DisplayObject.prototype, 'remove', function()
 	{
 		if (this.parent === null)
 			console.warn("Trying to remove object without parent.", this);
 	});
 
-	dbg.fn(j5g3.DisplayObject, 'stretch', function()
+	dbg.fn(j5g3.DisplayObject.prototype, 'stretch', function()
 	{
 		if (!this.width || !this.height)
 			dbg.error("Objects without width or height cannot be stretched.");
 	});
 
-	dbg.fn(j5g3.Clip, 'add_object', function(display_object)
+	dbg.fn(j5g3.Clip.prototype, 'add_object', function(display_object)
 	{
 		if (display_object.parent)
 			console.warn('Trying to add DisplayObject without removing first.', display_object);
 	});
 
-	dbg.fn(j5g3.Clip, 'go', function(frame) {
+	dbg.fn(j5g3.Clip.prototype, 'go', function(frame) {
 		if (frame < 0 || frame > this._frames.length)
 			console.warn('Invalid frame number: ' + frame, this);
 	});
@@ -125,7 +126,7 @@ var
 		me = this,
 		tab = me.$tab = $('<a href="#">'),
 		section = me.$section = $('<section>'),
-		bar = p.toolbar
+		bar = me.toolbar = p.toolbar
 	;
 		tab.html(p.label)
 			.click(function(ev) {
@@ -142,15 +143,70 @@ var
 			bar.setActive(me);
 	}
 
-	function Toolbar()
+	var DirtyBox = j5g3.Rect.extend({
+
+		fill: '#66e',
+		stroke: false,
+		alpha: 0.5,
+
+		validate: function(bb)
+		{
+			this.x = bb.x; this.y = bb.y;
+			this.width = bb.w; this.height = bb.h;
+			j5g3.DisplayObject.prototype.validate.call(this, bb, true);
+		}
+
+	});
+
+	function LayersTab(p)
+	{
+		Tab.call(this, p);
+	var
+		me = this,
+		engine = me.toolbar.engine,
+		html = ''
+	;
+		engine.layers.forEach(function(layer, i) {
+			html += '<fieldset><legend>Layer ' + i +
+				(layer.background ? '(Background)' : '') +
+				'</legend><p><label><input type="checkbox" value="' + i + '"/>' +
+				' Show Dirty Box</label></p>' +
+				'</fieldset>';
+		});
+
+		me.$section.html(html);
+		me.$section.find('input[type="checkbox"]').change(function() {
+		var
+			i = this.value,
+			layer = engine.layers[i]
+		;
+			if (!layer.__dbg_dbox)
+				layer.add(layer.__dbg_dbox = new DirtyBox({ fill: me.colors[i] }));
+			else
+			{
+				layer.__dbg_dbox.remove();
+				layer.__dbg_dbox = null;
+			}
+		});
+	}
+
+	LayersTab.prototype = {
+
+		colors: [ '#99e', '#9e9', '#e99' ]
+
+	};
+
+	function Toolbar(engine)
 	{
 	var
 		r = this.$el = $('<div class="j5g3-dbg-toolbar">'),
 		content = $('body').children(':not(script)')
 	;
+		this.engine = engine;
 		this.tabs = {
 			game: new Tab({ toolbar: this, label: 'Game' }),
-			cache: new Tab({ toolbar: this, label: 'Cache' })
+			cache: new Tab({ toolbar: this, label: 'Cache' }),
+			layers: new LayersTab({ toolbar: this, label: 'Layers' })
 		};
 
 		this.tabs.game.$section.append(content);
@@ -177,7 +233,7 @@ var
 
 	};
 
-	dbg.attachToolbar = function()
+	dbg.attachToolbar = function(engine)
 	{
 		if (!$)
 			return console.error('[j5g3-dbg] attachToolbar requires jQuery.');
@@ -185,7 +241,7 @@ var
 		$body = $(window.document.body);
 		$body.addClass('j5g3-dbg');
 
-		new Toolbar();
+		new Toolbar(engine);
 	};
 
 

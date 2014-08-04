@@ -18,16 +18,15 @@ canvas {
 .j5g3-stage-full canvas { width: 100%; height: 100%; }
 .j5g3-stage-full .j5g3-stage { position: relative; }
 
-.j5g3-dbg { padding-top: 50px; }
-
-.j5g3-dbg .j5g3-stage-full { top: 49px; }
+.j5g3-dbg { padding-top: 30px; }
+.j5g3-dbg .j5g3-stage-full { top: 30px; }
 
 .j5g3-dbg-toolbar {
-	position: absolute; top: 0; left: 0; right: 0; height: 45px;
+	position: absolute; top: 0; left: 0; right: 0; height: 30px;
 	background-color: #333; font-size: 14px;
 }
 .j5g3-dbg-toolbar a {
-	display: inline-block; line-height: 45px; padding: 0 15px; color: #eee;
+	display: inline-block; line-height: 30px; padding: 0 15px; color: #eee;
 	text-decoration: none;
 }
 .j5g3-dbg-toolbar .active {
@@ -38,6 +37,7 @@ canvas {
 
 .j5g3-dbg section.active { display: block; }
 .j5g3-dbg section { display: none; }
+.j5g3-dbg section > fieldset { margin: 15px; }
 	
 .j5g3-res-1080 { width: 1920px; height: 1080px; }
 .j5g3-aspect-16-9 canvas { width: 100%; height: 56%; }

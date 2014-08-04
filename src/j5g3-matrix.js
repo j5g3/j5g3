@@ -108,10 +108,9 @@ j5g3.BoundingBox.prototype = {
 		this.b = Math.max(y, y2, y3, M.y) | 0;
 	},
 
-	transform: function(obj, M)
+	multiply: function(obj, M)
 	{
 		var M2 = obj.M;
-
 		M = this.M.copy(M);
 
 		if (!M2.identity)
@@ -120,6 +119,13 @@ j5g3.BoundingBox.prototype = {
 			M.e += M2.e;
 			M.f += M2.f;
 		}
+
+		return M;
+	},
+
+	transform: function(obj, M)
+	{
+		M = this.multiply(obj, M);
 
 		if (M.identity)
 		{
@@ -130,7 +136,6 @@ j5g3.BoundingBox.prototype = {
 
 		this.w = this.r - this.x;
 		this.h = this.b - this.y;
-		this.M = M;
 	},
 
 	union: function(B)
