@@ -597,7 +597,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	{
 		this.M = new j5g3.Matrix();
 		this.extend(properties);
-		this.box = new j5g3.BoundingBox(this.x, this.y, this.width, this.height);
+		this.box = new j5g3.BoundingBox();
 	},
 
 	set: function(p)
@@ -675,7 +675,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 				BB.union(this.box);
 				this.box.M.dirty = this.M.dirty = false;
 			}
-			this.dirty = true;
+			BB.dirty = this.dirty = true;
 		}
 	},
 
@@ -695,6 +695,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 			this._previous._next = this._next;
 			this._next._previous = this._previous;
 
+			this.parent.dirty = true;
 			this.parent = this._previous = null;
 		}
 		return this;
@@ -806,16 +807,13 @@ j5g3.Image = j5g3.DisplayObject.extend(
 		}
 
 		j5g3.DisplayObject.call(this, properties);
-
-		if (this.source)
-			this.set_source(this.source);
 	},
 
 	paint: j5g3.Paint.Image,
 
-	_get_source: function(src)
+	get source()
 	{
-		return (typeof(src)==='string') ? j5g3.id(src) : src;
+		return this.__source;
 	},
 
 	/**
@@ -824,12 +822,12 @@ j5g3.Image = j5g3.DisplayObject.extend(
 	 * So we have to wait for the image to load in order
 	 * to get the correct width and height.
 	 */
-	set_source: function(src)
+	set source(src)
 	{
-		this.source = this._get_source(src);
+		src = this.__source = (typeof(src)==='string') ? j5g3.id(src) : src;
 
-		if (this.width === null)  this.width = this.source.naturalWidth || this.source.width;
-		if (this.height === null) this.height = this.source.naturalHeight || this.source.height;
+		if (this.width === null)  this.width = src.naturalWidth || src.width;
+		if (this.height === null) this.height = src.naturalHeight || src.height;
 	}
 
 });
@@ -987,14 +985,17 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		}
 
 		if (BB.M.dirty || me.M.dirty)
-			me.box.multiply(me, BB.M);
+			me.box.transform(me, BB.M);
 
 		while ((next = next._next) !== me.frame)
 			if (next.validate)
 				next.validate(me.box, me.dirty || force);
 
-		if (me.box.w > 0 && me.box.h > 0)
+		if (me.box.dirty)
+		{
 			BB.union(me.box);
+			me.box.dirty = false;
+		}
 		me.box.M.dirty = me.M.dirty = false;
 	},
 

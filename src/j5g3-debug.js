@@ -168,7 +168,7 @@ var
 	;
 		engine.layers.forEach(function(layer, i) {
 			html += '<fieldset><legend>Layer ' + i +
-				(layer.background ? '(Background)' : '') +
+				(layer.background ? ' (Background)' : '') +
 				'</legend><p><label><input type="checkbox" value="' + i + '"/>' +
 				' Show Dirty Box</label></p>' +
 				'</fieldset>';

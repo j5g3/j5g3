@@ -143,20 +143,23 @@ j5g3.BoundingBox.prototype = {
 	var
 		A = this
 	;
-		if (B.x < A.x)
-			A.x = B.x;
+		if (B.w && B.h)
+		{
+			if (B.x < A.x)
+				A.x = B.x;
 
-		if (B.y < A.y)
-			A.y = B.y;
+			if (B.y < A.y)
+				A.y = B.y;
 
-		if (B.r > A.r)
-			A.r = B.r;
+			if (B.r > A.r)
+				A.r = B.r;
 
-		if (B.b > A.b)
-			A.b = B.b;
+			if (B.b > A.b)
+				A.b = B.b;
 
-		A.w = A.r-A.x;
-		A.h = A.b-A.y;
+			A.w = A.r-A.x;
+			A.h = A.b-A.y;
+		}
 	}
 };
 
