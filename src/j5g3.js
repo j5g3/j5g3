@@ -181,18 +181,8 @@ j5g3.Render =
 	FastImage: function(context)
 	{
 		context.drawImage(this.source, this.x+this.cx, this.y+this.cy);
-	},
-
-	/**
-	 * Drawing Algorithm for cached display objects.
-	 */
-	Cache: function(context)
-	{
-		context.drawImage(
-			this._cache_source, 0, 0, this.width, this.height,
-			this.x + this.cx, this.y + this.cy, this.width, this.height
-		);
 	}
+
 };
 
 /**
@@ -359,6 +349,14 @@ j5g3.Paint = {
 
 		}
 
+	},
+
+	/**
+	 * Drawing Algorithm for cached display objects.
+	 */
+	Cache: function(context)
+	{
+		context.drawImage(this._cache_source, this.cx, this.cy);
 	}
 
 };
@@ -380,22 +378,27 @@ j5g3.Cache = {
 	var
 		me = this,
 		cache_canvas = j5g3.dom('CANVAS'),
-		cache_context
+		cache_context,
+		M = me.M, BB = new j5g3.BoundingBox()
 	;
 		// This will also clear the canvas.
 		cache_canvas.width = w || me.width;
 		cache_canvas.height= h || me.height;
 
 		cache_context = cache_canvas.getContext('2d');
-		cache_context.translate(-me.x-me.cx, -me.y-me.cy);
+		cache_context.translate(-me.cx, -me.cy);
 
 		me.clear_cache();
-		me.render(cache_context, me.box);
+		me.dirty = true;
+		me.M = new j5g3.Matrix();
+		BB.set(0,0,me.width, me.height);
+		me.render(cache_context, BB);
+		me.M = M;
 
 		me._cache_source = cache_canvas;
 
-		me._oldPaint= me.render;
-		me.render = j5g3.Render.Cache;
+		me._oldPaint= me.paint;
+		me.paint = j5g3.Paint.Cache;
 
 		return this;
 	},
@@ -762,7 +765,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	clear_cache: function()
 	{
 		if (this._oldPaint)
-			this.render = this._oldPaint;
+			this.paint = this._oldPaint;
 	},
 
 	/**
@@ -872,9 +875,6 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 			properties = { text: properties };
 
 		j5g3.DisplayObject.call(this, properties);
-
-		if (this.width===null || this.line_height===null || this.height===null)
-			this.measure();
 	},
 
 	_paint: j5g3.Paint.Text,
@@ -890,6 +890,7 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 		font = compute(obj, 'font')
 	;
 		obj.begin(context);
+
 		if (font)
 			context.font = font;
 
@@ -901,11 +902,10 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 		}
 
 		if (obj.line_height===null)
-			obj.line_height = parseInt(context.font, 10);
-		if (obj.width===null)
-			obj.width = max;
-		if (obj.height===null)
-			obj.height = obj.line_height;
+			obj.line_height = parseInt(context.font.match(/\d+/), 10);
+
+		obj.width = max;
+		obj.height = obj.line_height*text.length;
 
 		obj.end(context);
 
@@ -1530,7 +1530,6 @@ j5g3.Tween = j5g3.Class.extend(/**@lends j5g3.Tween.prototype */ {
 			me.vf = 1;
 
 		for (i in me.to)
-			// TODO See if calling apply_tween affects performance.
 			target[i] = me.apply_tween(i, me.vf);
 
 		target.dirty = true;

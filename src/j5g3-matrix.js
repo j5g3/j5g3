@@ -89,7 +89,7 @@ j5g3.BoundingBox.prototype = {
 	{
 		var x, y, x2, y2, x3, y3;
 
-		if (obj.cx!==0 && obj.cy !==0)
+		if (obj.cx || obj.cy)
 		{
 			M.to_world(obj.cx, obj.cy);
 			x = M.x; y = M.y;
