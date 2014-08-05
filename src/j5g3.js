@@ -857,7 +857,8 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 	 */
 	align_text: function(align)
 	{
-		var width = this.measure();
+		this.measure();
+		var width = this.width;
 
 		if (align==='left')
 			this.cx = 0;
@@ -909,7 +910,7 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 
 		obj.end(context);
 
-		return max;
+		return obj;
 	},
 
 	_begin: j5g3.DisplayObject.prototype.begin,
@@ -953,6 +954,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 
 	/// Dirty Box.
 	dbox: null,
+
 	/**
 	 * @private
 	 * It will initialize object without calling setup()
@@ -963,6 +965,8 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 
 		this._frames = [];
 		this.add_frame();
+		this.dbox = new j5g3.BoundingBox();
+		this.dbox.M = this.box.M;
 	},
 
 	init: function j5g3Clip(properties)
@@ -976,32 +980,27 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** Function to call after construction */
 	setup: null,
 
-	validate_children: function(next, force)
-	{
-		while ((next = next._next) !== this.frame)
-			if (next.validate)
-				next.validate(this.box, force);
-	},
-
 	validate: function(BB, force)
 	{
 	var
-		me = this
+		me = this,
+		next = me.frame,
+		dbox = me.dbox.reset()
 	;
-		if (me.dirty)
-		{
-			BB.union(me.box);
-			me.box.reset();
-		}
-
 		if (BB.M.dirty || me.M.dirty)
-			me.box.transform(me, BB.M);
+			dbox.transform(me, BB.M);
 
-		me.validate_children(me.frame, me.dirty || force);
+		while ((next = next._next) !== me.frame)
+			if (next.validate)
+				next.validate(dbox, me.dirty || force);
 
-		if (me.box.dirty)
+		if (dbox.dirty)
 		{
 			BB.union(me.box);
+			BB.union(dbox);
+			me.dbox = me.box;
+			me.box = dbox;
+
 			BB.dirty = true;
 			me.box.dirty = false;
 		}
@@ -1299,7 +1298,6 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		j5g3.Clip.call(me, p);
 
 		me._init_canvas();
-		me.dbox = new j5g3.BoundingBox();
 		me.dbox.M = me.box.M = me.M;
 
 		me.resolution(
