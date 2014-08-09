@@ -1626,6 +1626,13 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @lends j5g3.Spritesheet.prototype */ {
 		j5g3.Class.call(this, properties);
 	},
 
+	size: function(w, h)
+	{
+		this.width = w;
+		this.height = h;
+		return this;
+	},
+
 	/**
 	 * Image of the spritesheet. If a string passed it will be converted
 	 * to a j5g3.Image
