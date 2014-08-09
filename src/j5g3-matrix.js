@@ -360,7 +360,8 @@ j5g3.Matrix.prototype = {
 };
 
 /** @function
- * @return {j5g3.Matrix} */
-j5g3.matrix = function(a, b, c, d ,e ,f) { return new j5g3.Matrix(a, b, c, d, e, f); };
+ * @return {j5g3.Matrix}
+ */
+j5g3.matrix = function(B) { return new j5g3.Matrix(B); };
 
 })(this.j5g3);

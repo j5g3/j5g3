@@ -1,18 +1,9 @@
 
-j5g3.ready(function() {
+(function() {
 
-	module('j5-math');
+module('j5g3-matrix');
 
-var 
-	compareM = function(m, m2)
-	{
-		equal(m.a, m2.a);
-		equal(m.b, m2.b);
-		equal(m.c, m2.c);
-		equal(m.d, m2.d);
-		equal(m.e, m2.e);
-		equal(m.f, m2.f);
-	},
+var
 	tmp,
 	svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
 
@@ -21,77 +12,92 @@ var
 		tmp = svg.createSVGMatrix();
 		tmp.a = a; tmp.b = b; tmp.c = c; tmp.d = d; tmp.e = e; tmp.f = f;
 		return tmp;
+	},
+
+	m = j5g3.matrix(),
+	m2 = svg.createSVGMatrix(),
+	m3, m4,
+
+	initM = function(a, b, c, d, e, f)
+	{
+		m = j5g3.matrix().multiply(a,b,c,d,e,f);
+		m2 = svgM(a, b, c, d, e, f);
+	},
+
+	compareM = function(a, m, m2)
+	{
+		a.equal(m.a, m2.a);
+		a.equal(m.b, m2.b);
+		a.equal(m.c, m2.c);
+		a.equal(m.d, m2.d);
+		a.equal(m.e, m2.e);
+		a.equal(m.f, m2.f);
 	}
 ;
 
-	test('Matrix', function() {
-	var
-		m = j5g3.matrix(),
-		m2 = svg.createSVGMatrix(),
-		m3, m4,
+test('Matrix', function(a) {
+	a.equal(m.a, 1);
+	a.equal(m.d, 1);
+	a.equal(m.a, m2.a);
+	a.equal(m.d, m2.d);
 
-		initM = function(a, b, c, d, e, f)
-		{
-			m = j5g3.matrix(a,b,c,d,e,f);
-			m2 = svgM(a, b, c, d, e, f);
-		}
-	;
-		equal(m.a, 1);
-		equal(m.d, 1);
-		equal(m.a, m2.a);
-		equal(m.d, m2.d);
+	m.reset();
+	m2 = svg.createSVGMatrix();
 
-		/*
-		m.scale(-1, -2);
-		m2 = m2.scaleNonUniform(-1, -2);
-		compareM(m, m2);
+	compareM(a, m, m2);
+});
 
-		m.translate(-2, -2);
-		m2 = m2.translate(-2, -2);
-		equal(m.e, m2.e);
-		equal(m.f, m2.f);
-		*/
+test('Matrix#inverse', function(a) {
 
-		m.reset();
-		m2 = svg.createSVGMatrix();
+	initM(1,2,3,4,5,6);
+	console.log(m);
+	m = m.inverse();
+	m2 = m2.inverse();
 
-		compareM(m, m2);
+	compareM(a, m, m2);
 
-		initM(1,2,3,4,5,6);
-		m = m.inverse();
-		m2 = m2.inverse();
+	initM(11,12,13,14,15,16);
+	m = m.inverse();
+	m2 = m2.inverse();
 
-		compareM(m, m2);
+	compareM(a, m, m2);
 
-		initM(11,12,13,14,15,16);
-		m = m.inverse();
-		m2 = m2.inverse();
+	initM(-11, 12, -13, 14, -15, 16);
+	m = m.inverse();
+	m2 = m2.inverse();
 
-		compareM(m, m2);
-
-		initM(-11, 12, -13, 14, -15, 16);
-		m = m.inverse();
-		m2 = m2.inverse();
-
-		compareM(m, m2);
-
-		m = j5g3.matrix(11, 12, 13, 14, 15, 16);
-		m2= j5g3.matrix(-4, 5, 2, 99, 23, -99);
-		m3= svgM(11, 12, 13 ,14, 15, 16);
-		m4= svgM(-4, 5, 2, 99, 23, -99);
-
-		m = m.product(m2);
-		m2= m3.multiply(m4);
-
-		compareM(m, m2);
-
-		m = j5g3.matrix(11, 12, 13, 14, 15, 16);
-		m2= j5g3.matrix(-4, 5, 2, 99, 23, -99);
-		m = m.product(m2.inverse());
-		m2= m3.multiply(m4.inverse());
-
-		compareM(m, m2);
-		
-	});
+	compareM(a, m, m2);
 
 });
+	/*
+	m.scale(-1, -2);
+	m2 = m2.scaleNonUniform(-1, -2);
+	compareM(m, m2);
+
+	m.translate(-2, -2);
+	m2 = m2.translate(-2, -2);
+	equal(m.e, m2.e);
+	equal(m.f, m2.f);
+	*/
+
+test('Matrix#multiply', function(a)
+{
+	m = j5g3.matrix().multiply(11, 12, 13, 14, 15, 16);
+	m2= j5g3.matrix().multiply(-4, 5, 2, 99, 23, -99);
+	m3= svgM(11, 12, 13 ,14, 15, 16);
+	m4= svgM(-4, 5, 2, 99, 23, -99);
+
+	m = m.product(m2);
+	m2= m3.multiply(m4);
+
+	compareM(a, m, m2);
+
+	m = j5g3.matrix().multiply(11, 12, 13, 14, 15, 16);
+	m2= j5g3.matrix().multiply(-4, 5, 2, 99, 23, -99);
+	m = m.product(m2.inverse());
+	m2= m3.multiply(m4.inverse());
+
+	compareM(a, m, m2);
+});
+
+})();
