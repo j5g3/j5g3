@@ -4,33 +4,6 @@ j5g3(function(j5g3, engine) {
 
 	module('j5g3');
 
-	test('Class Constructor', function(assert)
-	{
-	var
-		img = j5g3.id('img'),
-		I = new j5g3.DisplayObject({ source: img })
-	;
-
-		assert.equal(I.source, img);
-	});
-
-	test('Class Properties', function(assert)
-	{
-	var
-		a = new j5g3.DisplayObject(),
-		b = new j5g3.DisplayObject({ source: 'img' }),
-		c = b.set({x: 5})
-	;
-		a.extend({ x: 10 });
-		b.set({ x: 10 });
-
-		assert.equal(c, b);
-		assert.equal(a.source, undefined);
-		assert.ok(b.source);
-		assert.equal(a.x, 10);
-		assert.equal(b.x, 10);
-	});
-
 	test('Image Constructor', function(assert)
 	{
 	var

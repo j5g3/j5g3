@@ -68,32 +68,6 @@ j5g3.extend(j5g3, {
 });
 
 /**
- * Returns a new DOM Element with tag tag and src attribute src.
- *
- * @param {string} tag
- * @param {string} uri
- *
- */
-j5g3.dom.src= function(tag, uri)
-{
-var
-	el = document.createElement(tag)
-;
-	el.setAttribute('src', uri);
-	return el;
-};
-
-/**
- * Returns an HTML Image object from a URI uri
- *
- * @param {string} uri
- */
-j5g3.dom.image= function(uri)
-{
-	return j5g3.dom.src('img', uri);
-};
-
-/**
  *
  * Uses methods.init as the constructor. If not passed it will define a function
  * and call the base constructor. Sets 'super' as the base class.

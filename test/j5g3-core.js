@@ -65,6 +65,29 @@
 		assert.ok(f.a === 5 && f.x === f.a);
 	});
 
+	test('Class Constructor', function(assert)
+	{
+	var
+		img = j5g3.id('img'),
+		I = new j5g3.Class({ source: img })
+	;
+
+		assert.equal(I.source, img);
+	});
+
+	test('Class Properties', function(assert)
+	{
+	var
+		a = new j5g3.Class(),
+		b = new j5g3.Class({ source: 'img' })
+	;
+		a.extend({ x: 10 });
+		assert.equal(a.source, undefined);
+		assert.ok(b.source);
+		assert.equal(a.x, 10);
+	});
+
+
 	test('DOM', function(assert)
 	{
 	var
