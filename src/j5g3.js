@@ -243,7 +243,7 @@ j5g3.Paint = {
 			context.translate(this.cx, this.cy);
 
 		while ((next=next._next) !== frame)
-			if (next.dirty || BB.intersect(next.box))
+			if (next.render && (next.dirty || BB.intersect(next.box)))
 				next.render(context, BB);
 	},
 
@@ -1439,8 +1439,6 @@ j5g3.Tween = j5g3.Class.extend(/**@lends j5g3.Tween.prototype */ {
 		this.extend(properties);
 	},
 
-	render: j5g3.Render.Void,
-
 	/**
 	 * Pause Tween
 	 */
@@ -1973,8 +1971,6 @@ j5g3.Action = j5g3.Class.extend(
 	 * Code to execute
 	 */
 	update: null,
-
-	render: j5g3.Render.Void,
 
 	init: function j5g3Action(p)
 	{
