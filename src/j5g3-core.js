@@ -68,6 +68,17 @@ j5g3.extend(j5g3, {
 });
 
 /**
+ * Creates a new Image object and returns it.
+ */
+j5g3.dom.image = function(src)
+{
+	var image = new window.Image();
+	image.src = src;
+
+	return image;
+};
+
+/**
  *
  * Uses methods.init as the constructor. If not passed it will define a function
  * and call the base constructor. Sets 'super' as the base class.

@@ -158,13 +158,10 @@ j5g3.Render =
 	 */
 	Default: function(context, BB)
 	{
-		if (this.dirty || BB.intersect(this.box))
-		{
-			this.begin(context);
-			this.paint(context, BB);
-			this.end(context);
-			this.dirty = false;
-		}
+		this.begin(context);
+		this.paint(context, BB);
+		this.end(context);
+		this.dirty = false;
 	},
 
 	/**
@@ -246,7 +243,8 @@ j5g3.Paint = {
 			context.translate(this.cx, this.cy);
 
 		while ((next=next._next) !== frame)
-			next.render(context, BB);
+			if (next.dirty || BB.intersect(next.box))
+				next.render(context, BB);
 	},
 
 	/**

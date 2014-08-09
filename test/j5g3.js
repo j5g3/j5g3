@@ -4,7 +4,7 @@ j5g3(function(j5g3, engine) {
 
 	module('j5g3');
 
-	test('Image Constructor', function(assert)
+	test('Image', function(assert)
 	{
 	var
 		src = 'img',
@@ -24,15 +24,22 @@ j5g3(function(j5g3, engine) {
 		assert.equal(d.source, c.source);
 	});
 
-	test('Image Drawing', function(assert)
+	test('Image#validate', function(assert)
 	{
 	var
-		a = j5g3.image('img')
+		stage = engine.stage,
+		a = j5g3.image('img').pos(10, 10)
 	;
 		assert.ok(a);
+		stage.add(a).validate();
+		assert.equal(stage.dbox.x, 10);
+		assert.equal(stage.dbox.y, 10);
+		assert.equal(stage.dbox.w, a.width);
+		assert.equal(stage.dbox.h, a.height);
+		a.remove();
 	});
 
-	test('Clip Construction', function(assert)
+	test('Clip', function(assert)
 	{
 	var
 		a = j5g3.clip()
@@ -41,7 +48,7 @@ j5g3(function(j5g3, engine) {
 		assert.ok(a.frame);
 	});
 
-	test('Clip - Adding Objects', function(assert)
+	test('Clip#add', function(assert)
 	{
 	var
 		a = j5g3.clip(),
@@ -50,9 +57,7 @@ j5g3(function(j5g3, engine) {
 		ac = j5g3.image('img'),
 		frame = a.frame
 	;
-
 		a.add([ aa, ab, ac ]);
-
 		assert.ok(frame);
 		assert.strictEqual(frame._next, aa);
 		assert.strictEqual(frame._previous, ac);
@@ -60,6 +65,19 @@ j5g3(function(j5g3, engine) {
 		assert.strictEqual(ab._next, ac);
 		assert.strictEqual(ac._next, frame);
 
+	});
+
+	test('Clip#add_frame', function (assert)
+	{
+	var
+		a = j5g3.clip(),
+		aa = j5g3.image('img'),
+		ab = j5g3.image('img'),
+		ac = j5g3.image('img'),
+		c = j5g3.clip(),
+		img = j5g3.image('img'),
+		frame, frame2 = c.frame
+	;
 		a.add_frame([ aa, ab, ac ]);
 		frame = a.frame;
 
@@ -71,9 +89,24 @@ j5g3(function(j5g3, engine) {
 		assert.strictEqual(ab._previous, aa);
 		assert.strictEqual(ac._next, frame);
 		assert.strictEqual(ac._previous, ab);
+
+		c.add_frame();
+		frame = c.frame;
+
+		assert.strictEqual(frame._next, frame);
+		assert.strictEqual(frame._previous, frame);
+
+		c.update();
+		assert.strictEqual(c.frame, frame2);
+		assert.ok(frame !== frame2);
+
+		c.add_frame(img);
+		frame = c.frame;
+		assert.strictEqual(frame._next, img);
+		assert.strictEqual(img._next, frame);
 	});
 
-	test('Clip - Removing Objects', function(assert)
+	test('Clip#remove', function(assert)
 	{
 	var
 		a = j5g3.clip(),
@@ -102,30 +135,7 @@ j5g3(function(j5g3, engine) {
 		assert.equal(frame._previous, frame);
 	});
 
-	test('Clip - Adding Frames', function(assert)
-	{
-	var
-		c = j5g3.clip(),
-		img = j5g3.image('img'),
-		frame, frame2 = c.frame
-	;
-		c.add_frame();
-		frame = c.frame;
-
-		assert.strictEqual(frame._next, frame);
-		assert.strictEqual(frame._previous, frame);
-
-		c.update();
-		assert.strictEqual(c.frame, frame2);
-		assert.ok(frame !== frame2);
-
-		c.add_frame(img);
-		frame = c.frame;
-		assert.strictEqual(frame._next, img);
-		assert.strictEqual(img._next, frame);
-	});
-
-	test('Text Construction', function(assert)
+	test('Text', function(assert)
 	{
 	var
 		t = j5g3.text(),
@@ -133,13 +143,7 @@ j5g3(function(j5g3, engine) {
 	;
 		assert.ok(t);
 		assert.equal(t2.text, 'Hello World');
-
-		//t.paint();
-		//t2.paint();
-		//equal(t.get_width(), 0);
-		//ok(t2.get_width());
 	});
-
 
 	test('Tween Construction', function(assert)
 	{
@@ -152,14 +156,13 @@ j5g3(function(j5g3, engine) {
 		assert.strictEqual(t.t, 0);
 	});
 
-	test('Spritesheet Constructor', function(assert)
+	test('Spritesheet', function(assert)
 	{
 	var
 		img=j5g3.image('soccer'),
 		s = j5g3.spritesheet('soccer'),
 		s2= j5g3.spritesheet(img)
 	;
-
 		assert.equal(s.sprites.length, 0);
 		assert.strictEqual(s2.source, img);
 		assert.strictEqual(s.source.source, img.source);
@@ -183,7 +186,7 @@ j5g3(function(j5g3, engine) {
 
 	});
 
-	test('Spritesheet - Clipping', function(assert)
+	test('Spritesheet#clip', function(assert)
 	{
 	var
 		s = j5g3.spritesheet('soccer').grid(5, 5),
@@ -192,27 +195,7 @@ j5g3(function(j5g3, engine) {
 		assert.equal(a._frames.length, 3);
 	});
 
-	test('Collision', function(assert)
-	{
-	var
-		a, b,
-		do_test = function(A, B) {
-			a = j5g3.rect({ fill: 'red', width: 100, height: 50 }).set(A),
-			b = j5g3.rect({ fill: 'green', width: 50, height: 30 }).set(B),
-			assert.ok(a.collides(b));
-		}
-	;
-		do_test({ x: 20, y: 20 }, { x: 100, y: 30 });
-		do_test({ x: 20, y: 100 }, { x:120, y:110 });
-		do_test({ x: 20, y: 340, sx: 0.5 }, { x: 100, y: 350 });
-		do_test({ x: 20, y: 420 }, { x: 100, y: 430, sx: 0.5 });
-
-		do_test({ x: 320, y: 20 }, { x: 400, y: 30, sx: -2 });
-		do_test({ x: 320, y: 100, sx: 0.3 }, { x: 400, y: 110, sx: -1 });
-		do_test({ x: 320, y: 180, sx: 0.5 }, { x: 400, y: 190, sx: -0.5 });
-	});
-
-	test('Invalidate', function(assert)
+	test('Stage#validate', function(assert)
 	{
 	var
 		a = j5g3.image('img').pos(10, 10).stretch(100, 100),
@@ -220,18 +203,15 @@ j5g3(function(j5g3, engine) {
 		stage = engine.stage,
 		dbox = stage.dbox
 	;
-		stage.add([a, b]);
-		assert.equal(dbox.w, undefined);
-		assert.equal(dbox.h, undefined);
-		stage.validate();
+		stage.box.reset();
+		stage.add([a, b]).validate();
 		assert.strictEqual(dbox.x, 10);
 		assert.strictEqual(dbox.y, 10);
 		assert.strictEqual(dbox.w, 110);
 		assert.strictEqual(dbox.h, 100);
 		stage.render();
 
-		b.invalidate();
-		stage.validate();
+		stage.box.reset();
 		b.invalidate();
 		stage.validate();
 
