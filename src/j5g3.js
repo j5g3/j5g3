@@ -1425,6 +1425,9 @@ j5g3.Tween = j5g3.Class.extend(/**@lends j5g3.Tween.prototype */ {
 	 */
 	on_remove: null,
 
+	/// How long to wait before starting the animation.
+	delay: 0,
+
 	/**
 	 * @param {(j5g3.DisplayObject|Object)} properties DisplayObject
 	 *        or an Object containing properties.
@@ -1469,6 +1472,7 @@ j5g3.Tween = j5g3.Class.extend(/**@lends j5g3.Tween.prototype */ {
 		this.repeat -= 1;
 		this.t=0;
 		this.vf= 0;
+		this.__delay = this.delay;
 
 		return this;
 	},
@@ -1524,6 +1528,12 @@ j5g3.Tween = j5g3.Class.extend(/**@lends j5g3.Tween.prototype */ {
 		target = me.target,
 		i
 	;
+		if (me.__delay)
+		{
+			me.__delay--;
+			return;
+		}
+
 		if (me.duration===me.t)
 			me.vf = 1;
 
@@ -1567,6 +1577,7 @@ j5g3.Tween = j5g3.Class.extend(/**@lends j5g3.Tween.prototype */ {
 
 		me.v = 1 / me.duration;
 		me.vf= 0;
+		me.__delay = me.delay;
 
 		me.update = me._calculate;
 		me.update();
@@ -1771,11 +1782,15 @@ j5g3.Spritesheet = j5g3.Class.extend(/** @lends j5g3.Spritesheet.prototype */ {
 	/**
 	 * Returns a new Sprite object based on index
 	 *
+	 * @param {number} index Sprite Index.
+	 * @param Klass Optional class. j5g3.Sprite by default.
+	 *
 	 * @return {j5g3.Sprite}
 	 */
-	sprite: function(index)
+	sprite: function(index, Klass)
 	{
-		return new j5g3.Sprite(this._sprites[index]);
+		Klass = Klass || j5g3.Sprite;
+		return new Klass(this._sprites[index]);
 	},
 
 	/**

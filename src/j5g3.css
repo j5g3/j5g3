@@ -38,6 +38,8 @@ canvas {
 .j5g3-dbg section.active { display: block; }
 .j5g3-dbg section { display: none; }
 .j5g3-dbg section > fieldset { margin: 15px; }
+
+section.j5g3-dbg-section { position: static; }
 	
 .j5g3-res-1080 { width: 1920px; height: 1080px; }
 .j5g3-aspect-16-9 canvas { width: 100%; height: 56%; }

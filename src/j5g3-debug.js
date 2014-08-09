@@ -125,7 +125,7 @@ var
 	var
 		me = this,
 		tab = me.$tab = $('<a href="#">'),
-		section = me.$section = $('<section>'),
+		section = me.$section = $('<section class="j5g3-dbg-section">'),
 		bar = me.toolbar = p.toolbar
 	;
 		tab.html(p.label)
