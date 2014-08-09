@@ -103,3 +103,17 @@
 	assert.equal(img.height, 178);
 
 	});
+
+	test('j5g3#get_type', function(a) {
+	var
+		audio = j5g3.dom('AUDIO'),
+		audio2 = new window.Audio(),
+		img = new Image(),
+		img2 = j5g3.dom('IMG')
+	;
+		a.equal(j5g3.get_type(audio), 'audio');
+		a.equal(j5g3.get_type(audio2), 'audio');
+		a.equal(j5g3.get_type(img), 'dom');
+		a.equal(j5g3.get_type(img2), 'dom');
+
+	});

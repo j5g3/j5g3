@@ -106,9 +106,10 @@ j5g3.extend(j5g3, /** @lends j5g3 */ {
 			if (obj instanceof Array) return 'array';
 			if (obj instanceof j5g3.Class) return 'j5g3';
 
+			if (obj instanceof window.HTMLAudioElement) return 'audio';
 			if (obj instanceof window.HTMLElement) return 'dom';
 			if (obj instanceof window.Image) return 'dom';
-			if (obj instanceof window.HTMLAudioElement) return 'audio';
+			if (obj instanceof window.Audio) return 'audio';
 		}
 
 		return result;
@@ -148,11 +149,6 @@ j5g3.extend(j5g3, /** @lends j5g3 */ {
  */
 j5g3.Render =
 {
-	/**
-	 * Draws nothing
-	 */
-	Void: function() { },
-
 	/**
 	 * Default drawing algorithm.
 	 */
