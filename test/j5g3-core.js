@@ -1,4 +1,10 @@
 
+	function compare(a, A, B)
+	{
+		for (var i in B)
+			a.strictEqual(A[i], B[i]);
+	}
+
 	module('j5g3-core');
 	test('Class', function(assert) {
 	var

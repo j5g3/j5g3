@@ -24,19 +24,21 @@
 j5g3.BoundingBox = function j5g3BoundingBox(x, y, w, h)
 {
 	this.M = new j5g3.Matrix();
-	this.set(x,y,w,h);
+
+	if (x!==undefined)
+		this.set(x,y,w,h);
 };
 
 j5g3.BoundingBox.prototype = {
 
 	/// Bounding box x position
-	x: null,
+	x: Infinity,
 	/// Bounding box y position
-	y: null,
+	y: Infinity,
 	/// Bounding box x2 position
-	r: 0,
+	r: -Infinity,
 	/// Bounding box y2 position
-	b: 0,
+	b: -Infinity,
 
 	/// Width
 	w: 0,
@@ -45,10 +47,13 @@ j5g3.BoundingBox.prototype = {
 	/// Last transformation matrix used.
 	M: null,
 
+	dirty: true,
+
 	reset: function()
 	{
 		this.x = this.y = Infinity;
-		this.w = this.h = this.r = this.b = 0;
+		this.w = this.h = 0;
+		this.r = this.b = -Infinity;
 		this.dirty = false;
 
 		return this;
@@ -87,40 +92,47 @@ j5g3.BoundingBox.prototype = {
 
 	transform_full: function(obj, M)
 	{
-		var x, y, x2, y2, x3, y3;
-
-		if (obj.cx || obj.cy)
-		{
-			M.to_world(obj.cx, obj.cy);
-			x = M.x; y = M.y;
-		} else
-		{
-			x = M.e; y = M.f;
-		}
-		M.to_world(obj.width+obj.cx, obj.height+obj.cy);
+	var
+		x = M.e,
+		y = M.f,
+		x2, y2, x3, y3
+	;
+		M.to_world(obj.width, obj.height);
 		x2 = M.x; y2 = M.y;
-		M.to_world(obj.cx, obj.height+obj.cy);
+		M.to_world(0, obj.height);
 		x3 = M.x; y3 = M.y;
-		M.to_world(obj.width+obj.cx, obj.cy);
+		M.to_world(obj.width, 0);
 
 		this.x = Math.min(x, x2, x3, M.x) | 0;
 		this.y = Math.min(y, y2, y3, M.y) | 0;
 		this.r = Math.max(x, x2, x3, M.x) | 0;
 		this.b = Math.max(y, y2, y3, M.y) | 0;
+		this.w = this.r - this.x;
+		this.h = this.b - this.y;
 	},
 
 	multiply: function(obj, M)
 	{
-		var M2 = obj.M;
 		M = this.M.copy(M);
 
-		if (!M2.identity)
-			M.multiply(M2.a, M2.b, M2.c, M2.d, M2.e, M2.f);
+		if (obj.sx !== 1 || obj.sy !== 1 || obj.__rotation)
+			M.multiply(
+				obj.sx * obj.__cos, obj.sx * obj.__sin,
+				-obj.sy * obj.__sin, obj.sy * obj.__cos, obj.x, obj.y
+			);
 		else {
-			M.e += M2.e;
-			M.f += M2.f;
+			M.e += obj.x;
+			M.f += obj.y;
 		}
 
+		if (obj.cx || obj.cy)
+		{
+			M.to_world(obj.cx, obj.cy);
+			M.e = M.x;
+			M.f = M.y;
+		}
+
+		M.dirty = true;
 		return M;
 	},
 
@@ -130,13 +142,16 @@ j5g3.BoundingBox.prototype = {
 
 		if (M.identity)
 		{
-			this.x = M.e + obj.cx; this.y = M.f + obj.cy;
-			this.r = this.x + obj.width; this.b = this.y + obj.height;
+			this.x = M.e;
+			this.y = M.f;
+			this.w = obj.width;
+			this.h = obj.height;
+			this.r = this.x + this.w;
+			this.b = this.y + this.h;
 		} else
 			this.transform_full(obj, M);
 
-		this.w = this.r - this.x;
-		this.h = this.b - this.y;
+		return this;
 	},
 
 	union: function(B)
@@ -160,6 +175,8 @@ j5g3.BoundingBox.prototype = {
 
 			A.w = A.r-A.x;
 			A.h = A.b-A.y;
+
+			A.dirty = true;
 		}
 	}
 };
@@ -189,7 +206,7 @@ j5g3.Matrix.prototype = {
 	/** f component (y coord) */
 	f: 0,
 
-	dirty: true,
+	dirty: false,
 
 	identity: true,
 
@@ -203,8 +220,13 @@ j5g3.Matrix.prototype = {
 	/// Scale Y
 	sy: 1,
 
+	/// Center X
+	cx: 0,
+	/// Center Y
+	cy: 0,
+
 	/** Sets Matrix rotation and calculates a,b,c and d values. */
-	setRotation: function(val)
+	set_rotation: function(val)
 	{
 		this._cos = Math.cos(val);
 		this._sin = Math.sin(val);
@@ -215,7 +237,7 @@ j5g3.Matrix.prototype = {
 	/**
 	 * Sets scaleX value
 	 */
-	setScaleX: function(sx)
+	set_sx: function(sx)
 	{
 		this.sx = sx;
 		return this.calc4();
@@ -224,7 +246,7 @@ j5g3.Matrix.prototype = {
 	/**
 	 * Sets scaleY value
 	 */
-	setScaleY: function(sy)
+	set_sy: function(sy)
 	{
 		this.sy = sy;
 		return this.calc4();
@@ -319,6 +341,8 @@ j5g3.Matrix.prototype = {
 	{
 		this.a = B.a; this.b = B.b; this.c = B.c;
 		this.d = B.d; this.e = B.e; this.f = B.f;
+		this._cos = B._cos; this._sin = B._sin;
+		this.sx = B.sx; this.sy = B.sy;
 		return this.invalidate(true, B.identity);
 	},
 
@@ -327,8 +351,8 @@ j5g3.Matrix.prototype = {
 	 */
 	reset: function()
 	{
-		this.a = 1; this.b = 0; this.c = 0;
-		this.d = 1; this.e = 0; this.f = 0;
+		this.a = this.d = this._cos = this.sx = this.sy = 1;
+		this.b = this.c = this._sin = this.e = this.f = 0;
 		return this.invalidate(true, true);
 	},
 

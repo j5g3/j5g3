@@ -28,8 +28,10 @@ j5g3(function(j5g3, engine) {
 	{
 	var
 		stage = engine.stage,
-		a = j5g3.image('img').pos(10, 10)
+		a = j5g3.image('img').pos(100, 200)
 	;
+		a.cx = -90;
+		a.cy = -190;
 		assert.ok(a);
 		stage.add(a).validate();
 		assert.equal(stage.dbox.x, 10);
@@ -135,6 +137,59 @@ j5g3(function(j5g3, engine) {
 		assert.equal(frame._previous, frame);
 	});
 
+	test('Clip#validate', function(a) {
+	var
+		A = j5g3.clip(),
+		B = j5g3.clip(),
+		rect = j5g3.rect({ x: 10, y: 20, width: 30, height: 40 }),
+		BB = new j5g3.BoundingBox()
+	;
+
+	A.add(rect).validate(BB);
+	compare(a, BB, { x: 10, y: 20, w: 30, h: 40, r: 40, b: 60 });
+	rect.pos(20, 30);
+	A.validate(BB.reset());
+	compare(a, BB, { x: 10, y: 20, w: 40, h: 50, r: 50, b: 70 });
+	A.dirty = false; rect.dirty = true;
+	A.validate(BB.reset());
+	compare(a, A.box, { x: 20, y: 30, w: 30, h: 40, r: 50, b: 70 });
+	A.dirty = rect.dirty = false;
+	A.validate(BB.reset());
+	compare(a, BB, { x: Infinity, y: Infinity, w: 0, h: 0, r: -Infinity, b: -Infinity });
+
+	A.set({ cx: 50, cy: -100 }).validate(BB.reset());
+	rect.invalidate();
+	A.validate(BB.reset());
+	compare(a, A.box, { x: 70, y: -70, w: 30, h: 40, r: 100, b: -30 });
+
+	rect.cx = -50; rect.cy = 100;
+	rect.invalidate();
+	A.validate(BB.reset());
+	A.validate(BB.reset());
+	compare(a, A.box, { x: 20, y: 30, w: 30, h: 40, r: 50, b: 70 });
+
+	rect.cx = 50; rect.cy = -100;
+	rect.invalidate();
+	A.validate(BB.reset());
+	compare(a, A.box, { x: 20, y: -170, w: 130, h: 240, r: 150, b: 70 });
+	rect.invalidate();
+	A.validate(BB.reset());
+	compare(a, A.box, { x: 120, y: -170, w: 30, h: 40, r: 150, b: -130 });
+
+	B.add(A).validate(BB.reset());
+	compare(a, A.box, { x: 120, y: -170, w: 30, h: 40, r: 150, b: -130 });
+	B.pos(10, 20).validate(BB.reset());
+	compare(a, A.box, { x: 120, y: -170, w: 40, h: 60, r: 160, b: -110 });
+
+	B.invalidate().validate(BB.reset());
+	compare(a, A.box, { x: 130, y: -150, w: 30, h: 40, r: 160, b: -110 });
+
+	B.scale(0.5, 1).validate(BB.reset());
+	B.validate(BB.reset());
+	compare(a, A.box, { x: 80, y: -150, w: 15, h: 40, r: 95, b: -110 });
+
+	});
+
 	test('Text', function(assert)
 	{
 	var
@@ -195,6 +250,22 @@ j5g3(function(j5g3, engine) {
 		assert.equal(a._frames.length, 3);
 	});
 
+	test('Stage#scale', function(a)
+	{
+	var
+		A = j5g3.image('img').pos(10, 10).stretch(100, 100),
+		s = engine.stage
+	;
+		s.box.reset();
+		s.add(A).scale(0.5, 1).set({ cx: 50, cy: 100 });
+		s.dbox.reset();
+		s.validate();
+		compare(a, s.dbox, { x: 30, y: 110, w: 50, h: 100 });
+
+		s.cx = s.cy = 0;
+		A.remove();
+	});
+
 	test('Stage#validate', function(assert)
 	{
 	var
@@ -205,20 +276,13 @@ j5g3(function(j5g3, engine) {
 	;
 		stage.box.reset();
 		stage.add([a, b]).validate();
-		assert.strictEqual(dbox.x, 10);
-		assert.strictEqual(dbox.y, 10);
-		assert.strictEqual(dbox.w, 110);
-		assert.strictEqual(dbox.h, 100);
+		compare(assert, dbox, { x: 10, y: 10, w: 110, h: 100 });
 		stage.render();
 
 		stage.box.reset();
 		b.invalidate();
 		stage.validate();
-
-		assert.strictEqual(dbox.x, 70);
-		assert.strictEqual(dbox.y, 50);
-		assert.strictEqual(dbox.w, 50);
-		assert.strictEqual(dbox.h, 50);
+		compare(assert, dbox, { x: 70, y: 50, w: 50, h: 50 });
 
 		a.remove(); b.remove();
 	});

@@ -157,7 +157,6 @@ j5g3.Render =
 		this.begin(context);
 		this.paint(context, BB);
 		this.end(context);
-		this.dirty = false;
 	},
 
 	/**
@@ -240,7 +239,10 @@ j5g3.Paint = {
 
 		while ((next=next._next) !== frame)
 			if (next.render && (next.dirty || BB.intersect(next.box)))
+			{
 				next.render(context, BB);
+				next.dirty = false;
+			}
 	},
 
 	/**
@@ -459,9 +461,10 @@ j5g3.HitTest = {
 	 */
 	Rect: function(x, y)
 	{
-		var M = this.box.M.to_client(x, y);
+		var B = this.box.M.to_client(x, y);
 
-		return ((M.x>0 && M.x<this.width)&&(M.y>0 && M.y<this.height)) ? this : false;
+		return ((B.x>=0 && B.x<=this.width) &&
+			(B.y>=0 && B.y<=this.height)) ? this : false;
 	},
 
 	/**
@@ -513,19 +516,13 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	 */
 	parent: null,
 
-	/// @type {j5g3.Matrix} Transformation Matrix
-	M: null,
-
 	/// @type {j5g3.BoundingBox} Bounding box in World coordinates
 	box: null,
 
 	/** X position @type {number} */
-	set x(val) { this.M.e = val; this.M.dirty = true; },
-	get x() { return this.M.e; },
-
+	x: 0,
 	/** Y position @type {number} */
-	set y(val) { this.M.f = val; this.M.dirty = true; },
-	get y() { return this.M.f; },
+	y: 0,
 
 	/** Offset X for rotation.  @type {number} */
 	cx: 0,
@@ -537,28 +534,29 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	/** @private @type {number|null} */
 	height: null,
 
-	_rotation: 0,
-
 	dirty: true,
+
+	__rotation: 0,
+	__sin: 0,
+	__cos: 1,
 
 	/** Rotation @type {number} */
 	set rotation(val)
 	{
-		this.M.setRotation((this._rotation = val));
+		this.__sin = Math.sin(val);
+		this.__cos = Math.cos(val);
+		this.__rotation = val;
 	},
-	get rotation() { return this._rotation; },
+
+	get rotation()
+	{
+		return this.__rotation;
+	},
 
 	/** X Scale @type {number} */
-	set sx(val) {
-		this.M.setScaleX(val);
-	},
-	get sx() { return this.M.sx; },
-
+	sx: 1,
 	/** Y Scale @type {number} */
-	set sy(val) {
-		this.M.setScaleY(val);
-	},
-	get sy() { return this.M.sy; },
+	sy: 1,
 
 	/** ALpha transparency value @type {number} */
 	alpha: 1,
@@ -576,9 +574,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	 */
 	fill: null,
 
-	/**
-	 * Font @type {string}
-	 */
+	/// Font @type {string}
 	font: null,
 
 	/** Line Width for children */
@@ -592,22 +588,31 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 
 	init: function j5g3DisplayObject(properties)
 	{
-		this.M = new j5g3.Matrix();
-		this.extend(properties);
 		this.box = new j5g3.BoundingBox();
+		this.extend(properties);
 	},
 
+	/**
+	 * Sets properties and invalidates object.
+	 */
 	set: function(p)
 	{
 		for (var i in p)
 			this[i] = p[i];
 
-		return this;
+		return this.invalidate();
 	},
 
-	invalidate: function()
+	/**
+	 * Invalidates object. if <code>box</code> is <code>false</code>
+	 * the bounding box will not be updated.
+	 *
+	 * @param {boolean} box Default true.
+	 */
+	invalidate: function(box)
 	{
 		this.dirty = true;
+		this.box.dirty = box!==false;
 		return this;
 	},
 
@@ -618,7 +623,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	{
 	var
 		me = this,
-		m = this.M
+		m = this.box.M
 	;
 		context.save();
 
@@ -634,9 +639,9 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 		if (me.miter_limit!==null) context.miterLimit = me.miter_limit;
 
 		if (!m.identity)
-			context.transform(m.a, m.b, m.c, m.d, m.e, m.f);
-		else if (m.f !==0 || m.e !== 0)
-			context.translate(m.e, m.f);
+			context.setTransform(m.a, m.b, m.c, m.d, m.e, m.f);
+		else if (me.x !==0 || me.y !== 0)
+			context.translate(me.x, me.y);
 	},
 
 	/**
@@ -660,19 +665,18 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	 */
 	_paint: null,
 
-	validate: function(BB, force)
+	validate: function(BB)
 	{
-		if (this.dirty || force)
+		if (this.dirty)
 		{
 			BB.union(this.box);
 
-			if (BB.M.dirty || this.M.dirty)
+			if (BB.M.dirty || this.box.dirty)
 			{
 				this.box.transform(this, BB.M);
 				BB.union(this.box);
-				this.box.M.dirty = this.M.dirty = false;
+				this.box.dirty = false;
 			}
-			BB.dirty = this.dirty = true;
 		}
 	},
 
@@ -727,7 +731,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	{
 		this.x = x;
 		this.y = y;
-		return this;
+		return this.invalidate();
 	},
 
 	/**
@@ -737,7 +741,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	{
 		this.width = w;
 		this.height = h;
-		return this;
+		return this.invalidate();
 	},
 
 	/**
@@ -779,7 +783,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 		this.sx = sx || 0;
 		this.sy = sy || 0;
 
-		return this;
+		return this.invalidate();
 	}
 
 });
@@ -974,35 +978,52 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** Function to call after construction */
 	setup: null,
 
-	validate: function(BB, force)
+	validate: function(BB)
 	{
 	var
 		me = this,
 		next = me.frame,
-		dbox = me.dbox.reset()
+		dbox = me.dbox
 	;
-		if (BB.M.dirty || me.M.dirty)
-			dbox.transform(me, BB.M);
+		if (BB.M.dirty || me.box.dirty)
+			dbox.multiply(me, BB.M);
 
 		while ((next = next._next) !== me.frame)
 			if (next.validate)
-				next.validate(dbox, me.dirty || force);
+			{
+				if (me.dirty)
+					next.dirty = true;
+				next.validate(dbox);
+			}
 
 		if (dbox.dirty)
 		{
 			BB.union(me.box);
 			BB.union(dbox);
-			me.dbox = me.box;
+			me.dbox = me.box.reset();
 			me.box = dbox;
-
-			BB.dirty = true;
 			me.box.dirty = false;
 		}
-		me.box.M.dirty = me.M.dirty = false;
+	},
+
+	next_frame: function()
+	{
+		var next;
+
+		if ((this._frame += this.st) >= this.length)
+			this._frame = 0;
+
+		next = this._frames[this._frame|0];
+
+		if (next !== this.frame)
+		{
+			this.frame = next;
+			this.dirty = true;
+		}
 	},
 
 	/**
-	 * Runs clip logic and advances frame.
+	 * Runs clip logic.
 	*/
 	update: function()
 	{
@@ -1018,18 +1039,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 				next.update();
 
 		if (this.playing)
-		{
-			if ((this._frame += this.st) >= this.length)
-				this._frame = 0;
-
-			next = this._frames[this._frame|0];
-
-			if (next !== this.frame)
-			{
-				this.frame = next;
-				this.dirty = true;
-			}
-		}
+			this.next_frame();
 	},
 
 	/**
@@ -1292,8 +1302,6 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		j5g3.Clip.call(me, p);
 
 		me._init_canvas();
-		me.dbox.M = me.box.M = me.M;
-
 		me.resolution(
 			me.width || me.canvas.clientWidth || 640,
 			me.height || me.canvas.clientHeight || 480
@@ -1351,9 +1359,10 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 		next = this.frame,
 		me = this,
 		x,y,w,h,
-		BB = me.dbox
+		BB = me.dbox.reset()
 	;
-		BB.reset();
+		if (me.box.dirty)
+			BB.multiply(me, BB.M.reset());
 
 		while ((next = next._next) !== me.frame)
 			if (next.validate)
@@ -1366,7 +1375,7 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 			BB.clip(0, 0, me.width, me.height);
 			me.box.set(x, y, w, h);
 		}
-		me.M.dirty = false;
+		BB.dirty = false;
 		return me;
 	}
 
@@ -1532,7 +1541,7 @@ j5g3.Tween = j5g3.Class.extend(/**@lends j5g3.Tween.prototype */ {
 		for (i in me.to)
 			target[i] = me.apply_tween(i, me.vf);
 
-		target.dirty = true;
+		target.invalidate();
 
 		if (me.t<me.duration)
 		{
@@ -2034,8 +2043,8 @@ j5g3.Engine = j5g3.Class.extend(/** @lends j5g3.Engine.prototype */{
 		} else
 		{
 			me._gameLoopFn = function() {
-				me._gameLoop();
 				me._renderLoop();
+				me._gameLoop();
 				me._renderLoopId = window.requestAnimationFrame(me._gameLoopFn);
 			};
 			me._gameLoopFn();

@@ -72,11 +72,6 @@ j5g3.Shape = j5g3.DisplayObject.extend(
 
 	line_width: null,
 
-	init: function j5g3Shape(p)
-	{
-		j5g3.DisplayObject.call(this, p);
-	},
-
 	_begin: j5g3.DisplayObject.prototype.begin,
 
 	begin: function(context)
