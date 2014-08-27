@@ -136,12 +136,12 @@ j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
 		if (typeof(p)==='number')
 			p = { radius: p };
 
-		j5g3.Shape.apply(this, [ p ]);
+		j5g3.Shape.call(this, p);
 	},
 
 	paintPath: function(context)
 	{
-		context.arc(this.__radius+this.cx, this.__radius+this.cy, this.__radius, 0, 2*Math.PI, false);
+		context.arc(this.__radius, this.__radius, this.__radius, 0, 2*Math.PI, false);
 	},
 
 	at: j5g3.HitTest.Circle
@@ -158,7 +158,7 @@ j5g3.Line = j5g3.Shape.extend(/**@lends j5g3.Line.prototype */{
 
 	paintPath: function(context)
 	{
-		context.moveTo(this.cx, this.cy);
+		context.moveTo(0, 0);
 		context.lineTo(this.width, this.height);
 	}
 
@@ -177,7 +177,7 @@ j5g3.Polygon = j5g3.Shape.extend(/**@lends j5g3.Polygon.prototype */{
 
 	init: function j5g3Polygon(p)
 	{
-		j5g3.Shape.apply(this, [p]);
+		j5g3.Shape.call(this, p);
 
 		if (this.points===null)
 			this.points = [];
@@ -243,10 +243,12 @@ j5g3.Polygon = j5g3.Shape.extend(/**@lends j5g3.Polygon.prototype */{
 
 		while (sides--)
 		{
-			p.points.push(Math.cos(a)*p.radius, Math.sin(a)*p.radius);
+			p.points.push(
+				Math.cos(a)*p.radius+p.radius,
+				Math.sin(a)*p.radius+p.radius
+			);
 			a += angle;
 		}
-		p.cx = p.cy = -p.radius;
 		p.width = p.height = p.radius*2;
 
 		return new j5g3.Polygon(p);
@@ -274,9 +276,9 @@ j5g3.Rect = j5g3.Shape.extend(/**@lends j5g3.Rect.prototype */{
 	paint : function(context)
 	{
 		if (this.fill !== false)
-			context.fillRect(this.cx, this.cy, this.width, this.height);
+			context.fillRect(0, 0, this.width, this.height);
 		if (this.stroke !== false)
-			context.strokeRect(this.cx, this.cy, this.width, this.height);
+			context.strokeRect(0, 0, this.width, this.height);
 	}
 
 });

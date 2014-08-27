@@ -19,12 +19,6 @@ module.exports = function(grunt) {
 					'src/j5g3-collision.js', 'src/j5g3-shapes.js',
 					'src/j5g3-support.js'
 				]
-			},
-			'j5g3dbg': {
-				options: { jshintrc: '.jshintrc' },
-				src: [
-					'src/j5g3-debug.js'
-				]
 			}
 		},
 
@@ -38,10 +32,6 @@ module.exports = function(grunt) {
 				src: '<%= jshint.j5g3.src %>',
 				dest: 'build/j5g3-all.js'
 			},
-			"j5g3dbg": {
-				src: ['<%= jshint.j5g3.src %>', '<%= jshint.j5g3dbg.src %>'],
-				dest: 'build/j5g3-all.dbg.js'
-			},
 
 			"css": {
 				src: 'src/j5g3.css',
@@ -50,8 +40,7 @@ module.exports = function(grunt) {
 
 			"release": {
 				files: {
-					'build/j5g3-<%= pkg.version %>.css': 'build/j5g3.css',
-					'build/j5g3-all-<%= pkg.version %>.dbg.js': '<%= concat.j5g3dbg.src %>'
+					'build/j5g3-<%= pkg.version %>.css': 'build/j5g3.css'
 				}
 			}
 		},
@@ -76,12 +65,7 @@ module.exports = function(grunt) {
 		watch: {
 			j5g3: {
 				files: '<%= jshint.j5g3.src %>',
-				tasks: [ 'jshint:j5g3', 'concat:j5g3', 'concat:j5g3dbg' ]
-			},
-
-			j5g3dbg: {
-				files: '<%= jshint.j5g3dbg.src %>',
-				tasks: [ 'jshint:j5g3dbg', 'concat:j5g3dbg' ]
+				tasks: [ 'jshint:j5g3', 'concat:j5g3' ]
 			},
 
 			css: {
@@ -99,7 +83,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-jsdoc');
 
-	grunt.registerTask('default', [ 'jshint', 'clean', 'concat:j5g3', 'concat:css', 'concat:j5g3dbg' ]);
+	grunt.registerTask('default', [ 'jshint', 'clean', 'concat:j5g3', 'concat:css' ]);
 	grunt.registerTask('minify', [ 'default', 'uglify:j5g3' ]);
 	grunt.registerTask('release', [ 'default', 'concat:release', 'uglify:release']);
 };

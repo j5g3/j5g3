@@ -262,7 +262,7 @@ j5g3(function(j5g3, engine) {
 		s.validate();
 		compare(a, s.dbox, { x: 30, y: 110, w: 50, h: 100 });
 
-		s.cx = s.cy = 0;
+		s.set({ sx: 1, sy: 1, cx: 0, cy: 0 });
 		A.remove();
 	});
 
@@ -275,7 +275,7 @@ j5g3(function(j5g3, engine) {
 		dbox = stage.dbox
 	;
 		stage.box.reset();
-		stage.add([a, b]).validate();
+		stage.add([a, b]).invalidate().validate();
 		compare(assert, dbox, { x: 10, y: 10, w: 110, h: 100 });
 		stage.render();
 

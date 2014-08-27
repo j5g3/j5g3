@@ -220,11 +220,6 @@ j5g3.Matrix.prototype = {
 	/// Scale Y
 	sy: 1,
 
-	/// Center X
-	cx: 0,
-	/// Center Y
-	cy: 0,
-
 	/** Sets Matrix rotation and calculates a,b,c and d values. */
 	set_rotation: function(val)
 	{

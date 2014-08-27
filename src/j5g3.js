@@ -191,7 +191,7 @@ j5g3.Paint = {
 	 */
 	Image: function (context)
 	{
-		context.drawImage(this.source, this.cx, this.cy);
+		context.drawImage(this.source, 0, 0);
 	},
 
 	/**
@@ -199,7 +199,7 @@ j5g3.Paint = {
 	 */
 	ImageScaled: function(context)
 	{
-		context.drawImage(this.source, this.cx, this.cy, this.width, this.height);
+		context.drawImage(this.source, 0, 0, this.width, this.height);
 	},
 
 	/**
@@ -221,7 +221,7 @@ j5g3.Paint = {
 	;
 		context.drawImage(
 			src.image, src.x, src.y, src.w, src.h,
-			this.cx, this.cy, this.width, this.height
+			0, 0, this.width, this.height
 		);
 	},
 
@@ -234,9 +234,6 @@ j5g3.Paint = {
 		frame = this.frame,
 		next = frame
 	;
-		if (this.cx || this.cy)
-			context.translate(this.cx, this.cy);
-
 		while ((next=next._next) !== frame)
 			if (next.render && (next.dirty || BB.intersect(next.box)))
 			{
@@ -250,7 +247,7 @@ j5g3.Paint = {
 	 */
 	Text: function(context)
 	{
-		context.fillText(this.text, this.cx, this.cy);
+		context.fillText(this.text, 0, 0);
 	},
 
 	/**
@@ -266,7 +263,7 @@ j5g3.Paint = {
 	;
 		for (;i<l;i++)
 		{
-			context.fillText(text[i], this.cx, this.cy + y);
+			context.fillText(text[i], 0, y);
 			y += this.line_height;
 		}
 	},
@@ -276,7 +273,7 @@ j5g3.Paint = {
 	 */
 	TextStroke: function(context)
 	{
-		context.strokeText(this.text, this.cx, this.cy);
+		context.strokeText(this.text, 0, 0);
 	},
 
 	/**
@@ -284,8 +281,8 @@ j5g3.Paint = {
 	 */
 	TextStrokeFill: function(context)
 	{
-		context.fillText(this.text, this.cx, this.cy);
-		context.strokeText(this.text, this.cx, this.cy);
+		context.fillText(this.text, 0, 0);
+		context.strokeText(this.text, 0, 0);
 	},
 
 	/**
@@ -295,7 +292,7 @@ j5g3.Paint = {
 	{
 		var map = this.map, y = map.length, x, sprites = this.sprites, s, cm;
 
-		context.translate(this.cx, this.cy+y*this.th);
+		context.translate(0, y*this.th);
 
 		while (y--)
 		{
@@ -325,7 +322,7 @@ j5g3.Paint = {
 		dy = (this.th/2|0) + this.offsetY,
 		offset, s
 	;
-		context.translate(this.cx, this.cy-dy);
+		context.translate(0, dy);
 		offset = dx;
 
 		for (; y<l; y++)
@@ -352,7 +349,7 @@ j5g3.Paint = {
 	 */
 	Cache: function(context)
 	{
-		context.drawImage(this._cache_source, this.cx, this.cy);
+		context.drawImage(this._cache_source, 0, 0);
 	}
 
 };
@@ -375,27 +372,25 @@ j5g3.Cache = {
 		me = this,
 		cache_canvas = j5g3.dom('CANVAS'),
 		cache_context,
-		M = me.M, BB = new j5g3.BoundingBox()
+		BB = new j5g3.BoundingBox(),
+		box = me.box,
+		M = box.M
 	;
 		// This will also clear the canvas.
 		cache_canvas.width = w || me.width;
 		cache_canvas.height= h || me.height;
-
 		cache_context = cache_canvas.getContext('2d');
-		cache_context.translate(-me.cx, -me.cy);
 
+		box.M = new j5g3.Matrix();
 		me.clear_cache();
 		me.dirty = true;
-		me.M = new j5g3.Matrix();
-		BB.set(0,0,me.width, me.height);
 		me.render(cache_context, BB);
-		me.M = M;
+		me.dirty = false;
+		box.M = M;
 
 		me._cache_source = cache_canvas;
-
 		me._oldPaint= me.paint;
 		me.paint = j5g3.Paint.Cache;
-
 		return this;
 	},
 
@@ -640,8 +635,8 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 
 		if (!m.identity)
 			context.setTransform(m.a, m.b, m.c, m.d, m.e, m.f);
-		else if (me.x !==0 || me.y !== 0)
-			context.translate(me.x, me.y);
+		else if (m.e !==0 || m.f !== 0)
+			context.translate(m.e, m.f);
 	},
 
 	/**
@@ -764,6 +759,8 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	{
 		if (this._oldPaint)
 			this.paint = this._oldPaint;
+
+		return this;
 	},
 
 	/**
@@ -978,16 +975,12 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** Function to call after construction */
 	setup: null,
 
-	validate: function(BB)
+	validate_children: function(BB, dbox)
 	{
 	var
 		me = this,
-		next = me.frame,
-		dbox = me.dbox
+		next = me.frame
 	;
-		if (BB.M.dirty || me.box.dirty)
-			dbox.multiply(me, BB.M);
-
 		while ((next = next._next) !== me.frame)
 			if (next.validate)
 			{
@@ -995,6 +988,16 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 					next.dirty = true;
 				next.validate(dbox);
 			}
+	},
+
+	validate: function(BB)
+	{
+	var
+		me = this,
+		dbox = me.dbox
+	;
+		dbox.multiply(me, BB.M);
+		me.validate_children(BB, dbox);
 
 		if (dbox.dirty)
 		{
@@ -1356,17 +1359,12 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	validate: function()
 	{
 	var
-		next = this.frame,
 		me = this,
 		x,y,w,h,
 		BB = me.dbox.reset()
 	;
-		if (me.box.dirty)
-			BB.multiply(me, BB.M.reset());
-
-		while ((next = next._next) !== me.frame)
-			if (next.validate)
-				next.validate(BB, me.dirty);
+		BB.multiply(me, BB.M.reset());
+		me.validate_children(BB, BB);
 
 		if (BB.w && BB.h)
 		{
@@ -1374,8 +1372,8 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 			BB.union(me.box);
 			BB.clip(0, 0, me.width, me.height);
 			me.box.set(x, y, w, h);
+			BB.dirty = false;
 		}
-		BB.dirty = false;
 		return me;
 	}
 
