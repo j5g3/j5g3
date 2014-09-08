@@ -322,7 +322,7 @@ j5g3.Paint = {
 		dy = (this.th/2|0) + this.offsetY,
 		offset, s
 	;
-		context.translate(0, dy);
+		context.translate(0, -dy);
 		offset = dx;
 
 		for (; y<l; y++)
