@@ -1926,33 +1926,20 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@lends j5g3.Map.prototype */ {
 	/** Offset Y */
 	offsetY: 0,
 
+	/**
+	 * @constructs j5g3.Map
+	 * @param p {object|j5g3.Spritesheet} Object or spritesheet
+	 */
 	init: function j5g3Map(p)
 	{
+		if (p instanceof j5g3.Spritesheet)
+			p = { sprites: p.sprites() };
+
 		j5g3.DisplayObject.call(this, p);
 
 		if (this.map===null)
 			this.map = [];
 	},
-
-	/**
-	 * Gets the top left coordinate of the tile at x,y for isometric maps.
-	 */
-	/*
-	to_iso: function(x, y)
-	{
-	var
-		me = this,
-		tw2=(this.tw/2 | 0) + this.offsetX,
-		th2=(this.th/2 | 0) + this.offsetY,
-		offset = (y%2) ? 0 : -tw2,
-
-		nx = (x * me.tw - offset | 0) - this.cx,
-		ny = (y * th2 | 0) - this.cy
-		;
-
-		return { x: nx, y: ny };
-	},
-	*/
 
 	paint: j5g3.Paint.Map
 
