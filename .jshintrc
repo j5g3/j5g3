@@ -7,6 +7,6 @@
 	"trailing":true,
 	"maxdepth":3,
 	"freeze": true,
-	"newcap": true,
-	"maxparams": 4
+	"maxparams": 4,
+	"browser": true
 }

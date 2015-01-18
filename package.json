@@ -16,6 +16,11 @@
 		"grunt-contrib-watch": "*",
 		"grunt-contrib-uglify": "*",
 		"grunt-contrib-yuidoc": "*",
-		"grunt-jsdoc": "*"
+		"grunt-jsdoc": "*",
+		
+		"grunt-karma": "*",
+		"karma-qunit": "*",
+		"karma-coverage": "*",
+		"karma-phantomjs-launcher": "*"
 	}
 }

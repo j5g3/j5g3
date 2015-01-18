@@ -15,10 +15,32 @@ module.exports = function(grunt) {
 			'j5g3': {
 				options: { jshintrc: '.jshintrc' },
 				src: [
-					'src/j5g3-core.js', 'src/j5g3-matrix.js', 'src/j5g3.js', 'src/j5g3-loader.js',
+					'src/j5g3-core.js', 'src/j5g3-matrix.js',
+					'src/j5g3-support.js',
+					'src/j5g3-validate.js', 'src/j5g3.js',
+					'src/j5g3-loader.js',
 					'src/j5g3-collision.js', 'src/j5g3-shapes.js',
-					'src/j5g3-support.js'
 				]
+			},
+
+			'tests': {
+				options: {
+					"unused":true,
+					"eqeqeq":true,
+					"newcap":true,
+					"undef":true,
+					"smarttabs":true,
+					"trailing":true,
+					"maxdepth":3,
+					"freeze": true,
+					"browser": true,
+					globals: {
+						'module': false, 'test': false,
+						'j5g3': false, 'compare': false,
+						"basePath": true
+					}
+				},
+				src: 'test/**/*.js'
 			}
 		},
 
@@ -65,12 +87,48 @@ module.exports = function(grunt) {
 		watch: {
 			j5g3: {
 				files: '<%= jshint.j5g3.src %>',
-				tasks: [ 'jshint:j5g3', 'concat:j5g3' ]
+				tasks: [ 'jshint:j5g3', 'concat:j5g3', 'karma' ]
 			},
 
 			css: {
 				files: '<%= concat.css.src %>',
 				tasks: [ 'concat:css' ]
+			},
+
+			tests: {
+				files: 'test/*.js',
+				tasks: [ 'jshint:tests', 'karma' ]
+			}
+		},
+
+		karma: {
+			j5g3: {
+				files: [
+					'<%= jshint.j5g3.src %>',
+					[
+						{ pattern: 'test/**/*.png', included: false, served: true },
+						{ pattern: 'test/**/*.gif', included: false, served: true },
+						{ pattern: 'package.json', included: false },
+						{ pattern: 'test/test.js', included: false },
+						{ pattern: 'test/**/*.mp3', included: false },
+						{ pattern: 'test/**/*.ogg', included: false },
+						'test/fixture.js', 'test/j5g3-core.js',
+						'test/j5g3-collision.js', 'test/j5g3-matrix.js',
+						'test/j5g3-shapes.js', 'test/j5g3.js',
+						'test/j5g3-validate.js', 'test/j5g3-loader.js'
+					]
+				],
+				frameworks: [ 'qunit' ],
+				plugins: [ 'karma-qunit', 'karma-coverage', 'karma-phantomjs-launcher' ],
+				browsers: [ 'PhantomJS' ],
+				reporters: [ 'progress', 'coverage' ],
+				preprocessors: {
+					'src/**/*.js': [ 'coverage' ]
+				},
+				singleRun: true,
+				coverageReporter: {
+					subdir: 'report'
+				}
 			}
 		}
 
@@ -82,6 +140,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-jsdoc');
+	grunt.loadNpmTasks('grunt-karma');
 
 	grunt.registerTask('default', [ 'jshint', 'clean', 'concat:j5g3', 'concat:css' ]);
 	grunt.registerTask('minify', [ 'default', 'uglify:j5g3' ]);

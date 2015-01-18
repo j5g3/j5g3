@@ -27,49 +27,22 @@ var
 	audioFormats = [ "wav", "mp3", "ogg" ],
 	audioMime = [ "audio/wav", "audio/mpeg", "audio/ogg" ]
 ;
-
-	/// bind() polyfill
-	if (!Function.prototype.bind)
-		Function.prototype.bind = function(scope)
-		{
-			var me = this;
-			return function() { return me.apply(scope, arguments); };
-		};
-
-	/// HTMLAudioElement polyfill
-	if (!window.HTMLAudioElement)
-		window.HTMLAudioElement = window.Audio;
-
-	if (!window.requestAnimationFrame)
-		window.requestAnimationFrame = window.mozRequestAnimationFrame ||
-			window.msRequestAnimationFrame ||
-			function(callback)
-			{
-				return window.setTimeout(callback, 1000/60);
-			};
-
-	if (!window.cancelAnimationFrame)
-		window.cancelAnimationFrame = window.mozCancelAnimationFrame ||
-			window.msCancelAnimationFrame ||
-			function(id)
-			{
-				window.clearTimeout(id);
-			};
-
 	/**
 	 * J5G3 Browser Capabilities module. Includes polyfills for features
 	 * used by the engine.
 	 * @namespace
 	 */
 	j5g3.support = {
-		audio: {},
+		audio: window.Audio && {},
 
 		touch: 'ontouchstart' in window.document
 	};
 
-	if (audioEl && audioEl.canPlayType)
+	if (!window.HTMLAudioElement)
+		window.HTMLAudioElement = window.Audio;
+
+	if (window.Audio && audioEl.canPlayType)
 	{
-		// TODO There is probably a better way to do this
 		audioFormats.forEach(function (f, i) {
 			j5g3.support.audio[f] = audioEl.canPlayType(audioMime[i]);
 

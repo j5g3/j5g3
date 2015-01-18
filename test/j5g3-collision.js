@@ -5,8 +5,8 @@
 	var
 		a, b,
 		do_test = function(A, B) {
-			a = j5g3.rect({ fill: 'red', width: 100, height: 50 }).set(A),
-			b = j5g3.rect({ fill: 'green', width: 50, height: 30 }).set(B),
+			a = j5g3.rect({ fill: 'red', width: 100, height: 50 }).set(A);
+			b = j5g3.rect({ fill: 'green', width: 50, height: 30 }).set(B);
 			assert.ok(a.collides(b));
 		}
 	;
@@ -24,7 +24,6 @@
 	{
 	var
 		A = j5g3.rect({ x: 10, y: 20, width: 30, height: 40, cx: -10, cy: -20 }),
-		B = j5g3.clip(),
 		BB = new j5g3.BoundingBox()
 	;
 		A.validate(BB);
@@ -33,7 +32,7 @@
 		A.validate(BB.reset());
 		a.ok(!A.at(0, 0));
 		a.ok(A.at(10, 20));
-		A.scale(0.5).invalidate();
+		A.scale(0.5);
 		A.validate(BB);
 		a.ok(!A.at(9, 20));
 		a.ok(!A.at(10, 19));

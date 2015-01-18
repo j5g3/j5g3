@@ -139,14 +139,19 @@ test('j5g3.Loader#audio', function(a) {
 var
 	loader = j5g3.loader(),
 	audio = loader.audio(basePath + 'pop.mp3'),
-	done = a.async()
+	done
 ;
-	loader.ready(function() {
-		a.ok(audio);
-		loader.destroy();
-		done();
-	});
-
+	if (j5g3.support.audio)
+	{
+		done = a.async();
+		loader.ready(function() {
+			a.ok(audio);
+			loader.destroy();
+			done();
+		});
+	}
+	else
+		a.ok(!audio);
 });
 
 })();
