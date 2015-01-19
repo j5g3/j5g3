@@ -36,62 +36,9 @@
 j5g3.Shape = j5g3.DisplayObject.extend(
 /** @lends j5g3.Shape.prototype */ {
 
-	/**
-	 * Type of shape for collision handling.
-	 * 'circle', 'segment', 'polygon'
-	 */
-	shape: null,
-
-	/**
-	 * Red value for fill attribute. Make sure to set all three for
-	 * colors to work. 0 to 255.
-	 */
-	red: undefined,
-
-	/**
-	 * Green value for fill attribute. Make sure to set all three for
-	 * colors to work. 0 to 255.
-	 */
-	green: undefined,
-
-	/**
-	 * Blue value for fill attribute. Make sure to set all three for
-	 * colors to work. 0 to 255.
-	 */
-	blue: undefined,
-
-	/**
-	 * Property affected by the red,green and blue properties.
-	 */
-	color_property: 'fill',
-
-	/* Old values */
-	_red: undefined,
-	_green: undefined,
-	_blue: undefined,
-
 	line_width: null,
 
-	_begin: j5g3.DisplayObject.prototype.begin,
-
-	begin: function(context)
-	{
-		var me = this;
-
-		if (me.red!==me._red || me.blue!==me._blue || me.green!==me._green)
-		{
-			// TODO this is ridiculous and slow.
-			me[me.color_property] = 'rgb(' + Math.floor(me.red) + ',' +
-				Math.floor(me.green) + ',' +
-				Math.floor(me.blue) + ')'
-			;
-			me._red = me._red;
-			me._green = me.green;
-			me._blue = me.blue;
-		}
-
-		this._begin(context);
-	},
+	is_dirty: j5g3.IsDirty.Shape,
 
 	paintPath: function()
 	{
@@ -118,18 +65,7 @@ j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
 
 	shape: 'circle',
 
-	__radius: 0,
-
-	set radius(val)
-	{
-		this.__radius = val;
-		this.width = this.height = val*2;
-	},
-
-	get radius()
-	{
-		return this.__radius;
-	},
+	radius: 0,
 
 	init: function j5g3Circle(p)
 	{
@@ -141,7 +77,7 @@ j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
 
 	paintPath: function(context)
 	{
-		context.arc(this.__radius, this.__radius, this.__radius, 0, 2*Math.PI, false);
+		context.arc(this.radius, this.radius, this.radius, 0, 2*Math.PI, false);
 	},
 
 	at: j5g3.HitTest.Circle

@@ -2,11 +2,26 @@
 	<title>j5g3 - Test Suite</title>
 
 	<script src="//code.jquery.com/qunit/qunit-git.js"></script>
-	<script src="../build/j5g3-all.js"></script>
+	
+	<script src="../src/j5g3-core.js"></script>
+	<script src="../src/j5g3-support.js"></script>
+	<script src="../src/j5g3-matrix.js"></script>
+	<script src="../src/j5g3-validate.js"></script>
+	<script src="../src/j5g3.js"></script>
+	<script src="../src/j5g3-loader.js"></script>
+	<script src="../src/j5g3-collision.js"></script>
+	<script src="../src/j5g3-shapes.js"></script>
 
+	<script>
+		var basePath = '';
+	</script>
+	
 	<script src="j5g3-core.js"></script>
+	<script src="j5g3-support.js"></script>
 	<script src="j5g3-matrix.js"></script>
+	<script src="j5g3-validate.js"></script>
 	<script src="j5g3.js"></script>
+	<script src="j5g3-loader.js"></script>
 	<script src="j5g3-collision.js"></script>
 	<script src="j5g3-shapes.js"></script>
 
@@ -17,6 +32,7 @@
 	<h2 id="qunit-banner"></h2>
 	<h2 id="qunit-userAgent"></h2>
 	<ol id="qunit-tests"></ol>
+	<div id="qunit-testresult"></div>
 	<div id="qunit-fixture">
 		<canvas width="800" height="600" id="screen"></canvas>
 		<img id="img" src="earth.gif" />

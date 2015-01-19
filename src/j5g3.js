@@ -235,10 +235,9 @@ j5g3.Paint = {
 		next = frame
 	;
 		while ((next=next._next) !== frame)
-			if (next.render && (next.dirty || BB.intersect(next.box)))
+			if (next.render && (next.dirty.$redraw || BB.intersect(next.box)))
 			{
 				next.render(context, BB);
-				next.dirty = false;
 			}
 	},
 
@@ -383,9 +382,7 @@ j5g3.Cache = {
 
 		box.M = new j5g3.Matrix();
 		me.clear_cache();
-		me.dirty = true;
 		me.render(cache_context, BB);
-		me.dirty = false;
 		box.M = M;
 
 		me._cache_source = cache_canvas;
@@ -529,24 +526,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	/** @private @type {number|null} */
 	height: null,
 
-	dirty: true,
-
-	__rotation: 0,
-	__sin: 0,
-	__cos: 1,
-
-	/** Rotation @type {number} */
-	set rotation(val)
-	{
-		this.__sin = Math.sin(val);
-		this.__cos = Math.cos(val);
-		this.__rotation = val;
-	},
-
-	get rotation()
-	{
-		return this.__rotation;
-	},
+	rotation: 0,
 
 	/** X Scale @type {number} */
 	sx: 1,
@@ -581,33 +561,24 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	/** Miter limit */
 	miter_limit: null,
 
+	/** Dirty State. See j5g3-validate.js */
+	dirty: null,
+
 	init: function j5g3DisplayObject(properties)
 	{
 		this.box = new j5g3.BoundingBox();
+		this.dirty = {};
 		this.extend(properties);
 	},
 
 	/**
-	 * Sets properties and invalidates object.
+	 * Sets object properties.
 	 */
 	set: function(p)
 	{
 		for (var i in p)
 			this[i] = p[i];
 
-		return this.invalidate();
-	},
-
-	/**
-	 * Invalidates object. if <code>box</code> is <code>false</code>
-	 * the bounding box will not be updated.
-	 *
-	 * @param {boolean} box Default true.
-	 */
-	invalidate: function(box)
-	{
-		this.dirty = true;
-		this.box.dirty = box!==false;
 		return this;
 	},
 
@@ -660,20 +631,9 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	 */
 	_paint: null,
 
-	validate: function(BB)
-	{
-		if (this.dirty)
-		{
-			BB.union(this.box);
-
-			if (BB.M.dirty || this.box.dirty)
-			{
-				this.box.transform(this, BB.M);
-				BB.union(this.box);
-				this.box.dirty = false;
-			}
-		}
-	},
+	validate: j5g3.Validate.DisplayObject,
+	is_dirty: j5g3.IsDirty.DisplayObject,
+	commit: j5g3.Commit.DisplayObject,
 
 	/**
 	 * Runs logic
@@ -691,7 +651,6 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 			this._previous._next = this._next;
 			this._next._previous = this._previous;
 
-			this.parent.dirty = true;
 			this.parent = this._previous = null;
 		}
 		return this;
@@ -726,7 +685,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	{
 		this.x = x;
 		this.y = y;
-		return this.invalidate();
+		return this;
 	},
 
 	/**
@@ -736,7 +695,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	{
 		this.width = w;
 		this.height = h;
-		return this.invalidate();
+		return this;
 	},
 
 	/**
@@ -780,7 +739,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 		this.sx = sx || 0;
 		this.sy = sy || 0;
 
-		return this.invalidate();
+		return this;
 	}
 
 });
@@ -947,9 +906,6 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** Time scale */
 	st: 1,
 
-	/// Dirty Box.
-	dbox: null,
-
 	/**
 	 * @private
 	 * It will initialize object without calling setup()
@@ -960,8 +916,6 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 
 		this._frames = [];
 		this.add_frame();
-		this.dbox = new j5g3.BoundingBox();
-		this.dbox.M = this.box.M;
 	},
 
 	init: function j5g3Clip(properties)
@@ -975,39 +929,9 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	/** Function to call after construction */
 	setup: null,
 
-	validate_children: function(BB, dbox)
-	{
-	var
-		me = this,
-		next = me.frame
-	;
-		while ((next = next._next) !== me.frame)
-			if (next.validate)
-			{
-				if (me.dirty)
-					next.dirty = true;
-				next.validate(dbox);
-			}
-	},
-
-	validate: function(BB)
-	{
-	var
-		me = this,
-		dbox = me.dbox
-	;
-		dbox.multiply(me, BB.M);
-		me.validate_children(BB, dbox);
-
-		if (dbox.dirty)
-		{
-			BB.union(me.box);
-			BB.union(dbox);
-			me.dbox = me.box.reset();
-			me.box = dbox;
-			me.box.dirty = false;
-		}
-	},
+	validate: j5g3.Validate.Clip,
+	is_dirty: j5g3.IsDirty.Clip,
+	commit: j5g3.Commit.Clip,
 
 	next_frame: function()
 	{
@@ -1019,10 +943,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 		next = this._frames[this._frame|0];
 
 		if (next !== this.frame)
-		{
 			this.frame = next;
-			this.dirty = true;
-		}
 	},
 
 	/**
@@ -1304,6 +1225,9 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	;
 		j5g3.Clip.call(me, p);
 
+		me.dbox = new j5g3.BoundingBox();
+		me.dbox.store();
+
 		me._init_canvas();
 		me.resolution(
 			me.width || me.canvas.clientWidth || 640,
@@ -1337,45 +1261,25 @@ j5g3.Stage = j5g3.Clip.extend(/** @lends j5g3.Stage.prototype */{
 	{
 	var
 		me = this,
+		box = me.dbox,
 		context = this.context,
-		dx = me.dbox.x, dw = me.dbox.w,
-		dy = me.dbox.y, dh = me.dbox.h
+		dx = box.x, dw = box.w,
+		dy = box.y, dh = box.h
 	;
 		if (dw !== 0 && dh !== 0)
 		{
 			context.clearRect(dx, dy, dw, dh);
 
 			me.begin(context);
-			me.paint(context, me.dbox);
+			me.paint(context, box);
 			me.end(context);
-
-			me.dirty = false;
 
 			me.screen.clearRect(dx, dy, dw, dh);
 			me.screen.drawImage(me.renderCanvas, dx, dy, dw, dh, dx, dy, dw, dh);
 		}
 	},
 
-	validate: function()
-	{
-	var
-		me = this,
-		x,y,w,h,
-		BB = me.dbox.reset()
-	;
-		BB.multiply(me, BB.M.reset());
-		me.validate_children(BB, BB);
-
-		if (BB.w && BB.h)
-		{
-			x = BB.x; y = BB.y; w = BB.w; h = BB.h;
-			BB.union(me.box);
-			BB.clip(0, 0, me.width, me.height);
-			me.box.set(x, y, w, h);
-			BB.dirty = false;
-		}
-		return me;
-	}
+	validate: j5g3.Validate.Stage
 
 });
 
@@ -1538,8 +1442,6 @@ j5g3.Tween = j5g3.Class.extend(/**@lends j5g3.Tween.prototype */ {
 
 		for (i in me.to)
 			target[i] = me.apply_tween(i, me.vf);
-
-		target.invalidate();
 
 		if (me.t<me.duration)
 		{
@@ -1941,7 +1843,9 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@lends j5g3.Map.prototype */ {
 			this.map = [];
 	},
 
-	paint: j5g3.Paint.Map
+	paint: j5g3.Paint.Map,
+
+	is_dirty: j5g3.IsDirty.Map
 
 });
 

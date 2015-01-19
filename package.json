@@ -14,6 +14,11 @@
 		"grunt-contrib-clean": "*",
 		"grunt-contrib-concat": "*",
 		"grunt-contrib-watch": "*",
-		"grunt-contrib-uglify": "*"
+		"grunt-contrib-uglify": "*",
+
+		"grunt-karma": "*",
+		"karma-qunit": "*",
+		"karma-coverage": "*",
+		"karma-phantomjs-launcher": "*"
 	}
 }

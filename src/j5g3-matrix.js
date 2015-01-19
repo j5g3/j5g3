@@ -24,6 +24,7 @@
 j5g3.BoundingBox = function j5g3BoundingBox(x, y, w, h)
 {
 	this.M = new j5g3.Matrix();
+	this.stored = { w: true, h: true };
 
 	if (x!==undefined)
 		this.set(x,y,w,h);
@@ -44,17 +45,15 @@ j5g3.BoundingBox.prototype = {
 	w: 0,
 	/// Height
 	h: 0,
-	/// Last transformation matrix used.
-	M: null,
 
-	dirty: true,
+	/// Calculated world transformation matrix
+	M: null,
 
 	reset: function()
 	{
 		this.x = this.y = Infinity;
 		this.w = this.h = 0;
 		this.r = this.b = -Infinity;
-		this.dirty = false;
 
 		return this;
 	},
@@ -90,66 +89,25 @@ j5g3.BoundingBox.prototype = {
 		return !(B.x > this.r || B.r < this.x || B.y > this.b || B.b < this.y);
 	},
 
-	transform_full: function(obj, M)
+	store: function()
 	{
-	var
-		x = M.e,
-		y = M.f,
-		x2, y2, x3, y3
-	;
-		M.to_world(obj.width, obj.height);
-		x2 = M.x; y2 = M.y;
-		M.to_world(0, obj.height);
-		x3 = M.x; y3 = M.y;
-		M.to_world(obj.width, 0);
+		var s = this.stored;
 
-		this.x = Math.min(x, x2, x3, M.x) | 0;
-		this.y = Math.min(y, y2, y3, M.y) | 0;
-		this.r = Math.max(x, x2, x3, M.x) | 0;
-		this.b = Math.max(y, y2, y3, M.y) | 0;
-		this.w = this.r - this.x;
-		this.h = this.b - this.y;
+		s.x = this.x;
+		s.y = this.y;
+		s.r = this.r;
+		s.b = this.b;
+
+		return this;
 	},
 
-	multiply: function(obj, M)
+	restore: function()
 	{
-		M = this.M.copy(M);
-
-		if (obj.sx !== 1 || obj.sy !== 1 || obj.__rotation)
-			M.multiply(
-				obj.sx * obj.__cos, obj.sx * obj.__sin,
-				-obj.sy * obj.__sin, obj.sy * obj.__cos, obj.x, obj.y
-			);
-		else {
-			M.e += obj.x;
-			M.f += obj.y;
-		}
-
-		if (obj.cx || obj.cy)
-		{
-			M.to_world(obj.cx, obj.cy);
-			M.e = M.x;
-			M.f = M.y;
-		}
-
-		M.dirty = true;
-		return M;
-	},
-
-	transform: function(obj, M)
-	{
-		M = this.multiply(obj, M);
-
-		if (M.identity)
-		{
-			this.x = M.e;
-			this.y = M.f;
-			this.w = obj.width;
-			this.h = obj.height;
-			this.r = this.x + this.w;
-			this.b = this.y + this.h;
-		} else
-			this.transform_full(obj, M);
+		var s = this.stored;
+		this.x = s.x;
+		this.y = s.y;
+		this.r = s.r;
+		this.b = s.b;
 
 		return this;
 	},
@@ -175,9 +133,9 @@ j5g3.BoundingBox.prototype = {
 
 			A.w = A.r-A.x;
 			A.h = A.b-A.y;
-
-			A.dirty = true;
 		}
+
+		return A;
 	}
 };
 
@@ -206,65 +164,16 @@ j5g3.Matrix.prototype = {
 	/** f component (y coord) */
 	f: 0,
 
-	dirty: false,
-
-	identity: true,
-
-	/// Precalculated Cosine
-	_cos: 1,
-	/// Precalculated Sine
-	_sin: 0,
-
-	/// Scale X
-	sx: 1,
-	/// Scale Y
-	sy: 1,
-
-	/** Sets Matrix rotation and calculates a,b,c and d values. */
-	set_rotation: function(val)
-	{
-		this._cos = Math.cos(val);
-		this._sin = Math.sin(val);
-
-		return this.calc4();
-	},
-
-	/**
-	 * Sets scaleX value
-	 */
-	set_sx: function(sx)
-	{
-		this.sx = sx;
-		return this.calc4();
-	},
-
-	/**
-	 * Sets scaleY value
-	 */
-	set_sy: function(sy)
-	{
-		this.sy = sy;
-		return this.calc4();
-	},
-
 	/**
 	 * Sets the scale x and y values.
 	 */
 	scale: function(sx, sy)
 	{
-		this.sx = sx;
-		this.sy = sy;
-		return this.calc4();
-	},
-
-	calc4: function()
-	{
-		this.a = this.sx * this._cos;
-		this.b = this.sx * this._sin;
-		this.c = -this.sy * this._sin;
-		this.d = this.sy * this._cos;
-
-		return this.invalidate(true, false);
+		this.a *= sx;
+		this.b *= sx;
+		this.c *= -sy;
+		this.d *= sy;
+		return this;
 	},
 
 	/**
@@ -283,13 +192,6 @@ j5g3.Matrix.prototype = {
 		this.e += A*k + C*l;
 		this.f += B*k + D*l;
 
-		return this.invalidate(true, false);
-	},
-
-	invalidate: function(dirty, identity)
-	{
-		this.dirty = dirty;
-		this.identity = identity;
 		return this;
 	},
 
@@ -319,7 +221,7 @@ j5g3.Matrix.prototype = {
 		m.e = (this.d*this.e-this.c*this.f) / -adbc;
 		m.f = (this.b*this.e-this.a*this.f) / adbc;
 
-		return m.invalidate(true, false);
+		return m;
 	},
 
 	/**
@@ -329,16 +231,16 @@ j5g3.Matrix.prototype = {
 	 */
 	product: function(M, x, y)
 	{
-		return this.clone().multiply(M.a, M.b, M.c, M.d, x || M.e || 0, y || M.f || 0);
+		x = x===undefined ? M.e : x;
+		y = y===undefined ? M.f : y;
+		return this.clone().multiply(M.a, M.b, M.c, M.d, x, y);
 	},
 
 	copy: function(B)
 	{
 		this.a = B.a; this.b = B.b; this.c = B.c;
 		this.d = B.d; this.e = B.e; this.f = B.f;
-		this._cos = B._cos; this._sin = B._sin;
-		this.sx = B.sx; this.sy = B.sy;
-		return this.invalidate(true, B.identity);
+		return this;
 	},
 
 	/**
@@ -346,9 +248,9 @@ j5g3.Matrix.prototype = {
 	 */
 	reset: function()
 	{
-		this.a = this.d = this._cos = this.sx = this.sy = 1;
-		this.b = this.c = this._sin = this.e = this.f = 0;
-		return this.invalidate(true, true);
+		this.a = this.d = 1;
+		this.b = this.c = this.e = this.f = 0;
+		return this;
 	},
 
 	/**
