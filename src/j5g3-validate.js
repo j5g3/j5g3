@@ -28,8 +28,8 @@ j5g3.Validate = {
 	{
 		var BB = this.dbox.reset();
 
-		if (isDirtyClip(this, BB))
-			commitClip(this, BB);
+		if (this.is_dirty())
+			this.commit(BB);
 
 		// Figure out a better way to clear box
 		this.box.store().reset();
@@ -47,8 +47,8 @@ j5g3.Validate = {
 
 	Clip: function(BB)
 	{
-		if (isDirtyClip(this))
-			commitClip(this, BB);
+		if (this.is_dirty(this))
+			this.commit(BB);
 
 		this.box.store().reset();
 
@@ -63,15 +63,166 @@ j5g3.Validate = {
 
 	DisplayObject: function(BB)
 	{
-		if (isDirty(this))
+		if (this.is_dirty())
 		{
 			BB.union(this.box);
-			commit(this, BB);
+			this.commit(BB);
 			transform(this);
 			BB.union(this.box);
 
 			return true;
 		}
+	}
+
+};
+
+j5g3.IsDirty = {
+
+	Map: function()
+	{
+	var
+		A = this,
+		B = this.dirty
+	;
+		B.$map = A.tw !== B.tw || A.th !== B.th || A.offsetX !== B.offsetX || A.offsetY !== B.offsetY || A.sprites !== B.sprites ||
+		A.map !== B.map;
+
+		B.$redraw = j5g3.IsDirty.DisplayObject.call(this) || B.$map;
+
+		return B.$redraw;
+	},
+
+	Shape: function()
+	{
+		if (this.radius !== this.dirty.radius)
+		{
+			this.width = this.height = this.radius * 2;
+			this.dirty.radius = this.radius;
+		}
+
+		return j5g3.IsDirty.DisplayObject.call(this);
+	},
+
+	Clip: function()
+	{
+	var
+		A = this,
+		B = A.dirty
+	;
+		B.$clip = A._frame !== B._frame;
+
+		// TODO optimize
+		B.$redraw = j5g3.IsDirty.DisplayObject.call(A) || B.$clip;
+
+		return B.$redraw;
+	},
+
+	DisplayObject: function()
+	{
+	var
+		A = this,
+		// TODO maybe not do this.
+		parentDirty = A.parent && A.parent.dirty || false,
+		B = A.dirty
+	;
+		B.$ignore = B.$redraw = parentDirty.$ignore || A.alpha===0 || A.width === 0 ||
+			A.height === 0 || A.sx === 0 || A.sy === 0;
+
+		if (B.$ignore)
+			return false;
+
+		B.$position = parentDirty.$position || A.x !== B.x || A.y !== B.y ||
+			A.cy !== B.cy || A.cx !== B.cx;
+
+		B.$dimension = parentDirty.$dimension || A.width !== B.width ||
+			A.height !== B.height || A.sy !== B.sy || A.sx !== B.sx;
+
+		B.$angle = parentDirty.$angle || A.rotation !== B.rotation;
+
+		B.$image = parentDirty.$image || A.alpha !== B.alpha || A.blending !== B.blending;
+
+		B.$shape = parentDirty.$shape || A.line_cap !== B.line_cap ||
+			A.line_join !== B.line_join || A.line_width !== B.line_width ||
+			A.miter_limit !== B.miter_limit || A.stroke !== B.stroke || A.fill !== B.fill;
+
+		B.$container = parentDirty.$container || A.parent !== B.parent;
+
+		B.$redraw = parentDirty.$redraw || B.$position || B.$dimension || B.$angle || B.$image || B.$shape || B.$container;
+
+		return B.$redraw;
+	}
+
+};
+
+j5g3.Commit = {
+
+	Map: function(BB)
+	{
+		var A = this, B = A.dirty;
+
+		if (B.$map)
+		{
+			B.tw = A.tw;
+			B.th = A.th;
+			B.offsetX = A.offsetX;
+			B.offsetY = A.offsetY;
+			B.sprites = A.sprites;
+			B.map = A.map;
+		}
+
+		j5g3.Commit.DisplayObject.call(A, BB);
+	},
+
+	Clip: function(BB)
+	{
+		var A = this;
+
+		if (A.dirty.$clip)
+			A.dirty._frame = A._frame;
+
+		j5g3.Commit.DisplayObject.call(A, BB);
+	},
+
+	DisplayObject: function(BB)
+	{
+	var
+		A = this,
+		B = A.dirty,
+		box = A.box,
+		M = box.M
+	;
+		if (B.$angle)
+			commitAngle(A, B, M);
+
+		if (B.$shape)
+			commitShape(A, B);
+
+		if (B.$angle || B.$dimension || B.$position || B.$container)
+			commitBox(A, B, BB, M);
+
+		if (B.$dimension)
+			commitDimension(A, B, M);
+
+		if (B.$position)
+			commitPosition(A, B, M);
+
+		if (B.$image)
+			commitImage(A, B, M);
+
+		if (B.$container)
+			commitContainer(A, B, M);
+
+		/*if (M.identity)
+		{
+			box.x = M.e;
+			box.y = M.f;
+			box.w = A.width;
+			box.h = A.height;
+			box.r = box.x + box.w;
+			box.b = box.y + box.h;
+
+			return;
+		}*/
 	}
 
 };
@@ -116,12 +267,6 @@ function commitImage(A, B)
 {
 	B.alpha = A.alpha;
 	B.blending = A.blending;
-	B.fill = A.fill;
-	B.line_cap = A.line_cap;
-	B.line_join = A.line_join;
-	B.line_width = A.line_width;
-	B.miter_limit = A.miter_limit;
-	B.stroke = A.stroke;
 }
 
 function commitContainer(A, B)
@@ -152,14 +297,6 @@ var
 	box.h = box.b - box.y;
 }
 
-function commitClip(A, BB)
-{
-	if (A.dirty.clip)
-		A.dirty._frame = A._frame;
-
-	commit(A, BB);
-}
-
 function commitBox(A, B, BB, M)
 {
 	M.copy(BB.M);
@@ -183,93 +320,14 @@ function commitBox(A, B, BB, M)
 	}
 }
 
-/**
- * Applies Matrix transformations. Order matters.
- */
-function commit(A, BB)
+function commitShape(A, B)
 {
-var
-	B = A.dirty,
-	box = A.box,
-	M = box.M
-;
-	if (B.angle)
-		commitAngle(A, B, M);
-
-	if (B.angle || B.dimension || B.position || B.container)
-		commitBox(A, B, BB, M);
-
-	if (B.dimension)
-		commitDimension(A, B, M);
-
-	if (B.position)
-		commitPosition(A, B, M);
-
-	if (B.image)
-		commitImage(A, B, M);
-
-	if (B.container)
-		commitContainer(A, B, M);
-
-	/*if (M.identity)
-	{
-		box.x = M.e;
-		box.y = M.f;
-		box.w = A.width;
-		box.h = A.height;
-		box.r = box.x + box.w;
-		box.b = box.y + box.h;
-
-		return;
-	}*/
-}
-
-function isDirtyClip(A)
-{
-var
-	B = A.dirty
-;
-	B.clip = A._frame !== B._frame;
-
-	// TODO optimize
-	B.redraw = isDirty(A) || B.clip;
-
-	return B.redraw;
-}
-
-function isDirty(A)
-{
-var
-	// TODO maybe not do this.
-	parentDirty = A.parent && A.parent.dirty || false,
-	B = A.dirty
-;
-	B.ignore = parentDirty.ignore || A.alpha===0 || A.width === 0 ||
-		A.height === 0 || A.sx === 0 || A.sy === 0;
-
-	if (B.ignore)
-		return false;
-
-	B.position = parentDirty.position || A.x !== B.x || A.y !== B.y ||
-		A.cy !== B.cy || A.cx !== B.cx;
-
-	B.dimension = parentDirty.dimension || A.width !== B.width ||
-		A.height !== B.height || A.sy !== B.sy || A.sx !== B.sx;
-
-	B.angle = parentDirty.rotation || A.rotation !== B.rotation;
-
-	B.image = parentDirty.image || A.alpha !== B.alpha || A.blending !== B.blending ||
-		A.fill !== B.fill;
-
-	B.shape = parentDirty.shape || A.line_cap !== B.line_cap ||
-		A.line_join !== B.line_join || A.line_width !== B.line_width ||
-		A.miter_limit !== B.miter_limit || A.stroke !== B.stroke;
-
-	B.container = parentDirty.container || A.parent !== B.parent;
-
-	B.redraw = parentDirty.redraw || B.position || B.dimension || B.angle || B.image || B.shape || B.container;
-
-	return B.redraw;
+	B.line_cap = A.line_cap;
+	B.line_join = A.line_join;
+	B.line_width = A.line_width;
+	B.miter_limit = A.miter_limit;
+	B.stroke = A.stroke;
+	B.fill = A.fill;
 }
 
 })(window.j5g3);

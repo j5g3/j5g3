@@ -235,7 +235,7 @@ j5g3.Paint = {
 		next = frame
 	;
 		while ((next=next._next) !== frame)
-			if (next.render && (next.dirty.redraw || BB.intersect(next.box)))
+			if (next.render && (next.dirty.$redraw || BB.intersect(next.box)))
 			{
 				next.render(context, BB);
 			}
@@ -632,6 +632,8 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 	_paint: null,
 
 	validate: j5g3.Validate.DisplayObject,
+	is_dirty: j5g3.IsDirty.DisplayObject,
+	commit: j5g3.Commit.DisplayObject,
 
 	/**
 	 * Runs logic
@@ -928,6 +930,8 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	setup: null,
 
 	validate: j5g3.Validate.Clip,
+	is_dirty: j5g3.IsDirty.Clip,
+	commit: j5g3.Commit.Clip,
 
 	next_frame: function()
 	{
@@ -1839,7 +1843,9 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@lends j5g3.Map.prototype */ {
 			this.map = [];
 	},
 
-	paint: j5g3.Paint.Map
+	paint: j5g3.Paint.Map,
+
+	is_dirty: j5g3.IsDirty.Map
 
 });
 

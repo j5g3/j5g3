@@ -121,15 +121,13 @@ img.addEventListener('load', function() {
 
 });
 
-/*test('j5g3#ready', function(a) {
+test('j5g3#ready', function(a) {
 
-	j5g3.ready(function() {
-		a.ok(true, "Callback called.");
-	});
+	j5g3.ready(function() {	});
 
-	var ev = new window.CustomEvent('load');
-	window.dispatchEvent(ev);
-});*/
+	a.ok(true);
+
+});
 
 test('j5g3#get_type', function(a) {
 var

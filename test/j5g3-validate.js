@@ -166,7 +166,7 @@ var
 	compare(a, BB, { x: 10, y: 20, w: 40, h: 50, r: 50, b: 70 });
 
 	A.validate(BB.reset());
-	assertBox(a, A.box, 10, 20, 50, 70);
+	assertBox(a, rect.box, 20, 30, 50, 70);
 	assertBox(a, BB, Infinity, Infinity, -Infinity, -Infinity);
 
 	A.set({ cx: 50, cy: -100 }).validate(BB.reset());
@@ -278,8 +278,38 @@ var
 	stage.validate();
 	compare(assert, stage.dbox, { x: 80, y: 60, w: 50, h: 50 });
 
-	//stage.validate();
-	//compare(assert, stage.dbox, { x: 300, y: 600, w: 0, h: 0 });
+	stage.validate();
+	compare(assert, stage.dbox, { w: 0, h: 0 });
+});
+
+test('j5g3.Validate.Circle', function(a) {
+
+var
+	A = j5g3.circle({ x: 5, y: 7, radius: 10 }),
+	B = j5g3.circle(20),
+	BB = new j5g3.BoundingBox()
+;
+	A.validate(BB);
+	compare(a, BB, { x: 5, y: 7, w: 20, h: 20 });
+
+	B.validate(BB);
+	compare(a, BB, { x: 0, y: 0, w: 40, h: 40 });
+});
+
+test('j5g3.Validate.Map', function(a) {
+var
+	map = [ [0, 1], [2], [3, 4, 5]],
+	ss = j5g3.spritesheet('img').grid(3, 3),
+	A = j5g3.map({
+		sprites: ss.sprites(), map: map,
+		tw: 50, th: 80
+	}),
+	BB = new j5g3.BoundingBox(),
+	sw = A.sprites[0].width,
+	sh = A.sprites[1].height
+;
+	A.validate(BB);
+	compare(a, BB, { x: 0, y: 0, w: sw*3, h: sh*3 });
 });
 
 });
