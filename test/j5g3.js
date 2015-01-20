@@ -199,4 +199,3 @@ var
 	s.set({ sx: 1, sy: 1, cx: 0, cy: 0 }).validate();
 	compare(a, s.dbox, { x: 10, y: 10, w: 100, h: 200 });
 });
-

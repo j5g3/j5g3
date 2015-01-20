@@ -38,7 +38,7 @@ j5g3.Shape = j5g3.DisplayObject.extend(
 
 	line_width: null,
 
-	is_dirty: j5g3.IsDirty.Shape,
+	test_dirty: j5g3.TestDirty.Shape,
 
 	paintPath: function()
 	{
@@ -62,9 +62,6 @@ j5g3.Shape = j5g3.DisplayObject.extend(
  * @extend j5g3.Shape
  */
 j5g3.Circle = j5g3.Shape.extend(/**@lends j5g3.Circle.prototype */ {
-
-	shape: 'circle',
-
 	radius: 0,
 
 	init: function j5g3Circle(p)
@@ -106,8 +103,6 @@ j5g3.Line = j5g3.Shape.extend(/**@lends j5g3.Line.prototype */{
  * @extend j5g3.Shape
  */
 j5g3.Polygon = j5g3.Shape.extend(/**@lends j5g3.Polygon.prototype */{
-
-	shape: 'polygon',
 	points: null,
 	normals: null,
 
@@ -202,8 +197,6 @@ j5g3.Polygon = j5g3.Shape.extend(/**@lends j5g3.Polygon.prototype */{
  */
 j5g3.Rect = j5g3.Shape.extend(/**@lends j5g3.Rect.prototype */{
 
-	shape: 'polygon',
-
 	init: function j5g3Rect(p)
 	{
 		j5g3.Shape.apply(this, [p]);
@@ -227,10 +220,8 @@ j5g3.Rect = j5g3.Shape.extend(/**@lends j5g3.Rect.prototype */{
  */
 j5g3.Dot = j5g3.Shape.extend(/**@lends j5g3.Dot.prototype */{
 
-	shape: 'circle',
 	line_cap: 'round',
 	line_join: 'round',
-	color_property: 'stroke',
 
 	/**
 	 * p can be properties or line_width

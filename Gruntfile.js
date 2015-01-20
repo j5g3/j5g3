@@ -15,9 +15,11 @@ module.exports = function(grunt) {
 			'j5g3': {
 				options: { jshintrc: '.jshintrc' },
 				src: [
-					'src/j5g3-core.js', 'src/j5g3-matrix.js',
+					'src/j5g3-core.js',
 					'src/j5g3-support.js',
-					'src/j5g3-validate.js', 'src/j5g3.js',
+					'src/j5g3-validate.js',
+					'src/j5g3.js',
+					'src/j5g3-matrix.js',
 					'src/j5g3-loader.js',
 					'src/j5g3-collision.js', 'src/j5g3-shapes.js',
 				]
@@ -102,32 +104,35 @@ module.exports = function(grunt) {
 		},
 
 		karma: {
-			j5g3: {
-				files: [
-					'<%= jshint.j5g3.src %>',
-					[
-						{ pattern: 'test/**/*.png', included: false, served: true },
-						{ pattern: 'test/**/*.gif', included: false, served: true },
-						{ pattern: 'package.json', included: false },
-						{ pattern: 'test/test.js', included: false },
-						{ pattern: 'test/**/*.mp3', included: false },
-						{ pattern: 'test/**/*.ogg', included: false },
-						'test/fixture.js', 'test/j5g3-core.js',
-						'test/j5g3-collision.js', 'test/j5g3-matrix.js',
-						'test/j5g3-shapes.js', 'test/j5g3.js',
-						'test/j5g3-validate.js', 'test/j5g3-loader.js'
-					]
-				],
+
+			options: {
+
 				frameworks: [ 'qunit' ],
-				plugins: [ 'karma-qunit', 'karma-coverage', 'karma-phantomjs-launcher' ],
 				browsers: [ 'PhantomJS' ],
 				reporters: [ 'progress', 'coverage' ],
-				preprocessors: {
-					'src/**/*.js': [ 'coverage' ]
-				},
 				singleRun: true,
 				coverageReporter: {
 					subdir: 'report'
+				}
+			},
+
+			j5g3: {
+				plugins: [ 'karma-qunit', 'karma-coverage', 'karma-phantomjs-launcher' ],
+				files: [
+					{ src: '<%= jshint.j5g3.src %>' },
+					{ src: 'test/**/*.png', included: false, served: true },
+					{ src: 'test/**/*.gif', included: false, served: true },
+					{ src: 'package.json', included: false },
+					{ src: 'test/test.js', included: false },
+					{ src: 'test/**/*.mp3', included: false },
+					{ src: 'test/**/*.ogg', included: false },
+					{ src: [ 'test/fixture.js', 'test/j5g3-core.js',
+					'test/j5g3-collision.js', 'test/j5g3-matrix.js',
+					'test/j5g3-shapes.js', 'test/j5g3.js',
+					'test/j5g3-validate.js', 'test/j5g3-loader.js']}
+				],
+				preprocessors: {
+					'src/**/*.js': [ 'coverage' ]
 				}
 			}
 		}

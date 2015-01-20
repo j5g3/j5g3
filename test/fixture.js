@@ -2,6 +2,7 @@
 (function() {
 
 window.document.body.innerHTML +=
+	'<div id="qunit-testrunner-toolbar"></div>' +
 	'<canvas width="800" height="600" id="screen"></canvas>' +
 	'<img id="img" src="base/test/earth.gif" />' +
 	'<img id="soccer" src="base/test/ball.gif" />';
@@ -10,8 +11,6 @@ window.basePath = 'base/test/';
 
 if (!window.Audio)
 {
-	//var x = j5g3.dom('audio');
-
 	window.HTMLAudioElement = window.Audio = function() {};
 }
 

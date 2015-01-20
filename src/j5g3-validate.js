@@ -28,19 +28,8 @@ j5g3.Validate = {
 	{
 		var BB = this.dbox.reset();
 
-		if (this.is_dirty())
-			this.commit(BB);
-
-		// Figure out a better way to clear box
-		this.box.store().reset();
-
-		if (validateChildren(this, this.box))
-		{
-			BB.union(this.box.stored);
-			BB.union(this.box);
+		if (j5g3.Validate.Clip.call(this, BB))
 			BB.clip(0, 0, this.width, this.height);
-		} else
-			this.box.restore();
 
 		return this;
 	},
@@ -67,7 +56,7 @@ j5g3.Validate = {
 		{
 			BB.union(this.box);
 			this.commit(BB);
-			transform(this);
+			this.box.commit(this);
 			BB.union(this.box);
 
 			return true;
@@ -78,6 +67,25 @@ j5g3.Validate = {
 
 j5g3.IsDirty = {
 
+	DisplayObject: function()
+	{
+		return (this.dirty.$redraw = this.test_dirty());
+	}
+
+};
+
+j5g3.TestDirty = {
+
+	Text: function()
+	{
+		var A = this, B = this.dirty;
+
+		if ((B.$text = A.text !== B.text))
+			B.text = A.text;
+
+		return j5g3.TestDirty.DisplayObject.call(this) || B.$text;
+	},
+
 	Map: function()
 	{
 	var
@@ -87,9 +95,7 @@ j5g3.IsDirty = {
 		B.$map = A.tw !== B.tw || A.th !== B.th || A.offsetX !== B.offsetX || A.offsetY !== B.offsetY || A.sprites !== B.sprites ||
 		A.map !== B.map;
 
-		B.$redraw = j5g3.IsDirty.DisplayObject.call(this) || B.$map;
-
-		return B.$redraw;
+		return j5g3.TestDirty.DisplayObject.call(this) || B.$map;
 	},
 
 	Shape: function()
@@ -100,7 +106,7 @@ j5g3.IsDirty = {
 			this.dirty.radius = this.radius;
 		}
 
-		return j5g3.IsDirty.DisplayObject.call(this);
+		return j5g3.TestDirty.DisplayObject.call(this);
 	},
 
 	Clip: function()
@@ -112,9 +118,7 @@ j5g3.IsDirty = {
 		B.$clip = A._frame !== B._frame;
 
 		// TODO optimize
-		B.$redraw = j5g3.IsDirty.DisplayObject.call(A) || B.$clip;
-
-		return B.$redraw;
+		return j5g3.TestDirty.DisplayObject.call(A) || B.$clip;
 	},
 
 	DisplayObject: function()
@@ -125,7 +129,7 @@ j5g3.IsDirty = {
 		parentDirty = A.parent && A.parent.dirty || false,
 		B = A.dirty
 	;
-		B.$ignore = B.$redraw = parentDirty.$ignore || A.alpha===0 || A.width === 0 ||
+		B.$ignore = parentDirty.$ignore || A.alpha===0 || A.width === 0 ||
 			A.height === 0 || A.sx === 0 || A.sy === 0;
 
 		if (B.$ignore)
@@ -147,14 +151,60 @@ j5g3.IsDirty = {
 
 		B.$container = parentDirty.$container || A.parent !== B.parent;
 
-		B.$redraw = parentDirty.$redraw || B.$position || B.$dimension || B.$angle || B.$image || B.$shape || B.$container;
-
-		return B.$redraw;
+		return parentDirty.$redraw || B.$position || B.$dimension || B.$angle || B.$image || B.$shape || B.$container;
 	}
 
 };
 
 j5g3.Commit = {
+
+	Box: function(A)
+	{
+	var
+		box = this,
+		M = box.M,
+		x = M.e,
+		y = M.f,
+		x2, y2, x3, y3
+	;
+		M.to_world(A.width, A.height);
+		x2 = M.x; y2 = M.y;
+		M.to_world(0, A.height);
+		x3 = M.x; y3 = M.y;
+		M.to_world(A.width, 0);
+
+		box.x = Math.min(x, x2, x3, M.x) | 0;
+		box.y = Math.min(y, y2, y3, M.y) | 0;
+		box.r = Math.ceil(Math.max(x, x2, x3, M.x));
+		box.b = Math.ceil(Math.max(y, y2, y3, M.y));
+		box.w = box.r - box.x;
+		box.h = box.b - box.y;
+	},
+
+	Matrix: function(A, BB)
+	{
+	var
+		B = A.dirty,
+		M = this.copy(BB.M)
+	;
+		if (A.sx !== 1 || A.sy !== 1 || A.rotation !== 0)
+		{
+			M.multiply(
+				A.sx * B.cos, A.sx * B.sin,
+				-A.sy * B.sin, A.sy * B.cos, 0, 0
+			);
+		}
+
+		M.e += A.x;
+		M.f += A.y;
+
+		if (A.cx !== 0 || B.cy !== 0)
+		{
+			M.to_world(A.cx, A.cy);
+			M.e = M.x;
+			M.f = M.y;
+		}
+	},
 
 	Map: function(BB)
 	{
@@ -162,10 +212,8 @@ j5g3.Commit = {
 
 		if (B.$map)
 		{
-			B.tw = A.tw;
-			B.th = A.th;
-			B.offsetX = A.offsetX;
-			B.offsetY = A.offsetY;
+			B.tw = A.tw; B.th = A.th;
+			B.offsetX = A.offsetX; B.offsetY = A.offsetY;
 			B.sprites = A.sprites;
 			B.map = A.map;
 		}
@@ -192,25 +240,48 @@ j5g3.Commit = {
 		M = box.M
 	;
 		if (B.$angle)
-			commitAngle(A, B, M);
+		{
+			B.cos = Math.cos(A.rotation);
+			B.sin = Math.sin(A.rotation);
+			B.rotation = A.rotation;
+		}
 
 		if (B.$shape)
-			commitShape(A, B);
-
-		if (B.$angle || B.$dimension || B.$position || B.$container)
-			commitBox(A, B, BB, M);
-
-		if (B.$dimension)
-			commitDimension(A, B, M);
+		{
+			B.line_cap = A.line_cap;
+			B.line_join = A.line_join;
+			B.line_width = A.line_width;
+			B.miter_limit = A.miter_limit;
+			B.stroke = A.stroke;
+			B.fill = A.fill;
+		}
 
 		if (B.$position)
-			commitPosition(A, B, M);
+		{
+			B.x = A.x; B.y = A.y;
+			B.cx = A.cx; B.cy = A.cy;
+		}
 
-		if (B.$image)
-			commitImage(A, B, M);
+		if (B.$dimension)
+		{
+			B.width = A.width;
+			B.height = A.height;
+			B.sx = A.sx;
+			B.sy = A.sy;
+		}
 
 		if (B.$container)
-			commitContainer(A, B, M);
+			B.parent = A.parent;
+
+		if (B.$angle || B.$dimension || B.$position || B.$container)
+			M.commit(A, BB);
+
+		if (B.$image)
+		{
+			B.alpha = A.alpha;
+			B.blending = A.blending;
+		}
+
 
 		/*if (M.identity)
 		{
@@ -240,94 +311,26 @@ var
 	return result;
 }
 
-function commitPosition(A, B)
+/*function validateMapChildren(me, BB)
 {
-	B.x = A.x;
-	B.y = A.y;
-	B.cx = A.cx;
-	B.cy = A.cy;
-}
+	var map = this.map, y = map.length, x, sprites = this.sprites, s, cm;
 
-function commitAngle(A, B)
-{
-	B.cos = Math.cos(A.rotation);
-	B.sin = Math.sin(A.rotation);
-	B.rotation = A.rotation;
-}
+	context.translate(0, y*this.th);
 
-function commitDimension(A, B)
-{
-	B.width = A.width;
-	B.height = A.height;
-	B.sx = A.sx;
-	B.sy = A.sy;
-}
-
-function commitImage(A, B)
-{
-	B.alpha = A.alpha;
-	B.blending = A.blending;
-}
-
-function commitContainer(A, B)
-{
-	B.parent = A.parent;
-}
-
-function transform(A)
-{
-var
-	box = A.box,
-	M = box.M,
-	x = M.e,
-	y = M.f,
-	x2, y2, x3, y3
-;
-	M.to_world(A.width, A.height);
-	x2 = M.x; y2 = M.y;
-	M.to_world(0, A.height);
-	x3 = M.x; y3 = M.y;
-	M.to_world(A.width, 0);
-
-	box.x = Math.min(x, x2, x3, M.x) | 0;
-	box.y = Math.min(y, y2, y3, M.y) | 0;
-	box.r = Math.ceil(Math.max(x, x2, x3, M.x));
-	box.b = Math.ceil(Math.max(y, y2, y3, M.y));
-	box.w = box.r - box.x;
-	box.h = box.b - box.y;
-}
-
-function commitBox(A, B, BB, M)
-{
-	M.copy(BB.M);
-
-	if (A.sx !== 1 || A.sy !== 1 || A.rotation !== 0)
+	while (y--)
 	{
-		M.multiply(
-			A.sx * B.cos, A.sx * B.sin,
-			-A.sy * B.sin, A.sy * B.cos, 0, 0
-		);
+		x = map[y].length;
+		cm= map[y];
+
+		context.translate(x*this.tw, -this.th);
+
+		while (x--)
+		{
+			context.translate(-this.tw, 0);
+			if ((s = sprites[cm[x]]))
+				s.render(context, BB);
+		}
 	}
-
-	M.e += A.x;
-	M.f += A.y;
-
-	if (A.cx !== 0 || B.cy !== 0)
-	{
-		M.to_world(A.cx, A.cy);
-		M.e = M.x;
-		M.f = M.y;
-	}
-}
-
-function commitShape(A, B)
-{
-	B.line_cap = A.line_cap;
-	B.line_join = A.line_join;
-	B.line_width = A.line_width;
-	B.miter_limit = A.miter_limit;
-	B.stroke = A.stroke;
-	B.fill = A.fill;
-}
+}*/
 
 })(window.j5g3);

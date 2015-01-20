@@ -304,12 +304,10 @@ var
 		sprites: ss.sprites(), map: map,
 		tw: 50, th: 80
 	}),
-	BB = new j5g3.BoundingBox(),
-	sw = A.sprites[0].width,
-	sh = A.sprites[1].height
+	BB = new j5g3.BoundingBox()
 ;
 	A.validate(BB);
-	compare(a, BB, { x: 0, y: 0, w: sw*3, h: sh*3 });
+	compare(a, A.box, { x: 0, y: 0, w: 0, h: 0 });
 });
 
 });

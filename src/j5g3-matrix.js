@@ -49,6 +49,8 @@ j5g3.BoundingBox.prototype = {
 	/// Calculated world transformation matrix
 	M: null,
 
+	commit: j5g3.Commit.Box,
+
 	reset: function()
 	{
 		this.x = this.y = Infinity;
@@ -223,6 +225,12 @@ j5g3.Matrix.prototype = {
 
 		return m;
 	},
+
+	/**
+	 * Calculates matrix based on display object properties and
+	 * global transformation matrix.
+	 */
+	commit: j5g3.Commit.Matrix,
 
 	/**
 	 * Multiplies matrix by M and optional x and y

@@ -304,7 +304,7 @@ j5g3.Paint = {
 			{
 				context.translate(-this.tw, 0);
 				if ((s = sprites[cm[x]]))
-					s.render(context, BB);
+					s.paint(context, BB);
 			}
 		}
 	},
@@ -633,6 +633,7 @@ j5g3.DisplayObject = j5g3.Class.extend(/** @lends j5g3.DisplayObject.prototype *
 
 	validate: j5g3.Validate.DisplayObject,
 	is_dirty: j5g3.IsDirty.DisplayObject,
+	test_dirty: j5g3.TestDirty.DisplayObject,
 	commit: j5g3.Commit.DisplayObject,
 
 	/**
@@ -824,6 +825,8 @@ j5g3.Text = j5g3.DisplayObject.extend(/** @lends j5g3.Text.prototype */{
 		return this;
 	},
 
+	test_dirty: j5g3.TestDirty.Text,
+
 	init: function j5g3Text(properties)
 	{
 		if (typeof properties === 'string')
@@ -930,7 +933,7 @@ j5g3.Clip = j5g3.DisplayObject.extend(
 	setup: null,
 
 	validate: j5g3.Validate.Clip,
-	is_dirty: j5g3.IsDirty.Clip,
+	test_dirty: j5g3.TestDirty.Clip,
 	commit: j5g3.Commit.Clip,
 
 	next_frame: function()
@@ -1845,7 +1848,8 @@ j5g3.Map = j5g3.DisplayObject.extend(/**@lends j5g3.Map.prototype */ {
 
 	paint: j5g3.Paint.Map,
 
-	is_dirty: j5g3.IsDirty.Map
+	test_dirty: j5g3.TestDirty.Map,
+	commit: j5g3.Commit.Map
 
 });
 
